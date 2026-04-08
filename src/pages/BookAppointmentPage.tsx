@@ -44,12 +44,12 @@ const SERVICES: Service[] = [
     tagline: 'Lift · Define · Fluff',
     description:
       'The process of lifting the brow hairs to add fullness, symmetry, and definition. Softens the structure of the hairs allowing endless styling options — from fluffy soap brows to clean and sleek. Lasts up to 6–8 weeks.',
-    duration: '75 min',
+    duration: '45 min+',
     tiers: [
-      { label: 'Lami Only', price: '$85' },
-      { label: 'Naked Brow Lami (No Tint)', price: '$115', note: '$100 in Jan' },
+      { label: 'Lamination Only', price: '$85' },
+      { label: 'Naked Brow Lamination (No Tint)', price: '$115', note: '$100 in Jan' },
       { label: 'Full Package', price: '$130', note: '$115 in Jan' },
-      { label: 'Maintenance Appt', price: '$65' },
+      { label: 'Maintenance Appointment', price: '$65' },
     ],
     images: [browLamImg1, browLamImg2],
     video: browLamVid,
@@ -60,7 +60,7 @@ const SERVICES: Service[] = [
     tagline: 'Sculpted · Tinted · Polished',
     description:
       'A complete brow enhancement package — brow shaping, waxing, and tinting all in one. Brow tint lasts up to 1 week on the skin and 4+ weeks on the hairs for a defined, polished finish.',
-    duration: '45 min',
+    duration: '40 min+',
     tiers: [{ label: 'Shape & Tint Package', price: '$65' }],
     images: [browStImg1, browStImg2],
     video: null,
@@ -71,7 +71,7 @@ const SERVICES: Service[] = [
     tagline: 'Clean · Shaped · Fresh',
     description:
       'Give your brows life again with a quick and easy brow shaping and waxing package. Includes the option of filling in the brows with a brow pencil and highlighting the brow bone to further accentuate your new brows.',
-    duration: '30 min',
+    duration: '20 min+',
     tiers: [{ label: 'Shape & Wax Package', price: '$50' }],
     images: [browWtImg1, browWtImg2],
     video: browWtVid,
@@ -82,7 +82,7 @@ const SERVICES: Service[] = [
     tagline: 'Lifted · Curled · Luminous',
     description:
       'Enhances and lifts your natural lashes making them appear longer, fuller, and freshly curled. Paired with a vitamin mask for deep nourishment. Lasts 6–8 weeks — the most low-maintenance service you can get.',
-    duration: '60 min',
+    duration: '45 min+',
     tiers: [
       { label: 'With Tint', price: '$110' },
       { label: 'Without Tint', price: '$100' },
