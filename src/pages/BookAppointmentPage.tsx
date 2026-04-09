@@ -85,7 +85,7 @@ const SERVICES: Service[] = [
     name: 'Keratin Lash Lift',
     tagline: 'Lifted · Curled · Luminous',
     description:
-      'Enhances and lifts your natural lashes making them appear longer, fuller, and freshly curled. Paired with a vitamin mask for deep nourishment. Lasts 6–8 weeks — the most low-maintenance service you can get.',
+      'Enhances and lifts your natural lashes making them appear longer, fuller, and freshly curled. Paired with a vitamin mask for deep nourishment. Lasts 6-8 weeks — the most low-maintenance service you can get.',
     duration: '45 min+',
     tiers: [
       { label: 'With Tint', price: '$110' },
@@ -109,7 +109,7 @@ const FAQ_DATA = [
       },
       {
         q: 'How long does brow lamination last?',
-        a: 'The lifted effect lasts up to 6–8 weeks before it begins to relax back to its natural state. As you get brow lamination done more regularly, the effect can extend to 9–10 weeks.',
+        a: 'The lifted effect lasts up to 6-8 weeks before it begins to relax back to its natural state. As you get brow lamination done more regularly, the effect can extend to 9-10 weeks.',
       },
       {
         q: 'Do I have to get the tint with it? How long does the tint last?',
@@ -129,7 +129,7 @@ const FAQ_DATA = [
       },
       {
         q: 'How often can I get brow lamination done?',
-        a: 'You must wait at least 8–12 weeks, or until your brows have returned to their natural state, to allow full recovery and avoid over-processing.',
+        a: 'You must wait at least 8-12 weeks, or until your brows have returned to their natural state, to allow full recovery and avoid over-processing.',
       },
       {
         q: 'Can I get brow henna and brow lamination done in one appointment?',
@@ -142,7 +142,7 @@ const FAQ_DATA = [
     items: [
       {
         q: 'How long do lash lifts last?',
-        a: 'Results can last anywhere from 6–8 weeks depending on your natural lash growth cycle and how well aftercare is followed.',
+        a: 'Results can last anywhere from 6-8 weeks depending on your natural lash growth cycle and how well aftercare is followed.',
       },
       {
         q: 'How often can I get a lash lift done?',
@@ -154,11 +154,11 @@ const FAQ_DATA = [
       },
       {
         q: 'How do lash lifts differ from lash extensions?',
-        a: 'A lash lift (1 hr) lifts your natural lashes for a more natural enhanced look. Lash extensions (1.5–3 hrs) apply synthetic lashes for a fuller look. Lash lifts are also much lower maintenance.',
+        a: 'A lash lift (1 hr) lifts your natural lashes for a more natural enhanced look. Lash extensions (1.5-3 hrs) apply synthetic lashes for a fuller look. Lash lifts are also much lower maintenance.',
       },
       {
         q: 'Does the lash lift procedure hurt?',
-        a: 'Not at all. It is pain-free and non-invasive as long as your artist is properly trained and certified. Your eyes will be closed for approximately 30–45 minutes — use that time to relax and unwind.',
+        a: 'Not at all. It is pain-free and non-invasive as long as your artist is properly trained and certified. Your eyes will be closed for approximately 30-45 minutes — use that time to relax and unwind.',
       },
       {
         q: 'Can a lash lift damage my natural lashes?',
@@ -222,11 +222,16 @@ function ServiceCard({
     <div className="bg-white rounded-2xl overflow-hidden border border-[#e3e2de] shadow-sm group hover:shadow-lg transition-shadow duration-300 flex flex-col">
       {/* Image gallery */}
       <div className="relative aspect-[3/4] overflow-hidden bg-[#f6f2ec] shrink-0">
-        <img
-          src={service.images[imgIdx]}
-          alt={service.name}
-          className="w-full h-full object-cover transition-opacity duration-300"
-        />
+        <div
+          className="flex h-full transition-transform duration-500 ease-in-out"
+          style={{ transform: `translateX(-${imgIdx * 100}%)` }}
+        >
+          {service.images.map((img, i) => (
+            <div key={i} className="w-full h-full shrink-0">
+              <img src={img} alt={`${service.name} ${i + 1}`} className="w-full h-full object-cover" />
+            </div>
+          ))}
+        </div>
 
         {/* Nav arrows — visible on hover */}
         <button
