@@ -558,7 +558,7 @@ function InfoTabs() {
         </div>
 
         {/* Content panel */}
-        <div className="bg-white/70 backdrop-blur-sm border border-[#e3e2de] rounded-2xl px-8 py-10 shadow-sm">
+        <div className="bg-white border border-[#e3e2de] rounded-2xl px-8 py-10 shadow-sm">
           <div key={active} className="tab-fade-in">
             {active === 'policies'  && <BookingPoliciesContent />}
             {active === 'faq'       && <FaqContent />}
