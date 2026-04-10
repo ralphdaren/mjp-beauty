@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
+import logoBlack from '@/assets/brand-kit/logo-black.png'
 
 const mainLinks = [
   { label: 'Home', to: '/' },
@@ -31,11 +32,8 @@ export default function Navbar() {
 
       <nav className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
         {/* Logo */}
-        <NavLink
-          to="/"
-          className="shrink-0 text-brand text-base font-semibold tracking-[0.2em] uppercase"
-        >
-          MJP Beauty
+        <NavLink to="/" className="shrink-0">
+          <img src={logoBlack} alt="MJP Beauty" className="h-13 w-auto" />
         </NavLink>
 
         {/* Desktop — center links */}
