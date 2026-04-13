@@ -6,8 +6,7 @@ import logoBlack from '@/assets/brand-kit/logo-black.png'
 const mainLinks = [
   { label: 'Home', to: '/' },
   { label: 'In Person Training', to: '/in-person-training' },
-  { label: 'Online Brow Courses', to: '/online-brow-courses' },
-  { label: 'Freebies', to: '/freebies' },
+  { label: 'Online Brow Courses', to: '/online-brow-courses' }, { label: 'Freebies', to: '/freebies' },
 ]
 
 export default function Navbar() {
@@ -33,7 +32,7 @@ export default function Navbar() {
       <nav className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
         {/* Logo */}
         <NavLink to="/" className="shrink-0">
-          <img src={logoBlack} alt="MJP Beauty" className="h-13 w-auto" />
+          <img src={logoBlack} alt="MJP Beauty" className="h-12 w-auto" />
         </NavLink>
 
         {/* Desktop — center links */}
