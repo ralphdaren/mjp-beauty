@@ -32,16 +32,13 @@ export default function Home() {
             ARE YOU HERE TO GLOW OR GROW?
           </p>
         </div>
-
-        {/* Subtle bottom fade into page background */}
-        <div className="hero-bottom-fade" />
       </section>
 
       <section className="about-section">
         <div className="section-heading">
-          <p className="about-eyebrow">get to know me</p>
+          <p className="about-eyebrow">GET TO KNOW ME</p>
           <h2 className="about-title">
-            meet the face behind <span>MJP beauty</span>
+            Meet The Face Behind <span>MJP beauty</span>
           </h2>
         </div>
 
