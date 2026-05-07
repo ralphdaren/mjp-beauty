@@ -26,10 +26,10 @@ export default function Home() {
             MJP Beauty
           </p>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-white leading-tight max-w-2xl">
-            I need headline po!
+            WELCOMES YOU
           </h1>
           <p className="mt-5 text-base sm:text-lg text-white/75 max-w-md font-light leading-relaxed">
-            I need your subtext here
+            ARE YOU HERE TO GLOW OR GROW?
           </p>
         </div>
 
