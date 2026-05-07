@@ -1,5 +1,5 @@
-import { NavLink } from 'react-router-dom'
 import headVid from '@/assets/home/home-head-vid.mp4'
+import aboutImg from '@/assets/home/about-me.jpg'
 import '@/styles/HomePage.css'
 
 export default function Home() {
@@ -35,6 +35,53 @@ export default function Home() {
 
         {/* Subtle bottom fade into page background */}
         <div className="hero-bottom-fade" />
+      </section>
+
+      <section className="about-section">
+        <div className="section-heading">
+          <p className="about-eyebrow">get to know me</p>
+          <h2 className="about-title">
+            meet the face behind <span>MJP beauty</span>
+          </h2>
+        </div>
+
+        <div className="about-content">
+          <div className="about-visual">
+            <div className="about-image-wrapper">
+              <img src={aboutImg} alt="Micah portrait" />
+            </div>
+            <p className="about-role">FOUNDER • EDUCATOR</p>
+          </div>
+
+          <div className="about-copy">
+            <div className="about-heading-group">
+              <h3>Hi I'm Micah</h3>
+              <p className="about-subtitle">Brow Artist & Leading Brow Educator in Canada</p>
+            </div>
+
+            <p className="about-description">
+              Welcome to MJP Beauty — where we don't just shape brows, we shape standards.
+            </p>
+            <p className="about-description">
+              I'm the founder of MJP Beauty, a dedicated Brow Artist specializing in natural results. After eight years in the beauty industry and training students across North America, my mission is clear: to raise the bar in brow education.
+            </p>
+            <p className="about-description">
+              Whether you're here for luxury brow services or ready to grow your skills through pro-level training, MJP Beauty is where confidence begins — with craft, care, and community.
+            </p>
+
+            <div className="about-divider" />
+            <div className="about-stats">
+              <div className="about-stat">
+                <span>8+</span>
+                <p>YEARS EXPERIENCED</p>
+              </div>
+              <div className="about-stat">
+                <span>450+</span>
+                <p>STUDENTS TRAINED</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
     </main>
   )
