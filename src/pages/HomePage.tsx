@@ -1,5 +1,8 @@
 import headVid from '@/assets/home/home-head-vid.mp4'
 import aboutImg from '@/assets/home/about-me.jpg'
+import inPersonCourseImg from '@/assets/home/in-person.jpg'
+import onlineCourseImg from '@/assets/home/online.jpg'
+import { Link } from 'react-router-dom'
 import '@/styles/HomePage.css'
 
 export default function Home() {
@@ -35,7 +38,7 @@ export default function Home() {
       </section>
 
       {/* About Me Section */}
-      <section className="bg-[#f6f2ec] text-[color:var(--foreground)] py-20 px-6 md:px-8">
+      <section className="bg-[#f6f2ec] text-[color:var(--foreground)] pt-12 pb-20 px-6 md:px-8">
         <div className="mx-auto mb-12 max-w-4xl text-center">
           <p className="mb-3 text-[0.85rem] uppercase tracking-[0.28em] text-[color:var(--muted-foreground)]">
             GET TO KNOW ME
@@ -96,6 +99,119 @@ export default function Home() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Courses Section */}
+      <section className="bg-[#f6f2ec] text-[color:var(--foreground)] pt-4 pb-12 px-6 md:px-8">
+        <div className="mx-auto mb-12 max-w-4xl text-center">
+          <p className="mb-3 text-[0.85rem] uppercase tracking-[0.28em] text-[color:var(--muted-foreground)]">
+            COURSES AVAILABLE
+          </p>
+          <h2 className="about-heading text-3xl font-semibold leading-tight text-[color:var(--foreground)] sm:text-4xl md:text-[2.8rem]">
+            Train with <span className="text-[#827064]">Micah</span>
+          </h2>
+        </div>
+
+        <div className="mx-auto max-w-[1200px] rounded-[2rem] border border-[#e3e2de] bg-[color:var(--background)] shadow-[0_20px_40px_rgba(0,0,0,0.08)] p-8 sm:p-10">
+          <div className="grid gap-8 lg:grid-cols-2">
+            <Link
+              to="/in-person-training"
+              className="group block overflow-hidden rounded-[2rem] border border-[#e3e2de] bg-white text-left transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)]"
+            >
+              <div className="relative overflow-hidden">
+                <img
+                  className="h-64 w-full object-cover transition duration-300 group-hover:scale-105"
+                  src={inPersonCourseImg}
+                  alt="In person brow training"
+                />
+                <div className="absolute left-6 bottom-6 rounded-full bg-white/95 px-4 py-2 text-[0.7rem] uppercase tracking-[0.22em] text-[color:var(--muted-foreground)] shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
+                  Now Enrolling • January - March 2026
+                </div>
+              </div>
+              <div className="p-7">
+                  <p className="text-sm uppercase tracking-[0.24em] text-[color:var(--muted-foreground)] mb-3">
+                  IN-PERSON ACADEMY
+                </p>
+                <h3 className="text-2xl font-semibold text-[color:var(--foreground)]">
+                  In-Person Trainings
+                </h3>
+                <p className="mt-6 mb-6 text-sm leading-7 text-[color:var(--foreground)]">
+                  Canada's first integrated program combining in-depth online training with hands-on, in-person mentorship. Trusted by 200+ students — a training so impactful, students fly in from across the country.
+                </p>
+                <ul className="space-y-3 text-sm text-[color:var(--foreground)] mt-6">
+                  <li>✓ Full online training included</li>
+                  <li>✓ Hands-on in-person mentorship</li>
+                  <li>✓ Proven structure & student success</li>
+                </ul>
+                <div className="mt-6 grid gap-4 md:grid-cols-2">
+                  <div className="rounded-[1.5rem] border border-[#e3e2de] p-5 text-center">
+                    <p className="text-[0.65rem] uppercase tracking-[0.24em] text-[color:var(--muted-foreground)] mb-2">
+                      Option 1
+                    </p>
+                    <p className="text-sm font-semibold text-[color:var(--foreground)]">
+                      Small Group
+                    </p>
+                  </div>
+                  <div className="rounded-[1.5rem] border border-[#e3e2de] p-5 text-center">
+                    <p className="text-[0.65rem] uppercase tracking-[0.24em] text-[color:var(--muted-foreground)] mb-2">
+                      Option 2
+                    </p>
+                    <p className="text-sm font-semibold text-[color:var(--foreground)]">
+                      Private 1-on-1
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Link>
+
+            <Link
+              to="/online-brow-courses"
+              className="group block overflow-hidden rounded-[2rem] border border-[#e3e2de] bg-white text-left transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)]"
+            >
+              <div className="overflow-hidden">
+                <img
+                  className="h-64 w-full object-cover transition duration-300 group-hover:scale-105"
+                  src={onlineCourseImg}
+                  alt="Online brow training"
+                />
+              </div>
+              <div className="p-7">
+                <p className="text-sm uppercase tracking-[0.24em] text-[color:var(--muted-foreground)] mb-3">
+                  ONLINE BROW ACADEMY
+                </p>
+                <h3 className="text-2xl font-semibold text-[color:var(--foreground)]">
+                  All-Inclusive Online Brow Training
+                </h3>
+                <p className="mt-6 mb-6 text-sm leading-7 text-[color:var(--foreground)]">
+                  A complete A-Z online training with over 50+ in-depth modules covering brow lamination, shaping, tinting, and waxing — learn on your schedule, from anywhere.
+                </p>
+                <ul className="space-y-3 text-sm text-[color:var(--foreground)] mt-6">
+                  <li>✓ 50+ in-depth video modules</li>
+                  <li>✓ Lamination, shaping, tinting, waxing</li>
+                  <li>✓ Self-paced or 4-week mentorship</li>
+                </ul>
+                <div className="mt-6 grid gap-4 md:grid-cols-2">
+                  <div className="rounded-[1.5rem] border border-[#e3e2de] p-5 text-center">
+                    <p className="text-[0.65rem] uppercase tracking-[0.24em] text-[color:var(--muted-foreground)] mb-2">
+                      Option 1
+                    </p>
+                    <p className="text-sm font-semibold text-[color:var(--foreground)]">
+                      Independent Artist
+                    </p>
+                  </div>
+                  <div className="rounded-[1.5rem] border border-[#e3e2de] p-5 text-center">
+                    <p className="text-[0.65rem] uppercase tracking-[0.24em] text-[color:var(--muted-foreground)] mb-2">
+                      Option 2
+                    </p>
+                    <p className="text-sm font-semibold text-[color:var(--foreground)]">
+                      VIP Mentorship
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Link>
           </div>
         </div>
       </section>
