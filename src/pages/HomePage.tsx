@@ -1,11 +1,22 @@
+import { useEffect } from 'react'
 import headVid from '@/assets/home/home-head-vid.mp4'
 import aboutImg from '@/assets/home/about-me.jpg'
 import inPersonCourseImg from '@/assets/home/in-person.jpg'
 import onlineCourseImg from '@/assets/home/online.jpg'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import '@/styles/HomePage.css'
 
 export default function Home() {
+  const location = useLocation()
+
+  useEffect(() => {
+    const target = (location.state as { scrollTo?: string } | null)?.scrollTo
+    if (target) {
+      const el = document.getElementById(target)
+      if (el) el.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [location.state])
+
   return (
     <main>
       {/* Landing Hero Section */}
@@ -38,7 +49,7 @@ export default function Home() {
       </section>
 
       {/* About Me Section */}
-      <section className="bg-[#f6f2ec] text-[color:var(--foreground)] pt-12 pb-20 px-6 md:px-8">
+      <section id="about" className="bg-[#f6f2ec] text-[color:var(--foreground)] pt-12 pb-20 px-6 md:px-8">
         <div className="mx-auto mb-12 max-w-4xl text-center">
           <p className="mb-3 text-[0.85rem] uppercase tracking-[0.28em] text-[color:var(--muted-foreground)]">
             GET TO KNOW ME
@@ -104,7 +115,7 @@ export default function Home() {
       </section>
 
       {/* Courses Section */}
-      <section className="bg-[#f6f2ec] text-[color:var(--foreground)] pt-4 pb-12 px-6 md:px-8">
+      <section id="courses" className="bg-[#f6f2ec] text-[color:var(--foreground)] pt-4 pb-12 px-6 md:px-8">
         <div className="mx-auto mb-12 max-w-4xl text-center">
           <p className="mb-3 text-[0.85rem] uppercase tracking-[0.28em] text-[color:var(--muted-foreground)]">
             COURSES AVAILABLE
@@ -212,6 +223,28 @@ export default function Home() {
                 </div>
               </div>
             </Link>
+          </div>
+        </div>
+      </section>
+      {/* CTA Section */}
+      <section className="bg-[#635850] px-6 md:px-12 py-14">
+        <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
+          <h2 className="about-heading text-2xl sm:text-3xl md:text-4xl font-semibold text-white max-w-lg text-center md:text-left">
+            Ready to start your brow journey with Micah?
+          </h2>
+          <div className="flex items-center gap-4 shrink-0">
+            <Link
+              to="/book-appointment"
+              className="px-6 py-3 text-sm font-medium tracking-wide rounded-full bg-white text-[#635850] hover:bg-white/90 transition-colors duration-200 whitespace-nowrap"
+            >
+              Book an Appointment
+            </Link>
+            <button
+              onClick={() => document.getElementById('courses')?.scrollIntoView({ behavior: 'smooth' })}
+              className="px-6 py-3 text-sm font-medium tracking-wide rounded-full text-white border border-white hover:bg-white/10 transition-colors duration-200 whitespace-nowrap"
+            >
+              View Courses
+            </button>
           </div>
         </div>
       </section>
