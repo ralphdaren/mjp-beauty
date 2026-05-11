@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import headVid from '@/assets/home/home-head-vid.mp4'
 import aboutImg from '@/assets/home/about-me.jpg'
 import inPersonCourseImg from '@/assets/home/in-person.jpg'
@@ -8,6 +8,7 @@ import '@/styles/HomePage.css'
 
 export default function Home() {
   const location = useLocation()
+  const [showBackToTop, setShowBackToTop] = useState(false)
 
   useEffect(() => {
     const target = (location.state as { scrollTo?: string } | null)?.scrollTo
@@ -16,6 +17,32 @@ export default function Home() {
       if (el) el.scrollIntoView({ behavior: 'smooth' })
     }
   }, [location.state])
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.12 }
+    )
+
+    document
+      .querySelectorAll('.anim-fade-up, .anim-fade-left, .anim-fade-right')
+      .forEach((el) => observer.observe(el))
+
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    const handleScroll = () => setShowBackToTop(window.scrollY > 300)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   return (
     <main>
@@ -36,13 +63,13 @@ export default function Home() {
 
         {/* Text content */}
         <div className="hero-content">
-          <p className="text-sm tracking-[0.25em] uppercase text-white/70 mb-4 font-light">
+          <p className="hero-eyebrow text-sm tracking-[0.25em] uppercase text-white/70 mb-4 font-light">
             MJP Beauty
           </p>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-white leading-tight max-w-2xl">
+          <h1 className="hero-heading text-4xl sm:text-5xl md:text-6xl font-semibold text-white leading-tight max-w-2xl">
             WELCOMES YOU
           </h1>
-          <p className="mt-5 text-base sm:text-lg text-white/75 max-w-md tracking-[0.1em] font-light leading-relaxed">
+          <p className="hero-tagline mt-5 text-base sm:text-lg text-white/75 max-w-md tracking-[0.1em] font-light leading-relaxed">
             ARE YOU HERE TO GLOW OR GROW?
           </p>
         </div>
@@ -50,7 +77,7 @@ export default function Home() {
 
       {/* About Me Section */}
       <section id="about" className="bg-[#f6f2ec] text-[color:var(--foreground)] pt-12 pb-20 px-6 md:px-8">
-        <div className="mx-auto mb-12 max-w-4xl text-center">
+        <div className="anim-fade-up mx-auto mb-12 max-w-4xl text-center">
           <p className="mb-3 text-[0.85rem] uppercase tracking-[0.28em] text-[color:var(--muted-foreground)]">
             GET TO KNOW ME
           </p>
@@ -61,8 +88,8 @@ export default function Home() {
 
         <div className="mx-auto max-w-[1200px] rounded-[2rem] border border-[#e3e2de] bg-[color:var(--background)] shadow-[0_20px_40px_rgba(0,0,0,0.08)] p-8 sm:p-10">
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-14">
-            <div className="flex flex-col items-center gap-6 text-center">
-              <div className="w-full max-w-[320px] min-h-[20rem] overflow-hidden rounded-t-[48%] rounded-b-none border border-white/20 shadow-[0_28px_70px_rgba(0,0,0,0.14)]">
+            <div className="anim-fade-left flex flex-col items-center gap-6 text-center" style={{ transitionDelay: '0.15s' }}>
+              <div className="portrait-arch w-full max-w-[320px] min-h-[20rem] overflow-hidden border border-white/20 shadow-[0_28px_70px_rgba(0,0,0,0.14)]">
                 <img className="h-full w-full object-cover" src={aboutImg} alt="Micah portrait" />
               </div>
               <p className="m-0 text-sm uppercase tracking-[0.3em] text-[color:var(--muted-foreground)]">
@@ -70,7 +97,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-6">
+            <div className="anim-fade-right flex flex-col gap-6" style={{ transitionDelay: '0.15s' }}>
               <div>
                 <h3 className="about-subheading m-0 text-2xl font-semibold leading-tight text-[color:var(--foreground)] sm:text-3xl md:text-[2.2rem]">
                   Hi I'm Micah
@@ -116,7 +143,7 @@ export default function Home() {
 
       {/* Courses Section */}
       <section id="courses" className="bg-[#f6f2ec] text-[color:var(--foreground)] pt-4 pb-12 px-6 md:px-8">
-        <div className="mx-auto mb-12 max-w-4xl text-center">
+        <div className="anim-fade-up mx-auto mb-12 max-w-4xl text-center">
           <p className="mb-3 text-[0.85rem] uppercase tracking-[0.28em] text-[color:var(--muted-foreground)]">
             COURSES AVAILABLE
           </p>
@@ -127,6 +154,7 @@ export default function Home() {
 
         <div className="mx-auto max-w-[1200px] rounded-[2rem] border border-[#e3e2de] bg-[color:var(--background)] shadow-[0_20px_40px_rgba(0,0,0,0.08)] p-8 sm:p-10">
           <div className="grid gap-8 lg:grid-cols-2">
+            <div className="anim-fade-up" style={{ transitionDelay: '0.15s' }}>
             <Link
               to="/in-person-training"
               className="group block overflow-hidden rounded-[2rem] border border-[#e3e2de] bg-white text-left transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)]"
@@ -176,7 +204,9 @@ export default function Home() {
                 </div>
               </div>
             </Link>
+            </div>
 
+            <div className="anim-fade-up" style={{ transitionDelay: '0.3s' }}>
             <Link
               to="/online-brow-courses"
               className="group block overflow-hidden rounded-[2rem] border border-[#e3e2de] bg-white text-left transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)]"
@@ -223,16 +253,17 @@ export default function Home() {
                 </div>
               </div>
             </Link>
+            </div>
           </div>
         </div>
       </section>
       {/* CTA Section */}
       <section className="bg-[#635850] px-6 md:px-12 py-14">
         <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
-          <h2 className="about-heading text-2xl sm:text-3xl md:text-4xl font-semibold text-white max-w-lg text-center md:text-left">
+          <h2 className="anim-fade-up about-heading text-2xl sm:text-3xl md:text-4xl font-semibold text-white max-w-lg text-center md:text-left">
             Ready to start your brow journey with Micah?
           </h2>
-          <div className="flex items-center gap-4 shrink-0">
+          <div className="anim-fade-up flex items-center gap-4 shrink-0" style={{ transitionDelay: '0.2s' }}>
             <Link
               to="/book-appointment"
               className="px-6 py-3 text-sm font-medium tracking-wide rounded-full bg-white text-[#635850] hover:bg-white/90 transition-colors duration-200 whitespace-nowrap"
@@ -248,6 +279,14 @@ export default function Home() {
           </div>
         </div>
       </section>
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        className={`back-to-top${showBackToTop ? ' back-to-top--visible' : ''}`}
+        aria-label="Back to top"
+      >
+        <span className="back-to-top-arrow">↑</span>
+        <span className="back-to-top-label">BACK TO TOP</span>
+      </button>
     </main>
   )
 }

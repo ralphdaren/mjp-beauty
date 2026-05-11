@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { NavLink } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 import logoBlack from '@/assets/brand-kit/logo-black.png'
@@ -12,17 +12,32 @@ const mainLinks = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [isHidden, setIsHidden] = useState(false)
+  const prevScrollY = useRef(0)
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 8)
-    window.addEventListener('scroll', handleScroll)
+    const handleScroll = () => {
+      const currentY = window.scrollY
+      setScrolled(currentY > 8)
+      if (currentY > 80) {
+        setIsHidden(currentY > prevScrollY.current)
+      } else {
+        setIsHidden(false)
+      }
+      prevScrollY.current = currentY
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   return (
     <header
+      style={{
+        transform: isHidden ? 'translateY(-100%)' : 'translateY(0)',
+        transition: 'transform 400ms ease-in-out, box-shadow 400ms ease-in-out',
+      }}
       className={[
-        'sticky top-0 z-50 bg-brand-light border-b border-brand-border transition-shadow duration-300',
+        'sticky top-0 z-50 bg-brand-light border-b border-brand-border',
         scrolled ? 'shadow-[0_2px_16px_rgba(130,112,100,0.10)]' : '',
       ].join(' ')}
     >
