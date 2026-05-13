@@ -148,7 +148,7 @@ export default function Home() {
             COURSES AVAILABLE
           </p>
           <h2 className="about-heading text-3xl font-semibold leading-tight text-[color:var(--foreground)] sm:text-4xl md:text-[2.8rem]">
-            Train with <span className="text-[#827064]">Micah</span>
+            Train the <span className="text-[#827064]">MJP Beauty Way</span>
           </h2>
         </div>
 
@@ -261,7 +261,7 @@ export default function Home() {
       <section className="bg-[#635850] px-6 md:px-12 py-14">
         <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
           <h2 className="anim-fade-up about-heading text-2xl sm:text-3xl md:text-4xl font-semibold text-white max-w-lg text-center md:text-left">
-            Ready to start your brow journey with Micah?
+            Ready to start your brow journey with us?
           </h2>
           <div className="anim-fade-up flex items-center gap-4 shrink-0" style={{ transitionDelay: '0.2s' }}>
             <Link

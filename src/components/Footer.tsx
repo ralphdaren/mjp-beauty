@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { X, Mail, Phone } from 'lucide-react'
+import { X, Mail } from 'lucide-react'
 import { SiFacebook, SiInstagram } from '@icons-pack/react-simple-icons'
 import logoWhite from '@/assets/brand-kit/logo-white.png'
 
@@ -138,14 +138,6 @@ export default function Footer() {
                 </div>
                 <span className="text-sm text-[color:var(--foreground)] group-hover:text-[#827064] transition-colors">
                   mjpbeauty@hotmail.com
-                </span>
-              </a>
-              <a href="tel:+16475551234" className="flex items-center gap-3 group">
-                <div className="w-9 h-9 rounded-full bg-[#f6f2ec] flex items-center justify-center shrink-0">
-                  <Phone size={16} className="text-[#827064]" />
-                </div>
-                <span className="text-sm text-[color:var(--foreground)] group-hover:text-[#827064] transition-colors">
-                  +1 (204) 890-4772
                 </span>
               </a>
             </div>
