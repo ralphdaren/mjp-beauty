@@ -4,6 +4,7 @@ import aboutImg from '@/assets/home/about-me.jpg'
 import inPersonCourseImg from '@/assets/home/in-person.jpg'
 import onlineCourseImg from '@/assets/home/online.jpg'
 import { Link, useLocation } from 'react-router-dom'
+import { CircleCheck } from 'lucide-react'
 import '@/styles/HomePage.css'
 
 export default function Home() {
@@ -76,7 +77,7 @@ export default function Home() {
       </section>
 
       {/* About Me Section */}
-      <section id="about" className="bg-[#f6f2ec] text-[color:var(--foreground)] pt-12 pb-20 px-6 md:px-8">
+      <section id="about" className="scroll-mt-[66px] bg-[#f6f2ec] text-[color:var(--foreground)] pt-12 pb-15 px-6 md:px-8">
         <div className="anim-fade-up mx-auto mb-12 max-w-4xl text-center">
           <p className="mb-3 text-[0.85rem] uppercase tracking-[0.28em] text-[color:var(--muted-foreground)]">
             GET TO KNOW ME
@@ -142,9 +143,9 @@ export default function Home() {
       </section>
 
       {/* Courses Section */}
-      <section id="courses" className="bg-[#f6f2ec] text-[color:var(--foreground)] pt-4 pb-12 px-6 md:px-8">
-        <div className="anim-fade-up mx-auto mb-12 max-w-4xl text-center">
-          <p className="mb-3 text-[0.85rem] uppercase tracking-[0.28em] text-[color:var(--muted-foreground)]">
+      <section id="courses" className="scroll-mt-[66px] bg-[#f6f2ec] text-[color:var(--foreground)] pt-4 pb-12 px-6 md:px-8">
+        <div className="anim-fade-up pt-4 pb-6 max-w-7xl mx-auto text-center">
+          <p className="mb-3 text-[0.75rem] uppercase tracking-[0.28em] text-[color:var(--muted-foreground)]">
             COURSES AVAILABLE
           </p>
           <h2 className="about-heading text-3xl font-semibold leading-tight text-[color:var(--foreground)] sm:text-4xl md:text-[2.8rem]">
@@ -180,9 +181,9 @@ export default function Home() {
                   Canada's first integrated program combining in-depth online training with hands-on, in-person mentorship. Trusted by 200+ students — a training so impactful, students fly in from across the country.
                 </p>
                 <ul className="space-y-3 text-sm text-[color:var(--foreground)] mt-6">
-                  <li>✓ Full online training included</li>
-                  <li>✓ Hands-on in-person mentorship</li>
-                  <li>✓ Proven structure & student success</li>
+                  <li className="flex items-center gap-2"><CircleCheck size={16} className="shrink-0 text-[#b89a7a]" /> Full online training included</li>
+                  <li className="flex items-center gap-2"><CircleCheck size={16} className="shrink-0 text-[#b89a7a]" /> Hands-on in-person mentorship</li>
+                  <li className="flex items-center gap-2"><CircleCheck size={16} className="shrink-0 text-[#b89a7a]" /> Proven structure & student success</li>
                 </ul>
                 <div className="mt-6 grid gap-4 md:grid-cols-2">
                   <div className="rounded-[1.5rem] border border-[#e3e2de] p-5 text-center">
@@ -229,9 +230,9 @@ export default function Home() {
                   A complete A-Z online training with over 50+ in-depth modules covering brow lamination, shaping, tinting, and waxing — learn on your schedule, from anywhere.
                 </p>
                 <ul className="space-y-3 text-sm text-[color:var(--foreground)] mt-6">
-                  <li>✓ 50+ in-depth video modules</li>
-                  <li>✓ Lamination, shaping, tinting, waxing</li>
-                  <li>✓ Self-paced or 4-week mentorship</li>
+                  <li className="flex items-center gap-2"><CircleCheck size={16} className="shrink-0 text-[#b89a7a]" /> 50+ in-depth video modules</li>
+                  <li className="flex items-center gap-2"><CircleCheck size={16} className="shrink-0 text-[#b89a7a]" /> Lamination, shaping, tinting, waxing</li>
+                  <li className="flex items-center gap-2"><CircleCheck size={16} className="shrink-0 text-[#b89a7a]" /> Self-paced or 4-week mentorship</li>
                 </ul>
                 <div className="mt-6 grid gap-4 md:grid-cols-2">
                   <div className="rounded-[1.5rem] border border-[#e3e2de] p-5 text-center">

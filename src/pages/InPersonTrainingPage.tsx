@@ -189,25 +189,23 @@ export default function InPersonTrainingPage() {
       {/* ── How It Works Section ─────────────────────────────────────── */}
       <section className="bg-white">
         {/* Section header */}
-        <div className="anim-fade-up py-16 px-6 md:px-8 text-center">
-          <p className="text-[0.8rem] uppercase tracking-[0.28em] text-[#a0948a] mb-3">
+        <div className="anim-fade-up pt-16 pb-10 px-6 md:px-8 text-center">
+          <p className="text-[0.75rem] uppercase tracking-[0.28em] text-[#a0948a] mb-3">
             The Training Format
           </p>
           <h2 className="about-heading text-3xl sm:text-4xl md:text-[2.6rem] font-semibold text-[#3d3028] leading-tight">
             How it Works
           </h2>
-          <p className="mt-4 text-[#5a5047] text-base sm:text-lg">
-            This in-person training format is as follows:
-          </p>
+          <div className="mt-8 flex items-center gap-4 max-w-xl mx-auto">
+            <div className="flex-1 h-px bg-[#d6cec8]" />
+            <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[#a0948a] whitespace-nowrap">
+              This in-person training format is as follows
+            </p>
+            <div className="flex-1 h-px bg-[#d6cec8]" />
+          </div>
         </div>
 
-        {/* ── Image strip ─────────────────────────────────────────────
-            Flex handles the expansion visual. Per-frame cost is kept low
-            by (a) removing the image scale transition, (b) replacing the
-            animated background gradient with two static gradients where
-            only opacity transitions (compositor-only), and (c) promoting
-            each panel to its own GPU layer via translateZ(0).
-        ─────────────────────────────────────────────────────────────── */}
+        {/* Image strips */}
         <div
           className="flex w-full overflow-hidden"
           style={{ height: '680px' }}
@@ -225,17 +223,15 @@ export default function InPersonTrainingPage() {
                 style={{
                   flex,
                   transition: 'flex 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                  transform: 'translateZ(0)', // own GPU compositing layer
+                  transform: 'translateZ(0)',
                 }}
               >
-                {/* Image — no scale transition (was causing per-frame repaint) */}
                 <img
                   src={item.img}
                   alt={item.alt}
                   className="absolute inset-0 w-full h-full object-cover"
                 />
 
-                {/* Static base gradient — never animates, zero paint cost */}
                 <div
                   className="absolute inset-0"
                   style={{
@@ -244,7 +240,6 @@ export default function InPersonTrainingPage() {
                   }}
                 />
 
-                {/* Hover boost — opacity only, runs on compositor */}
                 <div
                   className="absolute inset-0"
                   style={{
@@ -255,7 +250,7 @@ export default function InPersonTrainingPage() {
                   }}
                 />
 
-                {/* Step number — bottom-left at rest, fades out on hover */}
+                {/* Step number */}
                 <span
                   className="absolute bottom-6 left-6 font-semibold leading-none select-none"
                   style={{
@@ -268,7 +263,7 @@ export default function InPersonTrainingPage() {
                   {item.step}
                 </span>
 
-                {/* Text content — slides up on hover, number sits above title */}
+                {/* Text content */}
                 <div
                   className="absolute inset-x-0 bottom-0 px-7 pb-8 flex flex-col gap-3"
                   style={{
@@ -293,7 +288,7 @@ export default function InPersonTrainingPage() {
                   ))}
                 </div>
 
-                {/* Collapsed label — visible only when nothing is hovered */}
+                {/* Collapsed label */}
                 <div
                   className="absolute inset-x-0 bottom-6 px-5 text-center"
                   style={{
@@ -310,6 +305,8 @@ export default function InPersonTrainingPage() {
           })}
         </div>
       </section>
+
+
 
       {/* Back to top */}
       <button
