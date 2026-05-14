@@ -5,8 +5,8 @@ import logoBlack from '@/assets/brand-kit/logo-black.png'
 
 const mainLinks = [
   { label: 'Home', to: '/' },
-  { label: 'In Person Training', to: '/in-person-training' },
-  { label: 'Online Brow Courses', to: '/online-brow-courses' }, { label: 'Freebies', to: '/freebies' },
+  { label: 'In-Person Academy', to: '/in-person-training' },
+  { label: 'Online Brow Academy', to: '/online-brow-courses' }, { label: 'Freebies', to: '/freebies' },
 ]
 
 export default function Navbar() {
