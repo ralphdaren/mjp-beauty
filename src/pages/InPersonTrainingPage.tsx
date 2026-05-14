@@ -1,8 +1,11 @@
 import { useEffect, useState, useCallback } from 'react'
+import { CircleAlert } from 'lucide-react'
 import ipHeadImg from '@/assets/in-person/ip-head.jpg'
 import formatImg01 from '@/assets/in-person/format-img-01.jpg'
 import formatImg02 from '@/assets/in-person/format-img-02.jpg'
 import formatImg03 from '@/assets/in-person/format-img-03.jpg'
+import optImg01 from '@/assets/in-person/opt-img-01.jpg'
+import optImg02 from '@/assets/in-person/opt-img-02.jpg'
 import '@/styles/HomePage.css'
 
 const idealForItems = [
@@ -45,11 +48,40 @@ const formatItems = [
   },
 ]
 
+const optionCards = [
+  {
+    img: optImg01,
+    alt: 'Small Group Training',
+    label: 'Option 01',
+    title: 'Small Group',
+    price: '$1,575',
+    shadowClass: 'shadow-[0_8px_32px_rgba(130,112,100,0.10)]',
+    description:
+      'Train in an intimate group setting with direct support from Micah and her training assistant. Perfect for Artists who want access to premium training, expert guidance while at a more affordable rate.',
+  },
+  {
+    img: optImg02,
+    alt: 'Private 1-on-1 Training',
+    label: 'Option 02',
+    title: 'Private 1-on-1',
+    price: '$1,925',
+    shadowClass: 'shadow-[0_12px_40px_rgba(130,112,100,0.15)]',
+    description:
+      "Get personalized, focused guidance and mentorship to fast-track your skillset & technique with this One Day private training. With Micah's full attention and immediate feedback, you'll correct form and master brow skills efficiently — no wasted time, just results. Perfect for Artists ready to level up with expert guidance every step of the way.",
+  },
+]
+
 export default function InPersonTrainingPage() {
   const [showBackToTop, setShowBackToTop] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const [animating, setAnimating] = useState(false)
   const [hoveredFormat, setHoveredFormat] = useState<number | null>(null)
+  const [activeOption, setActiveOption] = useState(0)
+  const [tooltipCard, setTooltipCard] = useState<number | null>(null)
+
+  const handleOptionSwitch = useCallback(() => {
+    setActiveOption((prev) => 1 - prev)
+  }, [])
 
   const advance = useCallback(() => {
     setAnimating(true)
@@ -87,6 +119,13 @@ export default function InPersonTrainingPage() {
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  useEffect(() => {
+    if (tooltipCard === null) return
+    const handler = () => setTooltipCard(null)
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [tooltipCard])
 
   const anyHovered = hoveredFormat !== null
 
@@ -156,7 +195,7 @@ export default function InPersonTrainingPage() {
                 {idealForItems[activeIndex]}
               </p>
               <p className="mt-6 text-[0.72rem] uppercase tracking-[0.22em] text-[#a0948a] group-hover:text-[#827064] transition-colors duration-200">
-                Click or wait for next →
+                Click →
               </p>
             </button>
 
@@ -306,7 +345,190 @@ export default function InPersonTrainingPage() {
         </div>
       </section>
 
+      {/* ── Choose Your Path Section ─────────────────────────────────── */}
+      <section className="bg-[#f6f2ec] py-20 px-6 md:px-8">
+        {/* Section header */}
+        <div className="anim-fade-up text-center mb-14">
+          <p className="text-[0.75rem] uppercase tracking-[0.28em] text-[#a0948a] mb-3">
+            Investment
+          </p>
+          <h2 className="about-heading text-3xl sm:text-4xl md:text-[2.6rem] font-semibold text-[#3d3028] leading-tight">
+            Choose Your Path
+          </h2>
+          <div className="mt-8 flex items-center gap-4 max-w-xl mx-auto">
+            <div className="flex-1 h-px bg-[#d6cec8]" />
+            <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[#a0948a] whitespace-nowrap">
+              Select the format that&apos;s right for you
+            </p>
+            <div className="flex-1 h-px bg-[#d6cec8]" />
+          </div>
+        </div>
 
+        {/* Option cards */}
+        <div className="anim-fade-up mx-auto max-w-[1000px]">
+          <div className="sm:hidden flex flex-col gap-6">
+            {optionCards.map((card, i) => (
+              <div
+                key={i}
+                className={`rounded-2xl border border-[#e3e2de] bg-white ${card.shadowClass} overflow-hidden flex flex-col`}
+                style={undefined}
+              >
+                <div className="relative h-64 flex-shrink-0 overflow-hidden">
+                  <img src={card.img} alt={card.alt} className="absolute inset-0 w-full h-full object-cover" />
+                </div>
+                <div className="p-8 flex flex-col">
+                  <p className="text-[0.7rem] uppercase tracking-[0.28em] text-[#a0948a] mb-4">{card.label}</p>
+                  <h3 className="about-heading text-2xl font-semibold text-[#3d3028] leading-tight mb-6">{card.title}</h3>
+                  <div className="mb-1">
+                    <span className="text-[3rem] font-semibold text-[#3d3028] leading-none">{card.price}</span>
+                    <span className="text-xl text-[#5a5047] ml-2">CAD</span>
+                  </div>
+                  <div className="relative mb-8 flex items-center gap-2">
+                    <span className="text-[0.75rem] text-[#a0948a] tracking-wide">(gst included)</span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setTooltipCard((prev) => (prev === i ? null : i)) }}
+                      className="text-[#a0948a] hover:text-[#827064] transition-colors duration-200"
+                      aria-label="Interest-free payment plan info"
+                    >
+                      <CircleAlert size={12} />
+                    </button>
+                    {tooltipCard === i && (
+                      <div className="absolute top-full left-0 mt-1.5 w-56 bg-[#2a1a0e] text-white/90 text-[0.65rem] leading-relaxed tracking-wide px-3 py-2 rounded-lg shadow-lg z-20">
+                        Contact MJP Beauty for interest-free payment plan availability
+                      </div>
+                    )}
+                  </div>
+                  <div className="h-px bg-[#e3e2de] mb-8" />
+                  <p className="text-[#5a5047] text-base leading-relaxed">{card.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="hidden sm:block relative">
+            <div
+              className="invisible pointer-events-none flex flex-row"
+              style={{ width: 'calc(80% - 10px)' }}
+              aria-hidden="true"
+            >
+              <div className="w-[38%] flex-shrink-0" />
+              <div className="flex-1 p-10 flex flex-col">
+                <p className="text-[0.7rem] mb-4">{optionCards[1].label}</p>
+                <h3 className="about-heading text-2xl sm:text-3xl mb-6">{optionCards[1].title}</h3>
+                <div className="mb-1">
+                  <span className="text-[3rem] leading-none">{optionCards[1].price}</span>
+                  <span className="text-xl ml-2">CAD</span>
+                </div>
+                <p className="text-[0.75rem] mb-8">(gst included)</p>
+                <div className="h-px mb-8" />
+                <p className="text-base leading-relaxed">{optionCards[1].description}</p>
+              </div>
+            </div>
+
+            <div className="absolute inset-0 flex gap-5">
+              {optionCards.map((card, i) => {
+                const isActive = activeOption === i
+                return (
+                  <div
+                    key={i}
+                    className={`relative overflow-hidden rounded-2xl border border-[#e3e2de] bg-white ${card.shadowClass} transition-[flex-grow] duration-700 ease-in-out`}
+                    style={{ flexGrow: isActive ? 4 : 1, flexShrink: 0, flexBasis: '0%' }}
+                  >
+                    {/* Full card content — visible when active */}
+                    <div
+                      className="absolute inset-0 flex flex-row"
+                      style={{
+                        opacity: isActive ? 1 : 0,
+                        transition: isActive ? 'opacity 0.45s ease' : 'opacity 0.2s ease',
+                      }}
+                      aria-hidden={!isActive}
+                    >
+                      <div className="relative w-[38%] flex-shrink-0 overflow-hidden">
+                        <img src={card.img} alt={card.alt} className="absolute inset-0 w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 p-10 flex flex-col">
+                        <p className="text-[0.7rem] uppercase tracking-[0.28em] text-[#a0948a] mb-4">{card.label}</p>
+                        <h3 className="about-heading text-2xl sm:text-3xl font-semibold text-[#3d3028] leading-tight mb-6">
+                          {card.title}
+                        </h3>
+                        <div className="mb-1">
+                          <span className="text-[3rem] font-semibold text-[#3d3028] leading-none">{card.price}</span>
+                          <span className="text-xl text-[#5a5047] ml-2">CAD</span>
+                        </div>
+                        <div className="relative mb-8 flex items-center gap-2">
+                    <span className="text-[0.75rem] text-[#a0948a] tracking-wide">(gst included)</span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setTooltipCard((prev) => (prev === i ? null : i)) }}
+                      className="text-[#a0948a] hover:text-[#827064] transition-colors duration-200"
+                      aria-label="Interest-free payment plan info"
+                    >
+                      <CircleAlert size={12} />
+                    </button>
+                    {tooltipCard === i && (
+                      <div className="absolute top-full left-0 mt-1.5 w-56 bg-[#2a1a0e] text-white/90 text-[0.65rem] leading-relaxed tracking-wide px-3 py-2 rounded-lg shadow-lg z-20">
+                        Contact MJP Beauty for interest-free payment plan availability
+                      </div>
+                    )}
+                  </div>
+                        <div className="h-px bg-[#e3e2de] mb-8" />
+                        <p className="text-[#5a5047] text-base leading-relaxed">{card.description}</p>
+                      </div>
+                    </div>
+
+                    {/* Peek overlay — visible when inactive, clickable to switch */}
+                    <button
+                      className="absolute inset-0 group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#a0948a]"
+                      style={{
+                        opacity: isActive ? 0 : 1,
+                        pointerEvents: isActive ? 'none' : 'auto',
+                        transition: isActive ? 'opacity 0.2s ease' : 'opacity 0.5s ease 0.3s',
+                      }}
+                      onClick={handleOptionSwitch}
+                      aria-label={`Switch to ${card.title}`}
+                      tabIndex={isActive ? -1 : 0}
+                    >
+                      <img src={card.img} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-[#2a1a0e]/55 group-hover:bg-[#2a1a0e]/40 transition-colors duration-300" />
+                      <div className="absolute inset-x-0 bottom-0 p-5">
+                        <p className="text-[0.6rem] uppercase tracking-[0.22em] text-white/50 mb-1.5">{card.label}</p>
+                        <p className="text-white font-semibold text-sm leading-tight mb-3">{card.title}</p>
+                        <p className="text-[0.62rem] uppercase tracking-[0.18em] text-white/50 group-hover:text-white/80 transition-colors duration-300">
+                          View →
+                        </p>
+                      </div>
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Payment info */}
+        <div
+          className="anim-fade-up mx-auto max-w-[1000px] mt-8"
+          style={{ transitionDelay: '0.3s' }}
+        >
+          {/* Two-column: Deposit | Balance */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-10 justify-items-center">
+
+            <div>
+              <p className="text-[#3d3028] text-lg font-semibold leading-snug mb-1.5">$500 Deposit</p>
+              <p className="text-[#5a5047] text-sm leading-relaxed">
+                To secure your spot &amp; gain instant access to online modules
+              </p>
+            </div>
+
+            <div>
+              <p className="text-[#3d3028] text-lg font-semibold leading-snug mb-1.5">Remaining Balance</p>
+              <p className="text-[#5a5047] text-sm leading-relaxed">
+                Must be submitted two weeks before your training day
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </section>
 
       {/* Back to top */}
       <button
