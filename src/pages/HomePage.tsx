@@ -6,6 +6,7 @@ import onlineCourseImg from '@/assets/home/online.jpg'
 import { Link, useLocation } from 'react-router-dom'
 import { CircleCheck } from 'lucide-react'
 import '@/styles/HomePage.css'
+import TestimonialsSection from '@/components/TestimonialsSection'
 
 export default function Home() {
   const location = useLocation()
@@ -258,6 +259,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+      {/* Student Testimonials Section */}
+      <TestimonialsSection />
+
       {/* CTA Section */}
       <section className="bg-[#635850] px-6 md:px-12 py-14">
         <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
