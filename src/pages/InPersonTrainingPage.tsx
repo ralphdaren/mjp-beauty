@@ -6,6 +6,8 @@ import formatImg02 from '@/assets/in-person/format-img-02.jpg'
 import formatImg03 from '@/assets/in-person/format-img-03.jpg'
 import optImg01 from '@/assets/in-person/opt-img-01.jpg'
 import optImg02 from '@/assets/in-person/opt-img-02.jpg'
+import perk01Img from '@/assets/in-person/perk-01.jpg'
+import perk02Img from '@/assets/in-person/perk-02.jpg'
 import '@/styles/HomePage.css'
 
 const idealForItems = [
@@ -71,6 +73,29 @@ const optionCards = [
   },
 ]
 
+const kitItems = [
+  'THUYA PROLINE Brow Lamination Solutions (Step 1, 2 and 3)',
+  'Brow Foam Cleanser',
+  'Digital Timers (2)',
+  'Disposables: Mini Brow Spoolies, Doe Foot Applicators, Interdental Brushes',
+  'BROWCODE Tint (Light Brown & Dark Brown)',
+  'BROWCODE 100ml Cream Developer',
+  'Electric Tint Hand Mixer',
+  'Water Pump Dispenser',
+  'Brow Mapping Plastic Callipers',
+  'Brow Mapping Golden Mean Callipers',
+  'Alcohol & Water Pump Dispenser',
+  'Tint Applicator Brush',
+  'Practice Skin Pad for Waxing',
+  'Waxing Sticks',
+  'Standout Cosmetic Cling Film',
+  'Standout Tweezer & Scissors Set',
+  'Standout Crystal Ring Tint Mixing Dish',
+  'Standout Black Mapping String',
+  'Standout Pro Mapping Pencil (2)',
+  'Concealer Brushes (2)',
+]
+
 export default function InPersonTrainingPage() {
   const [showBackToTop, setShowBackToTop] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
@@ -78,6 +103,7 @@ export default function InPersonTrainingPage() {
   const [hoveredFormat, setHoveredFormat] = useState<number | null>(null)
   const [activeOption, setActiveOption] = useState(0)
   const [tooltipCard, setTooltipCard] = useState<number | null>(null)
+  const [kitOpen, setKitOpen] = useState(false)
 
   const handleOptionSwitch = useCallback(() => {
     setActiveOption((prev) => 1 - prev)
@@ -528,6 +554,333 @@ export default function InPersonTrainingPage() {
 
           </div>
         </div>
+      </section>
+
+      {/* ── Student Perks Section ────────────────────────────────── */}
+      <section className="bg-white py-20 px-6 md:px-8">
+
+        {/* Section header */}
+        <div className="anim-fade-up mx-auto max-w-[1200px] mb-10">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[0.75rem] uppercase tracking-[0.28em] text-[#a0948a] mb-4">
+                Student Perks
+              </p>
+              <h2 className="about-heading text-3xl sm:text-4xl md:text-[2.8rem] font-semibold text-[#3d3028] leading-tight">
+                Reserved only for<br className="hidden sm:block" /> our in-person students.
+              </h2>
+            </div>
+            <p className="text-sm text-[#a0948a] italic sm:text-right sm:max-w-[190px] leading-relaxed sm:pb-1">
+              Six exclusive benefits with every in-person seat.
+            </p>
+          </div>
+        </div>
+
+        {/* ── Desktop bento grid (md+) ───────────────────────────── */}
+        <div
+          className="anim-fade-up mx-auto max-w-[1200px] hidden md:grid grid-cols-12 gap-3"
+          style={{ gridTemplateRows: '220px 220px 280px' }}
+        >
+          {/* №06 — Featured: Three months of mentorship */}
+          <div
+            className="col-start-1 col-span-6 row-start-1 row-span-2 rounded-2xl p-7 flex flex-col justify-between"
+            style={{ backgroundColor: '#2a1a0e' }}
+          >
+            <div className="flex items-start justify-between">
+              <span className="text-xs font-semibold leading-none select-none text-white/20">06</span>
+              <span className="text-[0.6rem] uppercase tracking-[0.26em] text-white/25">Featured</span>
+            </div>
+            <div>
+              <h3 className="about-heading text-[2.2rem] lg:text-[2.6rem] font-semibold text-white leading-tight mb-4">
+                Three months of mentorship, direct from Micah.
+              </h3>
+              <p className="text-white/50 text-sm leading-relaxed max-w-sm">
+                Unlimited Instagram DM support and up to 5 model submissions for personalized feedback.
+              </p>
+            </div>
+          </div>
+
+          {/* №01 — Premium Student Kit */}
+          <div
+            className="col-start-7 col-span-3 row-start-1 row-span-2"
+            style={{ perspective: '1200px' }}
+          >
+            <div
+              className="relative w-full h-full"
+              style={{
+                transformStyle: 'preserve-3d',
+                transform: kitOpen ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                transition: 'transform 0.65s cubic-bezier(0.4, 0.2, 0.2, 1)',
+              }}
+            >
+              {/* Front */}
+              <div
+                className="absolute inset-0 rounded-2xl overflow-hidden flex flex-col bg-white border border-[#e3e2de] shadow-[0_2px_16px_rgba(130,112,100,0.10)]"
+                style={{ backfaceVisibility: 'hidden' }}
+              >
+                <div className="relative flex-1 min-h-0 overflow-hidden">
+                  <img
+                    src={perk01Img}
+                    alt="Premium Student Kit"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-5 flex flex-col gap-1.5 flex-shrink-0">
+                  <span className="text-xs font-semibold leading-none select-none text-[#d4ccc4]">01</span>
+                  <h3 className="text-[#3d3028] text-[0.95rem] font-semibold leading-snug">Premium Student Kit</h3>
+                  <p className="text-[#a0948a] text-[0.82rem] leading-relaxed">Pro tools and Micah's go-to products.</p>
+                  <button
+                    onClick={() => setKitOpen(true)}
+                    className="mt-1 text-left text-[0.63rem] uppercase tracking-[0.2em] text-[#a0948a] hover:text-[#827064] transition-colors duration-200"
+                  >
+                    See what's inside →
+                  </button>
+                </div>
+              </div>
+
+              {/* Back */}
+              <div
+                className="absolute inset-0 rounded-2xl flex flex-col overflow-hidden"
+                style={{
+                  backfaceVisibility: 'hidden',
+                  transform: 'rotateY(180deg)',
+                  backgroundColor: '#2a1a0e',
+                }}
+              >
+                <div className="p-5 flex flex-col h-full">
+                  <div className="flex items-start justify-between mb-3 flex-shrink-0">
+                    <div>
+                      <span className="text-xs font-semibold leading-none select-none text-white/20">01</span>
+                      <h3 className="text-white/90 text-sm font-semibold mt-1.5 leading-snug">What's in your kit</h3>
+                    </div>
+                    <button
+                      onClick={() => setKitOpen(false)}
+                      className="text-[0.6rem] uppercase tracking-[0.22em] text-white/35 hover:text-white/70 transition-colors duration-200 mt-0.5"
+                    >
+                      ← Back
+                    </button>
+                  </div>
+                  <div className="flex-1 overflow-y-auto">
+                    <ul className="flex flex-col gap-2">
+                      {kitItems.map((item, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <span className="text-[#a0948a] flex-shrink-0 leading-relaxed text-[0.7rem]">—</span>
+                          <span className="text-white/65 text-[0.72rem] leading-relaxed">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-4 pt-3 border-t border-white/10">
+                      <p className="text-[0.58rem] uppercase tracking-[0.22em] text-white/30 mb-1.5">Not included with your kit</p>
+                      <p className="text-white/40 text-[0.7rem] leading-relaxed">Soft Wax, Wax Pot, Post-Wax Oil &amp; Concealers</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* №02 — Framed Certificate of Completion */}
+          <div
+            className="col-start-10 col-span-3 row-start-1 rounded-2xl p-5 flex flex-col justify-between"
+            style={{ backgroundColor: '#ede5dc' }}
+          >
+            <span className="text-xs font-semibold leading-none select-none text-[#c4b0a4]">02</span>
+            <h3 className="text-[#3d3028] text-[0.95rem] font-semibold leading-snug">
+              Framed Certificate of Completion
+            </h3>
+          </div>
+
+          {/* №03 — 1 Year Online Theory Access */}
+          <div
+            className="col-start-10 col-span-3 row-start-2 rounded-2xl p-5 flex flex-col justify-between"
+            style={{ backgroundColor: '#ede5dc' }}
+          >
+            <span className="text-xs font-semibold leading-none select-none text-[#c4b0a4]">03</span>
+            <h3 className="text-[#3d3028] text-[0.95rem] font-semibold leading-snug">
+              1 Year Online Theory Access
+            </h3>
+          </div>
+
+          {/* №04 — Lunch & snacks by Micah */}
+          <div className="col-start-1 col-span-3 row-start-3 rounded-2xl p-5 flex flex-col justify-between bg-white border border-[#e3e2de] shadow-[0_2px_16px_rgba(130,112,100,0.10)]">
+            <span className="text-xs font-semibold leading-none select-none text-[#d4ccc4]">04</span>
+            <h3 className="text-[#3d3028] text-[0.95rem] font-semibold leading-snug">
+              Lunch &amp; snacks by Micah
+            </h3>
+          </div>
+
+          {/* №05 — Exclusive student discount codes */}
+          <div
+            className="col-start-4 col-span-4 row-start-3 rounded-2xl p-5 flex flex-col justify-between"
+            style={{ backgroundColor: '#e8ddd3' }}
+          >
+            <span className="text-xs font-semibold leading-none select-none text-[#c4b0a4]">05</span>
+            <h3 className="text-[#3d3028] text-base font-semibold leading-snug">
+              Exclusive student discount codes
+            </h3>
+          </div>
+
+          {/* perk-02 — Group photo */}
+          <div className="col-start-8 col-span-5 row-start-3 rounded-2xl overflow-hidden relative">
+            <img
+              src={perk02Img}
+              alt="MJP Beauty in-person students"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          </div>
+        </div>
+
+        {/* ── Mobile / tablet stacked grid (below md) ───────────── */}
+        <div className="mx-auto max-w-[1200px] grid md:hidden grid-cols-2 gap-3">
+          {/* Featured */}
+          <div
+            className="col-span-2 rounded-2xl p-7 flex flex-col justify-between min-h-[280px]"
+            style={{ backgroundColor: '#2a1a0e' }}
+          >
+            <div className="flex items-start justify-between">
+              <span className="text-xs font-semibold leading-none select-none text-white/20">06</span>
+              <span className="text-[0.6rem] uppercase tracking-[0.26em] text-white/25">Featured</span>
+            </div>
+            <div>
+              <h3 className="about-heading text-2xl sm:text-3xl font-semibold text-white leading-tight mb-3">
+                Three months of mentorship, direct from Micah.
+              </h3>
+              <p className="text-white/50 text-sm leading-relaxed">
+                Unlimited Instagram DM support and up to 5 model submissions for personalized feedback.
+              </p>
+            </div>
+          </div>
+
+          {/* perk-01 */}
+          <div
+            className="col-span-2 sm:col-span-1"
+            style={{ perspective: '1200px', height: '360px' }}
+          >
+            <div
+              className="relative w-full h-full"
+              style={{
+                transformStyle: 'preserve-3d',
+                transform: kitOpen ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                transition: 'transform 0.65s cubic-bezier(0.4, 0.2, 0.2, 1)',
+              }}
+            >
+              {/* Front */}
+              <div
+                className="absolute inset-0 rounded-2xl overflow-hidden flex flex-col bg-white border border-[#e3e2de] shadow-[0_2px_16px_rgba(130,112,100,0.10)]"
+                style={{ backfaceVisibility: 'hidden' }}
+              >
+                <div className="relative flex-1 min-h-0 overflow-hidden">
+                  <img
+                    src={perk01Img}
+                    alt="Premium Student Kit"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-5 flex flex-col gap-1.5 flex-shrink-0">
+                  <span className="text-xs font-semibold leading-none select-none text-[#d4ccc4]">01</span>
+                  <h3 className="text-[#3d3028] text-[0.95rem] font-semibold leading-snug">Premium Student Kit</h3>
+                  <p className="text-[#a0948a] text-sm leading-relaxed">Pro tools and Micah's go-to products.</p>
+                  <button
+                    onClick={() => setKitOpen(true)}
+                    className="mt-1 text-left text-[0.63rem] uppercase tracking-[0.2em] text-[#a0948a] hover:text-[#827064] transition-colors duration-200"
+                  >
+                    See what's inside →
+                  </button>
+                </div>
+              </div>
+
+              {/* Back */}
+              <div
+                className="absolute inset-0 rounded-2xl flex flex-col overflow-hidden"
+                style={{
+                  backfaceVisibility: 'hidden',
+                  transform: 'rotateY(180deg)',
+                  backgroundColor: '#2a1a0e',
+                }}
+              >
+                <div className="p-5 flex flex-col h-full">
+                  <div className="flex items-start justify-between mb-3 flex-shrink-0">
+                    <div>
+                      <span className="text-xs font-semibold leading-none select-none text-white/20">01</span>
+                      <h3 className="text-white/90 text-sm font-semibold mt-1.5 leading-snug">What's in your kit</h3>
+                    </div>
+                    <button
+                      onClick={() => setKitOpen(false)}
+                      className="text-[0.6rem] uppercase tracking-[0.22em] text-white/35 hover:text-white/70 transition-colors duration-200 mt-0.5"
+                    >
+                      ← Back
+                    </button>
+                  </div>
+                  <div className="flex-1 overflow-y-auto">
+                    <ul className="flex flex-col gap-2">
+                      {kitItems.map((item, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <span className="text-[#a0948a] flex-shrink-0 leading-relaxed text-[0.7rem]">—</span>
+                          <span className="text-white/65 text-[0.72rem] leading-relaxed">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-4 pt-3 border-t border-white/10">
+                      <p className="text-[0.58rem] uppercase tracking-[0.22em] text-white/30 mb-1.5">Not included with your kit</p>
+                      <p className="text-white/40 text-[0.7rem] leading-relaxed">Soft Wax, Wax Pot, Post-Wax Oil &amp; Concealers</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* №02 */}
+          <div
+            className="rounded-2xl p-5 flex flex-col justify-between min-h-[150px] sm:col-span-1"
+            style={{ backgroundColor: '#ede5dc' }}
+          >
+            <span className="text-xs font-semibold leading-none select-none text-[#c4b0a4]">02</span>
+            <h3 className="text-[#3d3028] text-[0.95rem] font-semibold leading-snug">
+              Framed Certificate of Completion
+            </h3>
+          </div>
+
+          {/* №03 */}
+          <div
+            className="rounded-2xl p-5 flex flex-col justify-between min-h-[150px]"
+            style={{ backgroundColor: '#ede5dc' }}
+          >
+            <span className="text-xs font-semibold leading-none select-none text-[#c4b0a4]">03</span>
+            <h3 className="text-[#3d3028] text-[0.95rem] font-semibold leading-snug">
+              1 Year Online Theory Access
+            </h3>
+          </div>
+
+          {/* №04 */}
+          <div className="rounded-2xl p-5 flex flex-col justify-between min-h-[150px] bg-white border border-[#e3e2de] shadow-[0_2px_16px_rgba(130,112,100,0.10)]">
+            <span className="text-xs font-semibold leading-none select-none text-[#d4ccc4]">04</span>
+            <h3 className="text-[#3d3028] text-[0.95rem] font-semibold leading-snug">
+              Lunch &amp; snacks by Micah
+            </h3>
+          </div>
+
+          {/* №05 */}
+          <div
+            className="rounded-2xl p-5 flex flex-col justify-between min-h-[150px]"
+            style={{ backgroundColor: '#e8ddd3' }}
+          >
+            <span className="text-xs font-semibold leading-none select-none text-[#c4b0a4]">05</span>
+            <h3 className="text-[#3d3028] text-[0.95rem] font-semibold leading-snug">
+              Exclusive student discount codes
+            </h3>
+          </div>
+
+          {/* perk-02 */}
+          <div className="col-span-2 rounded-2xl overflow-hidden relative h-[220px]">
+            <img
+              src={perk02Img}
+              alt="MJP Beauty in-person students"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          </div>
+        </div>
+
       </section>
 
       {/* Back to top */}
