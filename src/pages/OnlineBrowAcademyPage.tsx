@@ -1,4 +1,6 @@
 import { useEffect, useLayoutEffect, useState, useCallback, useRef } from 'react'
+import type { ReactNode } from 'react'
+import { ChevronDown, HelpCircle } from 'lucide-react'
 import olHeadImg from '@/assets/online/ol-head.jpg'
 import optImg01 from '@/assets/online/opt-img-01.jpg'
 import optImg02 from '@/assets/online/opt-img-02.jpg'
@@ -189,6 +191,133 @@ const onlineOptionCards = [
     ],
   },
 ]
+
+// ─── Online FAQ data ──────────────────────────────────────────────────────────
+
+const ONLINE_FAQ: { q: string; a: ReactNode }[] = [
+  {
+    q: 'Is it beginner-friendly?',
+    a: (
+      <p>
+        Absolutely! This training is designed and proven for all skill levels — from total beginners
+        to growing artists looking to refine their brow techniques or add new services to their menu.
+        I highly recommend beginner levels to opt for the VIP Mentorship package if you want to
+        achieve real, fast-tracked results.
+      </p>
+    ),
+  },
+  {
+    q: 'What supplies do I need to start?',
+    a: (
+      <p>
+        You'll get access to a full product list inside the course plus my Brow Artistry Essentials
+        Guide which will give you direct purchase links! I also walk you through how to use each
+        item, so you can feel confident before working on clients.
+      </p>
+    ),
+  },
+  {
+    q: 'Do I need to be certified already to take this course?',
+    a: (
+      <p>
+        No prior certification is required — this course provides full theory, step-by-step
+        techniques, and live demos to help you build a strong foundation from the ground up.
+        However, it's your responsibility to check the regulations in your specific state or
+        province regarding performing brow services on clients.
+      </p>
+    ),
+  },
+  {
+    q: 'Will I receive a certificate after completing the course?',
+    a: (
+      <p>
+        Yes! Once you've completed all of the modules and passed the quizzes, you'll receive a
+        Certificate of Completion directly from Micah which you can proudly display and use to
+        elevate your business.
+      </p>
+    ),
+  },
+  {
+    q: 'How long do I have access to the course?',
+    a: (
+      <p>
+        While many online trainings offer unlimited access, research shows that too much time leads
+        to low completion rates. This course is designed with accountability in mind — a 6-month
+        window encourages focus, consistency, and real progress.
+      </p>
+    ),
+  },
+  {
+    q: 'What if I need extra support while taking the course?',
+    a: (
+      <p>
+        Consider the VIP Mentorship option for $849 CAD which allows you to have direct mentorship
+        and guidance from your Educator, Micah. You will have up to 3 model submissions to receive
+        detailed and personalized feedback, along with 6 months of unlimited chat support. Designed
+        to fast-track your results as a student!
+      </p>
+    ),
+  },
+]
+
+function Accordion({ q, a }: { q: string; a: ReactNode }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="border-b border-[#e3e2de] last:border-0">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full text-left flex items-start justify-between gap-4 py-4"
+      >
+        <span className="text-sm font-medium text-[#3d3530] leading-snug">{q}</span>
+        <ChevronDown
+          size={16}
+          className={`mt-0.5 shrink-0 text-[#827064] transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+      <div className={`grid transition-all duration-200 ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+        <div className="overflow-hidden">
+          <div className="text-sm text-[#6b5f58] leading-relaxed pb-4">{a}</div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function OnlineFaqSection() {
+  return (
+    <section className="bg-[#f6f2ec] py-16">
+      <div className="max-w-4xl mx-auto px-6">
+
+        {/* Section heading */}
+        <div className="text-center mb-10">
+          <p className="text-[10px] tracking-[0.25em] uppercase text-[#a0948a] mb-2">Good to Know</p>
+          <h2 className="text-2xl font-semibold text-[#3d3530]">Frequently Asked Questions</h2>
+        </div>
+
+        {/* Tab navigator */}
+        <div className="flex justify-center mb-8">
+          <div className="flex gap-0 border-b border-[#d9d4cf] w-full max-w-lg">
+            <div className="group relative flex-1 flex flex-col items-center gap-1.5 py-3 px-2 text-[#6e5f55]">
+              <HelpCircle size={15} />
+              <span className="text-[11px] tracking-[0.1em] uppercase font-semibold whitespace-nowrap">FAQ</span>
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] w-3/4 bg-[#827064] rounded-full" />
+            </div>
+          </div>
+        </div>
+
+        {/* Content panel */}
+        <div className="bg-white border border-[#e3e2de] rounded-2xl px-8 py-10 shadow-sm">
+          <div className="max-w-2xl mx-auto">
+            {ONLINE_FAQ.map((item) => (
+              <Accordion key={item.q} q={item.q} a={item.a} />
+            ))}
+          </div>
+        </div>
+
+      </div>
+    </section>
+  )
+}
 
 export default function OnlineBrowAcademyPage() {
   const [showBackToTop, setShowBackToTop] = useState(false)
@@ -503,7 +632,7 @@ export default function OnlineBrowAcademyPage() {
       </section>
 
       {/* ── Curriculum Section ──────────────────────────────────── */}
-      <section className="bg-[#f6f2ec] flex items-start">
+      <section className="bg-white flex items-start">
 
         {/* Left: sticky image panel */}
         <div className="hidden lg:block w-[42%] flex-shrink-0 sticky top-0 h-screen overflow-hidden relative">
@@ -641,6 +770,8 @@ export default function OnlineBrowAcademyPage() {
           </div>
         </div>
       </section>
+
+      <OnlineFaqSection />
 
       {/* Back to top */}
       <button
