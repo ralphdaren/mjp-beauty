@@ -91,6 +91,15 @@
   animation-delay: 0.9s;
 }
 
+/* ─── Course Section Numbers ─────────────────────────────────────── */
+
+.course-number {
+  font-size: 3rem;
+  font-weight: 600;
+  line-height: 1;
+  color: #827064;
+}
+
 /* ─── Scroll-triggered Animations ───────────────────────────────── */
 
 .anim-fade-up {
@@ -121,7 +130,7 @@
 /* ─── Testimonials / Reviews Section ────────────────────────────── */
 
 .testimonials-section {
-  background-color: #f6f2ec;
+  background-color: #ede8e0;
   padding-top: 4rem;
   padding-bottom: 4rem;
 }

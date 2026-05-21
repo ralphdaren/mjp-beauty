@@ -144,8 +144,8 @@ export default function Home() {
       </section>
 
       {/* Courses Section */}
-      <section id="courses" className="scroll-mt-[66px] bg-[#f6f2ec] text-[color:var(--foreground)] pt-4 pb-12 px-6 md:px-8">
-        <div className="anim-fade-up pt-4 pb-6 max-w-7xl mx-auto text-center">
+      <section id="courses" className="scroll-mt-[66px] bg-white text-[color:var(--foreground)] pt-4 pb-16 px-6 md:px-12">
+        <div className="anim-fade-up pt-4 pb-10 max-w-[1200px] mx-auto text-center">
           <p className="mb-3 text-[0.75rem] uppercase tracking-[0.28em] text-[color:var(--muted-foreground)]">
             COURSES AVAILABLE
           </p>
@@ -154,108 +154,96 @@ export default function Home() {
           </h2>
         </div>
 
-        <div className="mx-auto max-w-[1200px] rounded-[2rem] border border-[#e3e2de] bg-[color:var(--background)] shadow-[0_20px_40px_rgba(0,0,0,0.08)] p-8 sm:p-10">
-          <div className="grid gap-8 lg:grid-cols-2">
-            <div className="anim-fade-up" style={{ transitionDelay: '0.15s' }}>
-            <Link
-              to="/in-person-training"
-              className="group block overflow-hidden rounded-[2rem] border border-[#e3e2de] bg-white text-left transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)]"
-            >
-              <div className="relative overflow-hidden">
+        <div className="mx-auto max-w-[1200px] grid lg:grid-cols-2">
+          {/* In-Person Column */}
+          <div
+            className="anim-fade-up border-b border-[#e3e2de] pb-12 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-14"
+            style={{ transitionDelay: '0.15s' }}
+          >
+            <Link to="/in-person-training" className="group flex h-full flex-col text-left">
+              <div className="mb-5 flex items-center gap-4">
+                <span className="course-number">01</span>
+                <div className="h-px flex-1 bg-[#e3e2de]" />
+                <span className="text-[0.65rem] uppercase tracking-[0.24em] text-[color:var(--muted-foreground)]">
+                  IN-PERSON ACADEMY
+                </span>
+              </div>
+              <h3 className="mb-6 text-3xl font-semibold text-[color:var(--foreground)]">
+                In-Person Trainings
+              </h3>
+              <div className="relative mb-6 overflow-hidden rounded-2xl">
                 <img
-                  className="h-64 w-full object-cover transition duration-300 group-hover:scale-105"
+                  className="h-72 w-full object-cover transition duration-300 group-hover:scale-105"
                   src={inPersonCourseImg}
                   alt="In person brow training"
                 />
-                <div className="absolute left-6 bottom-6 rounded-full bg-white/95 px-4 py-2 text-[0.7rem] uppercase tracking-[0.22em] text-[color:var(--muted-foreground)] shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
-                  Now Enrolling • January - March 2026
+                <div className="absolute bottom-4 left-4 rounded-full bg-white/95 px-4 py-2 text-[0.65rem] uppercase tracking-[0.22em] text-[color:var(--muted-foreground)] shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
+                  Now Enrolling · January - March 2026
                 </div>
               </div>
-              <div className="p-7">
-                  <p className="text-sm uppercase tracking-[0.24em] text-[color:var(--muted-foreground)] mb-3">
-                  IN-PERSON ACADEMY
-                </p>
-                <h3 className="text-2xl font-semibold text-[color:var(--foreground)]">
-                  In-Person Trainings
-                </h3>
-                <p className="mt-6 mb-6 text-sm leading-7 text-[color:var(--foreground)]">
-                  Canada's first integrated program combining in-depth online training with hands-on, in-person mentorship. Trusted by 200+ students — a training so impactful, students fly in from across the country.
-                </p>
-                <ul className="space-y-3 text-sm text-[color:var(--foreground)] mt-6">
-                  <li className="flex items-center gap-2"><CircleCheck size={16} className="shrink-0 text-[#b89a7a]" /> Full online training included</li>
-                  <li className="flex items-center gap-2"><CircleCheck size={16} className="shrink-0 text-[#b89a7a]" /> Hands-on in-person mentorship</li>
-                  <li className="flex items-center gap-2"><CircleCheck size={16} className="shrink-0 text-[#b89a7a]" /> Proven structure & student success</li>
-                </ul>
-                <div className="mt-6 grid gap-4 md:grid-cols-2">
-                  <div className="rounded-[1.5rem] border border-[#e3e2de] p-5 text-center">
-                    <p className="text-[0.65rem] uppercase tracking-[0.24em] text-[color:var(--muted-foreground)] mb-2">
-                      Option 1
-                    </p>
-                    <p className="text-sm font-semibold text-[color:var(--foreground)]">
-                      Small Group
-                    </p>
-                  </div>
-                  <div className="rounded-[1.5rem] border border-[#e3e2de] p-5 text-center">
-                    <p className="text-[0.65rem] uppercase tracking-[0.24em] text-[color:var(--muted-foreground)] mb-2">
-                      Option 2
-                    </p>
-                    <p className="text-sm font-semibold text-[color:var(--foreground)]">
-                      Private 1-on-1
-                    </p>
-                  </div>
+              <p className="mb-5 text-sm leading-7 text-[color:var(--foreground)]">
+                Canada's first integrated program combining in-depth online training with hands-on, in-person mentorship. Impactful training, students fly in from across the country.
+              </p>
+              <ul className="mb-6 space-y-3 text-sm text-[color:var(--foreground)]">
+                <li className="flex items-center gap-2"><CircleCheck size={16} className="shrink-0 text-[#b89a7a]" /> Full online training included</li>
+                <li className="flex items-center gap-2"><CircleCheck size={16} className="shrink-0 text-[#b89a7a]" /> Hands-on in-person mentorship</li>
+                <li className="flex items-center gap-2"><CircleCheck size={16} className="shrink-0 text-[#b89a7a]" /> Proven structure & student success</li>
+              </ul>
+              <div className="mt-auto grid grid-cols-2 gap-4">
+                <div className="rounded-[1.5rem] border border-[#e3e2de] p-5 text-center">
+                  <p className="mb-2 text-[0.65rem] uppercase tracking-[0.24em] text-[color:var(--muted-foreground)]">Option 1</p>
+                  <p className="text-sm font-semibold text-[color:var(--foreground)]">Small Group</p>
+                </div>
+                <div className="rounded-[1.5rem] border border-[#e3e2de] p-5 text-center">
+                  <p className="mb-2 text-[0.65rem] uppercase tracking-[0.24em] text-[color:var(--muted-foreground)]">Option 2</p>
+                  <p className="text-sm font-semibold text-[color:var(--foreground)]">Private 1-on-1</p>
                 </div>
               </div>
             </Link>
-            </div>
+          </div>
 
-            <div className="anim-fade-up" style={{ transitionDelay: '0.3s' }}>
-            <Link
-              to="/online-brow-courses"
-              className="group block overflow-hidden rounded-[2rem] border border-[#e3e2de] bg-white text-left transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)]"
-            >
-              <div className="overflow-hidden">
+          {/* Online Column */}
+          <div
+            className="anim-fade-up pt-12 lg:pl-14 lg:pt-0"
+            style={{ transitionDelay: '0.3s' }}
+          >
+            <Link to="/online-brow-courses" className="group flex h-full flex-col text-left">
+              <div className="mb-5 flex items-center gap-4">
+                <span className="course-number">02</span>
+                <div className="h-px flex-1 bg-[#e3e2de]" />
+                <span className="text-[0.65rem] uppercase tracking-[0.24em] text-[color:var(--muted-foreground)]">
+                  ONLINE BROW ACADEMY
+                </span>
+              </div>
+              <h3 className="mb-6 text-3xl font-semibold text-[color:var(--foreground)]">
+                All-Inclusive Online Brow Training
+              </h3>
+              <div className="relative mb-6 overflow-hidden rounded-2xl">
                 <img
-                  className="h-64 w-full object-cover transition duration-300 group-hover:scale-105"
+                  className="h-72 w-full object-cover transition duration-300 group-hover:scale-105"
                   src={onlineCourseImg}
                   alt="Online brow training"
                 />
               </div>
-              <div className="p-7">
-                <p className="text-sm uppercase tracking-[0.24em] text-[color:var(--muted-foreground)] mb-3">
-                  ONLINE BROW ACADEMY
-                </p>
-                <h3 className="text-2xl font-semibold text-[color:var(--foreground)]">
-                  All-Inclusive Online Brow Training
-                </h3>
-                <p className="mt-6 mb-6 text-sm leading-7 text-[color:var(--foreground)]">
-                  A complete A-Z online training with over 50+ in-depth modules covering brow lamination, shaping, tinting, and waxing — learn on your schedule, from anywhere.
-                </p>
-                <ul className="space-y-3 text-sm text-[color:var(--foreground)] mt-6">
-                  <li className="flex items-center gap-2"><CircleCheck size={16} className="shrink-0 text-[#b89a7a]" /> 50+ in-depth video modules</li>
-                  <li className="flex items-center gap-2"><CircleCheck size={16} className="shrink-0 text-[#b89a7a]" /> Lamination, shaping, tinting, waxing</li>
-                  <li className="flex items-center gap-2"><CircleCheck size={16} className="shrink-0 text-[#b89a7a]" /> Self-paced or 4-week mentorship</li>
-                </ul>
-                <div className="mt-6 grid gap-4 md:grid-cols-2">
-                  <div className="rounded-[1.5rem] border border-[#e3e2de] p-5 text-center">
-                    <p className="text-[0.65rem] uppercase tracking-[0.24em] text-[color:var(--muted-foreground)] mb-2">
-                      Option 1
-                    </p>
-                    <p className="text-sm font-semibold text-[color:var(--foreground)]">
-                      Independent Artist
-                    </p>
-                  </div>
-                  <div className="rounded-[1.5rem] border border-[#e3e2de] p-5 text-center">
-                    <p className="text-[0.65rem] uppercase tracking-[0.24em] text-[color:var(--muted-foreground)] mb-2">
-                      Option 2
-                    </p>
-                    <p className="text-sm font-semibold text-[color:var(--foreground)]">
-                      VIP Mentorship
-                    </p>
-                  </div>
+              <p className="mb-5 text-sm leading-7 text-[color:var(--foreground)]">
+                A complete A-Z online training with over 50+ in-depth modules covering brow lamination, shaping, tinting, and waxing — learn on your schedule, from anywhere.
+              </p>
+              <ul className="mb-6 space-y-3 text-sm text-[color:var(--foreground)]">
+                <li className="flex items-center gap-2"><CircleCheck size={16} className="shrink-0 text-[#b89a7a]" /> 50+ in-depth video modules</li>
+                <li className="flex items-center gap-2"><CircleCheck size={16} className="shrink-0 text-[#b89a7a]" /> Lamination, shaping, tinting, waxing</li>
+                <li className="flex items-center gap-2"><CircleCheck size={16} className="shrink-0 text-[#b89a7a]" /> Self-paced or 4-week mentorship</li>
+              </ul>
+              <div className="mt-auto grid grid-cols-2 gap-4">
+                <div className="rounded-[1.5rem] border border-[#e3e2de] p-5 text-center">
+                  <p className="mb-2 text-[0.65rem] uppercase tracking-[0.24em] text-[color:var(--muted-foreground)]">Option 1</p>
+                  <p className="text-sm font-semibold text-[color:var(--foreground)]">Independent Artist</p>
+                </div>
+                <div className="rounded-[1.5rem] border border-[#e3e2de] p-5 text-center">
+                  <p className="mb-2 text-[0.65rem] uppercase tracking-[0.24em] text-[color:var(--muted-foreground)]">Option 2</p>
+                  <p className="text-sm font-semibold text-[color:var(--foreground)]">VIP Mentorship</p>
                 </div>
               </div>
             </Link>
-            </div>
           </div>
         </div>
       </section>
