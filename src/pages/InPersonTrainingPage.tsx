@@ -53,7 +53,7 @@ const formatItems = [
 
 const optionCards = [
   {
-    img: optImg01,
+    img: optImg02,
     alt: 'Small Group Training',
     label: 'Option 01',
     title: 'Small Group',
@@ -63,7 +63,7 @@ const optionCards = [
       'Train in an intimate group setting with direct support from Micah and her training assistant. Perfect for Artists who want access to premium training, expert guidance while at a more affordable rate.',
   },
   {
-    img: optImg02,
+    img: optImg01,
     alt: 'Private 1-on-1 Training',
     label: 'Option 02',
     title: 'Private 1-on-1',
