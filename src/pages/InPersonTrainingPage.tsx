@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
-import { CircleAlert } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { CircleAlert, ChevronDown, HelpCircle, BookOpen } from 'lucide-react'
 import ipHeadImg from '@/assets/in-person/ip-head.jpg'
 import formatImg01 from '@/assets/in-person/format-img-01.jpg'
 import formatImg02 from '@/assets/in-person/format-img-02.jpg'
@@ -95,6 +96,241 @@ const kitItems = [
   'Standout Pro Mapping Pencil (2)',
   'Concealer Brushes (2)',
 ]
+
+// ─── Training FAQ data ────────────────────────────────────────────────────────
+
+const TRAINING_FAQ = [
+  {
+    q: 'What Makes this Training Different From Others?',
+    a: (
+      <p>
+        This isn't just another brow course. It's a proven, hybrid program combining in-depth
+        online training with hands-on mentorship, designed to get you real results fast. Over 400+
+        students have transformed their skills, gained loyal clients, and are growing their beauty
+        businesses to this day. If you want to master the details that create wow-worthy brows,
+        this is the course for you.
+      </p>
+    ),
+  },
+  {
+    q: 'Where Are the Trainings Held?',
+    a: (
+      <div className="space-y-2">
+        <p>
+          All Winnipeg-based trainings are conducted at{' '}
+          <strong className="text-[#3d3530] font-semibold">Standout Beauty Salon &amp; Academy</strong>,
+          located at 186 Provencher Boulevard, Winnipeg, Manitoba.
+        </p>
+        <p>
+          Additionally, Micah holds annual training sessions in Vancouver, providing opportunities
+          for students in that region to attend in person. Micah travels to Vancouver once a year
+          to hold trainings as well.
+        </p>
+      </div>
+    ),
+  },
+  {
+    q: 'Who Organizes the Models?',
+    a: (
+      <div className="space-y-3">
+        <p>
+          The student will have the opportunity to learn on two models to optimize the training
+          experience:
+        </p>
+        <ul className="space-y-1">
+          <li className="flex gap-3">
+            <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-[#827064] shrink-0" />
+            <span><strong className="text-[#3d3530] font-semibold">Model #1:</strong> Brow Shape, Tint and Wax model</span>
+          </li>
+          <li className="flex gap-3">
+            <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-[#827064] shrink-0" />
+            <span><strong className="text-[#3d3530] font-semibold">Model #2:</strong> Brow Lamination, Shape, Tint and Wax model</span>
+          </li>
+        </ul>
+        <p>
+          Students are responsible for sourcing their own models for the in-person training day.
+          Upon receiving the training deposit, Micah will send a confirmation email containing
+          detailed guidance on selecting suitable model candidates. All models must be approved by
+          Micah through submission of a photo showing their natural brows. For students traveling
+          from out of town, Micah can provide models upon request.
+        </p>
+      </div>
+    ),
+  },
+  {
+    q: 'When Will I Gain Access to the Online Modules?',
+    a: (
+      <p>
+        Access to the online training portion of the course will be sent to the student immediately
+        once the initial deposit is received. It is the student's responsibility to complete the
+        modules prior to their training day. If a student cancels within the one-month cancellation
+        period, the student will lose their access to the online course immediately.
+      </p>
+    ),
+  },
+  {
+    q: 'What Are the Payment Options?',
+    a: (
+      <ol className="list-decimal list-inside space-y-1.5">
+        <li>E-transfer</li>
+        <li>Cash</li>
+        <li>Credit Card / Invoice <span className="text-[#a0948a]">(subject to a 2.9% transaction fee)</span></li>
+        <li>Interest-free Payment Plan Option</li>
+      </ol>
+    ),
+  },
+  {
+    q: 'How Does the Payment Plan Work?',
+    a: (
+      <div className="space-y-3">
+        <p>
+          Once the initial{' '}
+          <strong className="text-[#3d3530] font-semibold">$500 non-refundable deposit</strong>{' '}
+          has been received, the student has complete control on how they choose to make small
+          incremental payments to pay off the remaining balance, under three conditions:
+        </p>
+        <ol className="list-decimal list-inside space-y-1.5">
+          <li>When a payment is submitted, it must be a minimum of <strong className="text-[#3d3530] font-semibold">$300</strong></li>
+          <li>The remaining balance must be fully paid <strong className="text-[#3d3530] font-semibold">one week prior</strong> to the training date</li>
+          <li>Must be paid via <strong className="text-[#3d3530] font-semibold">e-transfer</strong></li>
+        </ol>
+        <p>If this option interests you, please mention this in your inquiry email.</p>
+      </div>
+    ),
+  },
+  {
+    q: 'How Does the Post-Training Mentorship Work?',
+    a: (
+      <p>
+        You have unlimited access to Micah over the next{' '}
+        <strong className="text-[#3d3530] font-semibold">3 months post-training</strong> to ask
+        any questions regarding brow technique. You can also submit up to{' '}
+        <strong className="text-[#3d3530] font-semibold">5 model transformations</strong> which
+        Micah will take the time to analyze, review, and send back personalized and detailed
+        feedback. This is meant for you to study and analyze so that you can continually improve
+        with each client. All in all, this post-training mentorship is meant to fast-track your
+        career as a Brow Artist — an opportunity that not many trainings offer.
+      </p>
+    ),
+  },
+]
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function Accordion({ q, a }: { q: string; a: ReactNode }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="border-b border-[#e3e2de] last:border-0">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full text-left flex items-start justify-between gap-4 py-4"
+      >
+        <span className="text-sm font-medium text-[#3d3530] leading-snug">{q}</span>
+        <ChevronDown
+          size={16}
+          className={`mt-0.5 shrink-0 text-[#827064] transition-transform duration-200 ${
+            open ? 'rotate-180' : ''
+          }`}
+        />
+      </button>
+      <div
+        className={`grid transition-all duration-200 ${
+          open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="text-sm text-[#6b5f58] leading-relaxed pb-4">{a}</div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function HowToEnrollContent() {
+  return (
+    <div className="max-w-2xl mx-auto text-center py-8">
+      <p className="text-[10px] tracking-[0.2em] uppercase text-[#a0948a] mb-3">Coming Soon</p>
+      <p className="text-sm text-[#6b5f58] leading-relaxed">
+        Step-by-step enrollment instructions will be available here shortly.
+      </p>
+    </div>
+  )
+}
+
+function TrainingFaqContent() {
+  return (
+    <div className="max-w-2xl mx-auto">
+      {TRAINING_FAQ.map((item) => (
+        <Accordion key={item.q} q={item.q} a={item.a} />
+      ))}
+    </div>
+  )
+}
+
+// ─── Info tabs ────────────────────────────────────────────────────────────────
+
+const TRAINING_INFO_TABS = [
+  { id: 'enroll', label: 'How to Enroll', Icon: BookOpen },
+  { id: 'faq',    label: 'FAQ',           Icon: HelpCircle },
+] as const
+
+type TrainingTabId = (typeof TRAINING_INFO_TABS)[number]['id']
+
+function TrainingInfoTabs() {
+  const [active, setActive] = useState<TrainingTabId>('enroll')
+
+  return (
+    <section className="bg-[#f6f2ec] border-t border-[#e3e2de] py-16">
+      <div className="max-w-4xl mx-auto px-6">
+
+        {/* Section heading */}
+        <div className="text-center mb-10">
+          <p className="text-[10px] tracking-[0.25em] uppercase text-[#a0948a] mb-2">Good to Know</p>
+          <h2 className="text-2xl font-semibold text-[#3d3530]">Training Information</h2>
+        </div>
+
+        {/* Tab navigator */}
+        <div className="flex justify-center mb-8">
+          <div className="flex gap-0 border-b border-[#d9d4cf] w-full max-w-lg">
+            {TRAINING_INFO_TABS.map(({ id, label, Icon }) => {
+              const isActive = active === id
+              return (
+                <button
+                  key={id}
+                  onClick={() => setActive(id)}
+                  className={`group relative flex-1 flex flex-col items-center gap-1.5 py-3 px-2 transition-colors duration-200 ${
+                    isActive ? 'text-[#6e5f55]' : 'text-[#a0948a] hover:text-[#6e5f55]'
+                  }`}
+                >
+                  <Icon size={15} className="transition-colors duration-200" />
+                  <span className="text-[11px] tracking-[0.1em] uppercase font-semibold whitespace-nowrap transition-colors duration-200">
+                    {label}
+                  </span>
+                  <span
+                    className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] bg-[#827064] rounded-full transition-all duration-300 ${
+                      isActive ? 'w-3/4 opacity-100' : 'w-0 opacity-0'
+                    }`}
+                  />
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Content panel */}
+        <div className="bg-white border border-[#e3e2de] rounded-2xl px-8 py-10 shadow-sm">
+          <div key={active} className="tab-fade-in">
+            {active === 'enroll' && <HowToEnrollContent />}
+            {active === 'faq'    && <TrainingFaqContent />}
+          </div>
+        </div>
+
+      </div>
+    </section>
+  )
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function InPersonTrainingPage() {
   const [showBackToTop, setShowBackToTop] = useState(false)
@@ -576,12 +812,11 @@ export default function InPersonTrainingPage() {
           </div>
         </div>
 
-        {/* ── Desktop bento grid (md+) ───────────────────────────── */}
         <div
           className="anim-fade-up mx-auto max-w-[1200px] hidden md:grid grid-cols-12 gap-3"
           style={{ gridTemplateRows: '220px 220px 280px' }}
         >
-          {/* №06 — Featured: Three months of mentorship */}
+          {/* No.6 - Featured: Three months of mentorship */}
           <div
             className="col-start-1 col-span-6 row-start-1 row-span-2 rounded-2xl p-7 flex flex-col justify-between"
             style={{ backgroundColor: '#2a1a0e' }}
@@ -600,7 +835,7 @@ export default function InPersonTrainingPage() {
             </div>
           </div>
 
-          {/* №01 — Premium Student Kit */}
+          {/* No.1 - Premium Student Kit */}
           <div
             className="col-start-7 col-span-3 row-start-1 row-span-2"
             style={{ perspective: '1200px' }}
@@ -679,7 +914,7 @@ export default function InPersonTrainingPage() {
             </div>
           </div>
 
-          {/* №02 — Framed Certificate of Completion */}
+          {/* No.2 - Framed Certificate of Completion */}
           <div
             className="col-start-10 col-span-3 row-start-1 rounded-2xl p-5 flex flex-col justify-between"
             style={{ backgroundColor: '#ede5dc' }}
@@ -690,7 +925,7 @@ export default function InPersonTrainingPage() {
             </h3>
           </div>
 
-          {/* №03 — 1 Year Online Theory Access */}
+          {/* No.3 - 1 Year Online Theory Access */}
           <div
             className="col-start-10 col-span-3 row-start-2 rounded-2xl p-5 flex flex-col justify-between"
             style={{ backgroundColor: '#ede5dc' }}
@@ -701,7 +936,7 @@ export default function InPersonTrainingPage() {
             </h3>
           </div>
 
-          {/* №04 — Lunch & snacks by Micah */}
+          {/* No.4 - Lunch & snacks by Micah */}
           <div className="col-start-1 col-span-3 row-start-3 rounded-2xl p-5 flex flex-col justify-between bg-white border border-[#e3e2de] shadow-[0_2px_16px_rgba(130,112,100,0.10)]">
             <span className="text-xs font-semibold leading-none select-none text-[#d4ccc4]">04</span>
             <h3 className="text-[#3d3028] text-[0.95rem] font-semibold leading-snug">
@@ -709,7 +944,7 @@ export default function InPersonTrainingPage() {
             </h3>
           </div>
 
-          {/* №05 — Exclusive student discount codes */}
+          {/* No.5 — Exclusive student discount codes */}
           <div
             className="col-start-4 col-span-4 row-start-3 rounded-2xl p-5 flex flex-col justify-between"
             style={{ backgroundColor: '#e8ddd3' }}
@@ -730,7 +965,7 @@ export default function InPersonTrainingPage() {
           </div>
         </div>
 
-        {/* ── Mobile / tablet stacked grid (below md) ───────────── */}
+        {/* ── Mobile / tablet stacked grid ───────────── */}
         <div className="mx-auto max-w-[1200px] grid md:hidden grid-cols-2 gap-3">
           {/* Featured */}
           <div
@@ -830,7 +1065,7 @@ export default function InPersonTrainingPage() {
             </div>
           </div>
 
-          {/* №02 */}
+          {/* No.2 */}
           <div
             className="rounded-2xl p-5 flex flex-col justify-between min-h-[150px] sm:col-span-1"
             style={{ backgroundColor: '#ede5dc' }}
@@ -841,7 +1076,7 @@ export default function InPersonTrainingPage() {
             </h3>
           </div>
 
-          {/* №03 */}
+          {/* No.3 */}
           <div
             className="rounded-2xl p-5 flex flex-col justify-between min-h-[150px]"
             style={{ backgroundColor: '#ede5dc' }}
@@ -852,7 +1087,7 @@ export default function InPersonTrainingPage() {
             </h3>
           </div>
 
-          {/* №04 */}
+          {/* No.4 */}
           <div className="rounded-2xl p-5 flex flex-col justify-between min-h-[150px] bg-white border border-[#e3e2de] shadow-[0_2px_16px_rgba(130,112,100,0.10)]">
             <span className="text-xs font-semibold leading-none select-none text-[#d4ccc4]">04</span>
             <h3 className="text-[#3d3028] text-[0.95rem] font-semibold leading-snug">
@@ -860,7 +1095,7 @@ export default function InPersonTrainingPage() {
             </h3>
           </div>
 
-          {/* №05 */}
+          {/* No.5 */}
           <div
             className="rounded-2xl p-5 flex flex-col justify-between min-h-[150px]"
             style={{ backgroundColor: '#e8ddd3' }}
@@ -882,6 +1117,9 @@ export default function InPersonTrainingPage() {
         </div>
 
       </section>
+
+      {/* ── Info Tabs ────────────────────────────────────────────── */}
+      <TrainingInfoTabs />
 
       {/* Back to top */}
       <button
