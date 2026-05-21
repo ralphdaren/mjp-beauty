@@ -1,7 +1,8 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useLayoutEffect, useState, useCallback, useRef } from 'react'
 import olHeadImg from '@/assets/online/ol-head.jpg'
 import optImg01 from '@/assets/online/opt-img-01.jpg'
 import optImg02 from '@/assets/online/opt-img-02.jpg'
+import curriculumImg from '@/assets/online/curriculum-img.jpg'
 import '@/styles/HomePage.css'
 
 const youWillItems = [
@@ -11,6 +12,144 @@ const youWillItems = [
   'Master a proven mapping method that transforms your brow results — so you can confidently map balanced, symmetrical brows tailored to each client\'s unique features (even the tricky, uneven ones)!',
   'Go beyond basic waxing techniques — gain the knowledge and skills to confidently wax brows while protecting your client\'s skin. Learn how to avoid skin lifting, understand ingredient interactions, and deliver flawless results every time that your clients love.',
   'Unlock the rare, expert details in brow artistry that will set you apart from your competition — educational insights you won\'t find anywhere else. This training focuses on the details to help you create a raving fan club of clients and a most importantly, a steady income!',
+]
+
+type CurriculumMod = { num: string; name: string }
+type CurriculumPart =
+  | { type: 'modules'; tab: string; tabSub: string; partLabel: string; title: string; modules: CurriculumMod[] }
+  | { type: 'business'; tab: string; tabSub: string; partLabel: string; title: string; description: string; bullets: string[] }
+  | { type: 'bonuses'; tab: string; tabSub: string; partLabel: string; title: string; items: { label: string; sub: string; bullets?: string[] }[] }
+
+const curriculumParts: CurriculumPart[] = [
+  {
+    type: 'modules',
+    tab: 'Part 1',
+    tabSub: 'Brow Lamination Theory',
+    partLabel: 'Part 1',
+    title: 'Brow Lamination Theory',
+    modules: [
+      { num: 'Mod 01', name: 'Brow Lamination Theory' },
+      { num: 'Mod 02', name: 'Health & Safety' },
+      { num: 'Mod 03', name: 'Consultations & Consent Forms (Digital vs Printed)' },
+      { num: 'Mod 04', name: 'Products & Tools (TGA vs Cysteamine-based Systems)' },
+      { num: 'Mod 05', name: 'Equipment' },
+      { num: 'Mod 06', name: 'Hygiene & Sanitation' },
+      { num: 'Mod 07', name: 'Workstation Set-up' },
+      { num: 'Mod 08', name: 'Aftercare & Three Aftercare Kit Options for your Clients' },
+    ],
+  },
+  {
+    type: 'modules',
+    tab: 'Part 2',
+    tabSub: 'Brow Lamination Process',
+    partLabel: 'Part 2',
+    title: 'Brow Lamination Process',
+    modules: [
+      { num: 'Mod 10', name: 'Step-by-Step Lami Service Overview' },
+      { num: 'Mod 11', name: 'Brow Prep & Cleansing' },
+      { num: 'Mod 12', name: 'Understanding Step 1 Perming Solution' },
+      { num: 'Mod 13', name: 'Understanding Step 2 Nourishing Solution' },
+      { num: 'Mod 14', name: 'Styling & Concealing' },
+      { num: 'Mod 15', name: 'Step 3 Nourishing Agent' },
+      { num: 'Mod 16', name: 'Troubleshooting Brow Lamination Problems (Over-processing VS Under-processing)' },
+    ],
+  },
+  {
+    type: 'modules',
+    tab: 'Part 3',
+    tabSub: 'Brow Mapping Fundamentals',
+    partLabel: 'Part 3',
+    title: 'Brow Mapping Fundamentals',
+    modules: [
+      { num: 'Mod 17', name: 'Intro to Brow Mapping' },
+      { num: 'Mod 18', name: 'Brow Mapping Consultations' },
+      { num: 'Mod 19', name: 'Tools & Essentials' },
+      { num: 'Mod 20', name: 'Step-by-Step of Signature Mapping Technique' },
+      { num: 'Mod 21', name: "Do's & Don'ts of Brow Mapping" },
+      { num: 'Mod 22', name: 'Face Shapes & Brows' },
+      { num: 'Mod 23', name: 'Troubleshooting Challenging & Asymmetrical Brows ("Hook brows", Triangle brows, "S-brows")' },
+      { num: 'Mod 24', name: 'Achieving Custom Brow Shapes (Straight, Soft, Angled, Lifted Brows)' },
+      { num: 'Mod 25', name: 'Bonus Mapping with Paste' },
+    ],
+  },
+  {
+    type: 'modules',
+    tab: 'Part 4',
+    tabSub: 'Brow Tinting Fundamentals',
+    partLabel: 'Part 4',
+    title: 'Brow Tinting Fundamentals',
+    modules: [
+      { num: 'Mod 26', name: 'Intro to Natural Brow Tinting Fundamentals' },
+      { num: 'Mod 27', name: 'Health & Safety' },
+      { num: 'Mod 28', name: 'Product Knowledge (using industry leading brand, Brow Code)' },
+      { num: 'Mod 29', name: 'Tools & Equipment' },
+      { num: 'Mod 30', name: 'Step-by-Step Tinting Technique' },
+      { num: 'Bonus', name: 'Troubleshooting Brow Tinting Problems' },
+    ],
+  },
+  {
+    type: 'modules',
+    tab: 'Part 5',
+    tabSub: 'Brow Waxing Fundamentals',
+    partLabel: 'Part 5',
+    title: 'Brow Waxing Fundamentals',
+    modules: [
+      { num: 'Mod 32', name: 'Intro to Brow Waxing' },
+      { num: 'Mod 33', name: 'Health & Safety — Contraindications & Understanding Skincare Ingredients' },
+      { num: 'Mod 34', name: 'Waxing Product Knowledge' },
+      { num: 'Mod 35', name: 'Waxing Product Tools' },
+      { num: 'Mod 36', name: 'Step-by-Step Overview Strip Waxing Service' },
+      { num: 'Mod 37', name: 'Waxing Application & Removal Technique' },
+      { num: 'Mod 38', name: 'Tweezing Technique — tweeze, micro-trim & "debulking"' },
+      { num: 'Mod 39', name: 'Troubleshooting Wax Application Problems' },
+    ],
+  },
+  {
+    type: 'business',
+    tab: 'Business & Brows',
+    tabSub: '',
+    partLabel: '',
+    title: 'Business & Brows',
+    description:
+      'Learn the exact systems and strategies I used to grow my beauty business organically through Instagram — the same ones that helped me become a recognized Brow Artist & Educator in my city and across the country. Inside this module, you\'ll dive into:',
+    bullets: [
+      'Pricing for Profit — Pricing strategies that actually make sense',
+      'Curating a Loyal Clientele',
+      'Marketing & Branding + access to my Social Media Ebook Glam Up Your Grid',
+      'How to start and grow your Brow Business from the ground up',
+      'How to capture IG-worthy content straight from your phone',
+      'How & What to Upsell Retail Brow Products to Clients',
+    ],
+  },
+  {
+    type: 'bonuses',
+    tab: 'Bonuses',
+    tabSub: '',
+    partLabel: '',
+    title: 'Bonuses',
+    items: [
+      {
+        label: 'Video Demonstrations',
+        sub: '7 Model Demonstrations from Start to Finish',
+        bullets: [
+          '(2) Full Brow Lami Service on Sparse, Thin Brows',
+          '(1) Full Brow Lami Service on Average, Normal Brows',
+          '(1) Naked Brow Lami Service on Full Brows',
+          '(1) Brow Lamination Maintenance Service',
+          '(1) Brow Mapping on Non-laminated Brows',
+          '(1) Brow Mapping on Laminated Brows',
+          '(1) Brow Tinting Demo on Laminated Brows',
+        ],
+      },
+      { label: '40+ Video Lectures', sub: 'Every module comes with a detailed video lesson and high-quality video tutorials to walk you through each technique step by step' },
+      { label: '250+ pages Downloadable Training Manual', sub: '"Brow Artistry Blueprint"' },
+      { label: '70+ pages Downloadable Social Media Ebook', sub: '"Glam Up Your Grid"' },
+      { label: '"The Brow Lab" Chapter', sub: "Insider look into Brow Brands and Products I'm currently trialling, testing and loving" },
+      { label: 'Access to Downloadable & Printable Consent Form Templates', sub: '' },
+      { label: '"Natural Brow Checklist"', sub: '' },
+      { label: 'Exclusive Student Discount Codes', sub: '' },
+    ],
+  },
 ]
 
 const onlineOptionCards = [
@@ -56,6 +195,14 @@ export default function OnlineBrowAcademyPage() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [animating, setAnimating] = useState(false)
   const [activeOption, setActiveOption] = useState(0)
+  const [activePart, setActivePart] = useState(0)
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0 })
+
+  useLayoutEffect(() => {
+    const el = tabRefs.current[activePart]
+    if (el) setIndicatorStyle({ top: el.offsetTop, height: el.offsetHeight })
+  }, [activePart])
 
   const handleOptionSwitch = useCallback(() => {
     setActiveOption((prev) => 1 - prev)
@@ -349,6 +496,146 @@ export default function OnlineBrowAcademyPage() {
                   </div>
                 )
               })}
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ── Curriculum Section ──────────────────────────────────── */}
+      <section className="bg-[#f6f2ec] flex items-start">
+
+        {/* Left: sticky image panel */}
+        <div className="hidden lg:block w-[42%] flex-shrink-0 sticky top-0 h-screen overflow-hidden relative">
+          <p className="absolute top-6 left-6 z-10 text-[0.58rem] uppercase tracking-[0.32em] text-white/80 font-light">
+            MJP Beauty · Curriculum
+          </p>
+          <img
+            src={curriculumImg}
+            alt="MJP Beauty Curriculum"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-[#1a0e08]/20" />
+          <div className="absolute bottom-10 left-6 z-10 backdrop-blur-md bg-white/15 border border-white/25 px-6 py-5">
+            <p className="text-white font-semibold text-[1.35rem] leading-snug">
+              39 modules.<br />Mapped out, in full.
+            </p>
+          </div>
+        </div>
+
+        {/* Right: curriculum content */}
+        <div className="flex-1 py-14 px-8 lg:px-14 xl:px-16 min-h-screen">
+
+          {/* Header */}
+          <div className="mb-10 anim-fade-up">
+            <p className="text-[0.72rem] uppercase tracking-[0.3em] text-[#a0948a] mb-4">
+              What's Inside
+            </p>
+            <h2 className="about-heading leading-tight text-[#3d3028] mb-4" style={{ fontSize: 'clamp(1.9rem, 2.8vw, 2.7rem)' }}>
+              An overview of everything<br />
+              <span className="text-[#827064]">you'll master.</span>
+            </h2>
+            <p className="text-[#5a5047] text-sm sm:text-base leading-relaxed max-w-lg">
+              No gatekeeping here — every module, mapped out so you know exactly what's covered.
+            </p>
+          </div>
+
+          {/* Tabs + Module list */}
+          <div className="flex gap-0 anim-fade-up" style={{ transitionDelay: '0.15s' }}>
+
+            {/* Sidebar tabs */}
+            <div className="relative flex flex-col pr-6 border-r border-[#d8d0c8] min-w-[160px] shrink-0">
+              {/* Sliding active indicator */}
+              <div
+                className="absolute left-0 w-0.5 bg-[#b07b5a] transition-[top,height] duration-300 ease-in-out"
+                style={{ top: indicatorStyle.top, height: indicatorStyle.height }}
+              />
+              {curriculumParts.map((part, i) => (
+                <button
+                  key={i}
+                  ref={el => { tabRefs.current[i] = el }}
+                  onClick={() => setActivePart(i)}
+                  className="text-left py-2.5 pl-3 transition-all duration-200 flex flex-col gap-0.5"
+                >
+                  <span className={[
+                    'text-[0.9rem] transition-colors duration-200',
+                    activePart === i ? 'text-[#3d3028] font-medium' : 'text-[#a0948a] font-normal',
+                  ].join(' ')}>
+                    {part.tab}
+                  </span>
+                  {part.tabSub && (
+                    <span className={[
+                      'text-[0.67rem] transition-colors duration-200',
+                      activePart === i ? 'text-[#827064]' : 'text-[#c4b8b0]',
+                    ].join(' ')}>
+                      {part.tabSub}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* Module content */}
+            <div className="flex-1 pl-8 min-w-0">
+              <p className="text-[0.65rem] uppercase tracking-[0.3em] text-[#827064] mb-1">
+                {curriculumParts[activePart].partLabel}
+              </p>
+              <h3 className="text-xl sm:text-2xl font-semibold text-[#3d3028] mb-5">
+                {curriculumParts[activePart].title}
+              </h3>
+
+              {/* Modules list */}
+              {curriculumParts[activePart].type === 'modules' && (
+                <div className="flex flex-col">
+                  {curriculumParts[activePart].modules.map((mod, i) => (
+                    <div key={i} className="flex items-start gap-5 py-3.5 border-b border-[#e3ddd8] last:border-b-0">
+                      <span className="text-[0.67rem] font-medium text-[#827064] min-w-[52px] mt-0.5 shrink-0">{mod.num}</span>
+                      <span className="text-[#3d3028] text-sm leading-relaxed">{mod.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Business & Brows */}
+              {curriculumParts[activePart].type === 'business' && (
+                <div>
+                  <p className="text-[#5a5047] text-sm leading-relaxed mb-5">
+                    {curriculumParts[activePart].description}
+                  </p>
+                  <div className="flex flex-col">
+                    {curriculumParts[activePart].bullets.map((b, i) => (
+                      <div key={i} className="flex items-start gap-3.5 py-3.5 border-b border-[#e3ddd8] last:border-b-0">
+                        <span className="mt-[6px] w-1.5 h-1.5 rounded-full bg-[#b07b5a] shrink-0" />
+                        <span className="text-[#3d3028] text-sm leading-relaxed">{b}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Bonuses */}
+              {curriculumParts[activePart].type === 'bonuses' && (
+                <div className="flex flex-col">
+                  {curriculumParts[activePart].items.map((item, i) => (
+                    <div key={i} className="py-3.5 border-b border-[#e3ddd8] last:border-b-0">
+                      <p className="text-[#3d3028] text-sm font-medium leading-snug">{item.label}</p>
+                      {item.sub && (
+                        <p className="text-[#827064] text-xs leading-relaxed mt-0.5">{item.sub}</p>
+                      )}
+                      {item.bullets && (
+                        <ul className="mt-2 flex flex-col gap-1">
+                          {item.bullets.map((b, j) => (
+                            <li key={j} className="flex items-start gap-2.5">
+                              <span className="mt-[5px] w-1 h-1 rounded-full bg-[#b07b5a] shrink-0" />
+                              <span className="text-[#5a5047] text-xs leading-relaxed">{b}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
           </div>
