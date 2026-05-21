@@ -44,14 +44,14 @@ export default function Navbar() {
       {/* Thin decorative top accent line */}
       <div className="h-[2px] bg-brand w-full" />
 
-      <nav className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
+      <nav className="max-w-7xl mx-auto px-8 h-20 flex items-center justify-between gap-8">
         {/* Logo */}
         <NavLink to="/" className="shrink-0">
-          <img src={logoBlack} alt="MJP Beauty" className="h-12 w-auto" />
+          <img src={logoBlack} alt="MJP Beauty" className="h-16 w-auto" />
         </NavLink>
 
         {/* Desktop — center links */}
-        <div className="hidden lg:flex items-center gap-7 flex-1 justify-center">
+        <div className="hidden lg:flex items-center gap-9 flex-1 justify-center">
           {mainLinks.map(({ label, to }) => (
             <NavLink
               key={to}
@@ -59,7 +59,7 @@ export default function Navbar() {
               end={to === '/'}
               className={({ isActive }) =>
                 [
-                  'text-sm tracking-wide pb-0.5 transition-colors duration-200 whitespace-nowrap',
+                  'text-base tracking-wide pb-0.5 transition-colors duration-200 whitespace-nowrap',
                   'border-b-[1.5px]',
                   isActive
                     ? 'text-brand border-brand font-medium'
@@ -73,16 +73,16 @@ export default function Navbar() {
         </div>
 
         {/* Desktop — right actions */}
-        <div className="hidden lg:flex items-center gap-3 shrink-0">
+        <div className="hidden lg:flex items-center gap-4 shrink-0">
           <NavLink
             to="/book-appointment"
-            className="px-5 py-2 text-sm tracking-wide rounded-full text-white bg-brand hover:opacity-90 transition-opacity duration-200 whitespace-nowrap"
+            className="px-6 py-2.5 text-base tracking-wide rounded-full text-white bg-brand hover:opacity-90 transition-opacity duration-200 whitespace-nowrap"
           >
             Book an Appointment
           </NavLink>
           <NavLink
             to="/student-login"
-            className="px-5 py-2 text-sm tracking-wide rounded-full text-brand border border-brand hover:bg-brand hover:text-white transition-colors duration-200 whitespace-nowrap"
+            className="px-6 py-2.5 text-base tracking-wide rounded-full text-brand border border-brand hover:bg-brand hover:text-white transition-colors duration-200 whitespace-nowrap"
           >
             Student Login
           </NavLink>
@@ -95,7 +95,7 @@ export default function Navbar() {
           aria-label="Toggle menu"
           aria-expanded={isOpen}
         >
-          {isOpen ? <X size={20} /> : <Menu size={20} />}
+          {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </nav>
 
