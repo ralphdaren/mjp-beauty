@@ -78,65 +78,55 @@ export default function Home() {
       </section>
 
       {/* About Me Section */}
-      <section id="about" className="scroll-mt-[66px] bg-[#f6f2ec] text-[color:var(--foreground)] pt-12 pb-15 px-6 md:px-8">
-        <div className="anim-fade-up mx-auto mb-12 max-w-4xl text-center">
-          <p className="mb-3 text-[0.85rem] uppercase tracking-[0.28em] text-[color:var(--muted-foreground)]">
-            GET TO KNOW ME
-          </p>
-          <h2 className="about-heading text-3xl font-semibold leading-tight text-[color:var(--foreground)] sm:text-4xl md:text-[2.8rem]">
-            Meet The Face Behind <span className="text-[#827064]">MJP Beauty</span>
-          </h2>
-        </div>
-
-        <div className="mx-auto max-w-[1200px] rounded-[2rem] border border-[#e3e2de] bg-[color:var(--background)] shadow-[0_20px_40px_rgba(0,0,0,0.08)] p-8 sm:p-10">
-          <div className="grid gap-12 lg:grid-cols-2 lg:gap-14">
-            <div className="anim-fade-left flex flex-col items-center gap-6 text-center" style={{ transitionDelay: '0.15s' }}>
-              <div className="portrait-arch w-full max-w-[320px] min-h-[20rem] overflow-hidden border border-white/20 shadow-[0_28px_70px_rgba(0,0,0,0.14)]">
-                <img className="h-full w-full object-cover" src={aboutImg} alt="Micah portrait" />
-              </div>
-              <p className="m-0 text-sm uppercase tracking-[0.3em] text-[color:var(--muted-foreground)]">
-                FOUNDER • EDUCATOR
-              </p>
+      <section id="about" className="scroll-mt-[66px]">
+        <div className="grid lg:grid-cols-2 min-h-[640px] lg:min-h-[740px]">
+          {/* Left: cream bg + arch portrait */}
+          <div className="anim-fade-left relative min-h-[520px] bg-[#f6f2ec]">
+            <p className="absolute top-6 left-6 z-10 m-0 text-[0.82rem] uppercase tracking-[0.3em] text-[color:var(--muted-foreground)]">
+              FOUNDER · EDUCATOR
+            </p>
+            <div className="about-arch-photo">
+              <img
+                className="w-full h-full object-cover object-center"
+                src={aboutImg}
+                alt="Micah portrait"
+              />
             </div>
+          </div>
 
-            <div className="anim-fade-right flex flex-col gap-6" style={{ transitionDelay: '0.15s' }}>
-              <div>
-                <h3 className="about-subheading m-0 text-2xl font-semibold leading-tight text-[color:var(--foreground)] sm:text-3xl md:text-[2.2rem]">
-                  Hi I'm Micah
-                </h3>
-                <p className="mt-3 text-base leading-7 text-[color:var(--muted-foreground)]">
-                  Brow Artist & Leading Brow Educator in Canada
+          {/* Right: text content */}
+          <div className="anim-fade-right flex flex-col justify-center gap-5 px-10 py-14 lg:px-16 lg:py-20 bg-white" style={{ transitionDelay: '0.2s' }}>
+            <p className="m-0 text-[0.85rem] uppercase tracking-[0.28em] text-[color:var(--muted-foreground)]">
+              GET TO KNOW ME
+            </p>
+            <h2 className="about-heading m-0 text-3xl font-semibold leading-tight text-[color:var(--foreground)] sm:text-4xl md:text-[2.8rem]">
+              Meet The Face Behind <span className="text-[#827064]">MJP Beauty</span>
+            </h2>
+
+            <p className="m-0 max-w-xl text-sm leading-[1.9] text-[color:var(--foreground)] sm:text-base">
+              Welcome to MJP Beauty — where we don't just shape brows, we shape standards.
+            </p>
+            <p className="m-0 max-w-xl text-sm leading-[1.9] text-[color:var(--muted-foreground)] sm:text-base">
+              I'm the founder of MJP Beauty, a dedicated Brow Artist specializing in natural results. After eight years in the beauty industry and training students across North America, my mission is clear: to raise the bar in brow education.
+            </p>
+            <p className="m-0 max-w-xl text-sm leading-[1.9] text-[color:var(--muted-foreground)] sm:text-base">
+              Whether you're here for luxury brow services or ready to grow your skills through pro-level training, MJP Beauty is where confidence begins — with craft, care, and community.
+            </p>
+
+            <div className="h-px w-full bg-black/10" />
+
+            <div className="flex flex-wrap gap-10">
+              <div className="flex items-center gap-4">
+                <span className="text-3xl font-semibold text-[color:var(--foreground)]">8+</span>
+                <p className="m-0 text-[0.75rem] uppercase tracking-[0.18em] text-[color:var(--muted-foreground)]">
+                  YEARS<br />EXPERIENCED
                 </p>
               </div>
-
-              <p className="m-0 max-w-2xl text-sm leading-[1.9] text-[color:var(--foreground)] sm:text-base">
-                Welcome to MJP Beauty — where we don't just shape brows, we shape standards.
-              </p>
-              <p className="m-0 max-w-2xl text-sm leading-[1.9] text-[color:var(--foreground)] sm:text-base">
-                I'm the founder of MJP Beauty, a dedicated Brow Artist specializing in natural results. After eight years in the beauty industry and training students across North America, my mission is clear: to raise the bar in brow education.
-              </p>
-              <p className="m-0 max-w-2xl text-sm leading-[1.9] text-[color:var(--foreground)] sm:text-base">
-                Whether you're here for luxury brow services or ready to grow your skills through pro-level training, MJP Beauty is where confidence begins — with craft, care, and community.
-              </p>
-
-              <div className="h-px w-full bg-black/10" />
-              <div className="flex flex-wrap gap-20">
-                <div className="flex items-center gap-4">
-                  <span className="text-3xl font-semibold text-[color:var(--foreground)]">8+</span>
-                  <p className="m-0 text-[0.75rem] uppercase tracking-[0.18em] text-[color:var(--muted-foreground)]">
-                    YEARS
-                    <br />
-                    EXPERIENCED
-                  </p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-3xl font-semibold text-[color:var(--foreground)]">450+</span>
-                  <p className="m-0 text-[0.75rem] uppercase tracking-[0.18em] text-[color:var(--muted-foreground)]">
-                    STUDENTS
-                    <br />
-                    TRAINED
-                  </p>
-                </div>
+              <div className="flex items-center gap-4">
+                <span className="text-3xl font-semibold text-[color:var(--foreground)]">450+</span>
+                <p className="m-0 text-[0.75rem] uppercase tracking-[0.18em] text-[color:var(--muted-foreground)]">
+                  STUDENTS<br />TRAINED
+                </p>
               </div>
             </div>
           </div>
@@ -144,7 +134,7 @@ export default function Home() {
       </section>
 
       {/* Courses Section */}
-      <section id="courses" className="scroll-mt-[66px] bg-white text-[color:var(--foreground)] pt-4 pb-16 px-6 md:px-12">
+      <section id="courses" className="scroll-mt-[66px] bg-white text-[color:var(--foreground)] pt-20 pb-16 px-6 md:px-12">
         <div className="anim-fade-up pt-4 pb-10 max-w-[1200px] mx-auto text-center">
           <p className="mb-3 text-[0.75rem] uppercase tracking-[0.28em] text-[color:var(--muted-foreground)]">
             COURSES AVAILABLE
