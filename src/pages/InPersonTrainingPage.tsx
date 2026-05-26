@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import type { ReactNode } from 'react'
-import { CircleAlert, ChevronDown, HelpCircle, BookOpen } from 'lucide-react'
+import { CircleAlert, ChevronDown, HelpCircle, BookOpen, ArrowRight } from 'lucide-react'
 import ipHeadImg from '@/assets/in-person/ip-head.jpg'
 import formatImg01 from '@/assets/in-person/format-img-01.jpg'
 import formatImg02 from '@/assets/in-person/format-img-02.jpg'
@@ -926,15 +927,21 @@ export default function InPersonTrainingPage() {
           </div>
 
           {/* No.3 - 1 Year Online Theory Access */}
-          <div
-            className="col-start-10 col-span-3 row-start-2 rounded-2xl p-5 flex flex-col justify-between"
+          <Link
+            to="/online-brow-courses#curriculum"
+            className="col-start-10 col-span-3 row-start-2 rounded-2xl p-5 flex flex-col justify-between hover:opacity-80 transition-opacity duration-200"
             style={{ backgroundColor: '#ede5dc' }}
           >
             <span className="text-xs font-semibold leading-none select-none text-[#c4b0a4]">03</span>
-            <h3 className="text-[#3d3028] text-[0.95rem] font-semibold leading-snug">
-              1 Year Online Theory Access
-            </h3>
-          </div>
+            <div className="flex flex-col gap-2">
+              <h3 className="text-[#3d3028] text-[0.95rem] font-semibold leading-snug">
+                1 Year Online Theory Access
+              </h3>
+              <p className="text-[0.68rem] tracking-[0.14em] uppercase text-[#a0948a] flex items-center gap-1">
+                View curriculum <ArrowRight size={10} />
+              </p>
+            </div>
+          </Link>
 
           {/* No.4 - Lunch & snacks by Micah */}
           <div className="col-start-1 col-span-3 row-start-3 rounded-2xl p-5 flex flex-col justify-between bg-white border border-[#e3e2de] shadow-[0_2px_16px_rgba(130,112,100,0.10)]">
@@ -1077,15 +1084,21 @@ export default function InPersonTrainingPage() {
           </div>
 
           {/* No.3 */}
-          <div
-            className="rounded-2xl p-5 flex flex-col justify-between min-h-[150px]"
+          <Link
+            to="/online-brow-courses#curriculum"
+            className="rounded-2xl p-5 flex flex-col justify-between min-h-[150px] hover:opacity-80 transition-opacity duration-200"
             style={{ backgroundColor: '#ede5dc' }}
           >
             <span className="text-xs font-semibold leading-none select-none text-[#c4b0a4]">03</span>
-            <h3 className="text-[#3d3028] text-[0.95rem] font-semibold leading-snug">
-              1 Year Online Theory Access
-            </h3>
-          </div>
+            <div className="flex flex-col gap-2">
+              <h3 className="text-[#3d3028] text-[0.95rem] font-semibold leading-snug">
+                1 Year Online Theory Access
+              </h3>
+              <p className="text-[0.68rem] tracking-[0.14em] uppercase text-[#a0948a] flex items-center gap-1">
+                View curriculum <ArrowRight size={10} />
+              </p>
+            </div>
+          </Link>
 
           {/* No.4 */}
           <div className="rounded-2xl p-5 flex flex-col justify-between min-h-[150px] bg-white border border-[#e3e2de] shadow-[0_2px_16px_rgba(130,112,100,0.10)]">

@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useState, useCallback, useRef } from 'react'
 import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { ChevronDown, HelpCircle } from 'lucide-react'
 import { getProductByHandle, createCheckoutUrl, formatPrice } from '@/lib/shopify'
 import type { ShopifyProduct } from '@/lib/shopify'
@@ -340,6 +340,15 @@ export default function OnlineBrowAcademyPage() {
   const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0 })
   const [shopifyProducts, setShopifyProducts] = useState<(ShopifyProduct | null)[]>([null, null])
   const [moduleProducts, setModuleProducts] = useState<(ShopifyProduct | null)[]>(Array(6).fill(null))
+  const location = useLocation()
+
+  useEffect(() => {
+    if (!location.hash) return
+    const el = document.getElementById(location.hash.slice(1))
+    if (!el) return
+    const timer = setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80)
+    return () => clearTimeout(timer)
+  }, [location.hash])
   const [enrolling, setEnrolling] = useState<number | null>(null)
 
   useLayoutEffect(() => {
@@ -782,7 +791,7 @@ export default function OnlineBrowAcademyPage() {
       </section>
 
       {/* ── Curriculum Section ──────────────────────────────────── */}
-      <section className="bg-white flex items-start">
+      <section id="curriculum" className="bg-white flex items-start">
 
         {/* Left: sticky image panel */}
         <div className="hidden lg:block w-[42%] flex-shrink-0 sticky top-0 h-screen overflow-hidden relative">
