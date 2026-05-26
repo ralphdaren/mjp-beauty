@@ -389,7 +389,7 @@ export default function OnlineBrowAcademyPage() {
             MJP Beauty
           </p>
           <h1 className="hero-heading about-heading text-4xl sm:text-5xl md:text-6xl font-semibold text-white leading-tight max-w-3xl text-center">
-            The All-Inclusive Online Brow Education
+            The Ultimate Online Brow Education
           </h1>
         </div>
       </section>
