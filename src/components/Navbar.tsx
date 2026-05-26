@@ -289,7 +289,7 @@ export default function Navbar() {
                   })}
                 </div>
 
-                <p
+                <div
                   style={{
                     opacity: isAcademyOpen ? 1 : 0,
                     transform: isAcademyOpen ? 'translateY(0)' : 'translateY(8px)',
@@ -297,10 +297,19 @@ export default function Navbar() {
                       ? 'opacity 350ms ease 720ms, transform 350ms ease 720ms'
                       : 'opacity 150ms ease 0ms, transform 150ms ease 0ms',
                   }}
-                  className="text-[0.82rem] text-[#a0948a] mt-4 flex-none leading-relaxed"
+                  className="mt-4 flex-none flex items-center justify-between gap-4"
                 >
-                  Purchase any module individually of your choice.
-                </p>
+                  <p className="text-[0.82rem] text-[#a0948a] leading-relaxed">
+                    Purchase any module individually of your choice.
+                  </p>
+                  <NavLink
+                    to="/online-modules"
+                    onClick={() => setIsAcademyOpen(false)}
+                    className="shrink-0 flex items-center gap-1.5 px-4 py-2 text-[0.75rem] tracking-[0.12em] uppercase rounded-full border border-brand text-brand hover:bg-brand hover:text-white transition-colors duration-200"
+                  >
+                    Browse Modules <ArrowRight size={12} />
+                  </NavLink>
+                </div>
               </div>
 
             </div>
