@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { Menu, X, ChevronDown } from 'lucide-react'
+import { Menu, X, ChevronDown, ArrowRight } from 'lucide-react'
 import logoBlack from '@/assets/brand-kit/logo-black.png'
 import optImg01 from '@/assets/online/opt-img-01.jpg'
 import optImg02 from '@/assets/online/opt-img-02.jpg'
@@ -13,14 +13,14 @@ const regularLinks = [
 const featuredCourses = [
   {
     img: optImg01,
-    imgLabel: 'SELF-GUIDED LEARNING',
+    imgLabel: 'All-inclusive Course',
     title: 'Independent Artist',
     description: 'Everything you need to launch your own brow studio — from technique to business.',
     to: '/online-brow-courses',
   },
   {
     img: optImg02,
-    imgLabel: 'EXPERT MENTORSHIP',
+    imgLabel: 'All-inclusive Course',
     title: 'VIP Mentorship',
     description: 'Personalised guidance, portfolio reviews and direct mentorship from Micah.',
     to: '/online-brow-courses',
@@ -216,7 +216,7 @@ export default function Navbar() {
                           ? `opacity 380ms ease ${delay}ms, transform 380ms ease ${delay}ms, box-shadow 300ms ease`
                           : 'opacity 150ms ease 0ms, transform 150ms ease 0ms, box-shadow 300ms ease',
                       }}
-                      className="group border border-brand-border bg-white flex flex-col overflow-hidden hover:shadow-[0_8px_32px_rgba(130,112,100,0.18)]"
+                      className="group border border-brand-border bg-white flex flex-col overflow-hidden rounded-2xl hover:shadow-[0_8px_32px_rgba(130,112,100,0.18)]"
                     >
                       {/* Image — 58% of card height */}
                       <div className="relative overflow-hidden flex-[0_0_58%] min-h-0">
@@ -225,7 +225,7 @@ export default function Navbar() {
                           alt={course.title}
                           className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
                         />
-                        <p className="absolute bottom-3 left-4 text-[0.6rem] tracking-[0.22em] uppercase text-white/80 font-light">
+                        <p className="absolute top-3 left-4 text-[0.6rem] tracking-[0.22em] uppercase text-white/80 font-light">
                           {course.imgLabel}
                         </p>
                       </div>
@@ -234,7 +234,7 @@ export default function Navbar() {
                         <h3 className="font-semibold text-[#3d3028] text-base leading-snug">{course.title}</h3>
                         <p className="text-[#5a5047] text-sm leading-relaxed flex-1">{course.description}</p>
                         <p className="text-[0.62rem] tracking-[0.22em] uppercase text-[#a0948a] flex items-center gap-1.5 group-hover:text-brand transition-colors duration-200">
-                          EXPLORE <span className="text-sm">→</span>
+                          EXPLORE <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform duration-200" />
                         </p>
                       </div>
                     </NavLink>
@@ -252,14 +252,14 @@ export default function Navbar() {
                       ? 'opacity 360ms ease 450ms, transform 360ms ease 450ms'
                       : 'opacity 150ms ease 0ms, transform 150ms ease 0ms',
                   }}
-                  className="text-[0.65rem] tracking-[0.3em] uppercase text-[#a0948a] mb-4 flex-none"
+                  className="text-[0.65rem] tracking-[0.3em] uppercase text-[#3d3028] mb-4 flex-none font-medium"
                 >
                   Single Modules
                 </p>
 
                 <div className="flex flex-col flex-1 min-h-0">
                   {singleModules.map((mod, i) => {
-                    const delay = isAcademyOpen ? 460 + i * 40 : 0
+                    const delay = isAcademyOpen ? 460 + i * 75 : 0
                     return (
                       <a
                         key={mod.num}
@@ -271,16 +271,19 @@ export default function Navbar() {
                           opacity: isAcademyOpen ? 1 : 0,
                           transform: isAcademyOpen ? 'translateY(0)' : 'translateY(8px)',
                           transition: isAcademyOpen
-                            ? `opacity 340ms ease ${delay}ms, transform 340ms ease ${delay}ms`
+                            ? `opacity 480ms ease ${delay}ms, transform 480ms ease ${delay}ms`
                             : 'opacity 150ms ease 0ms, transform 150ms ease 0ms',
                         }}
-                        className="group flex items-center gap-5 flex-1 border-b border-brand-border last:border-b-0 hover:bg-white/50 px-2 -mx-2 transition-colors duration-150"
+                        className="group flex items-center gap-5 flex-1 border-b border-brand-border last:border-b-0 transition-all duration-200"
                       >
-                        <span className="text-sm text-[#a0948a] min-w-[28px] shrink-0 font-light">{mod.num}</span>
-                        <span className="text-base text-[#3d3028] flex-1 leading-snug group-hover:text-brand transition-colors duration-150">
+                        <span className="text-sm text-[#c4b8b0] min-w-[28px] shrink-0 font-light group-hover:text-brand transition-colors duration-200">{mod.num}</span>
+                        <span className="text-base text-[#3d3028] flex-1 leading-snug group-hover:text-brand group-hover:translate-x-1.5 transition-all duration-200 ease-out">
                           {mod.name}
                         </span>
-                        <span className="text-[#c4b8b0] text-base group-hover:text-brand transition-colors duration-150 shrink-0">→</span>
+                        <ArrowRight
+                          size={14}
+                          className="text-transparent shrink-0 -translate-x-2 opacity-0 group-hover:text-brand group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-200 ease-out"
+                        />
                       </a>
                     )
                   })}
@@ -294,7 +297,7 @@ export default function Navbar() {
                       ? 'opacity 350ms ease 720ms, transform 350ms ease 720ms'
                       : 'opacity 150ms ease 0ms, transform 150ms ease 0ms',
                   }}
-                  className="text-[0.62rem] text-[#a0948a] mt-4 flex-none leading-relaxed"
+                  className="text-[0.82rem] text-[#a0948a] mt-4 flex-none leading-relaxed"
                 >
                   Purchase any module individually of your choice.
                 </p>
