@@ -45,3 +45,6 @@ dist-ssr
 *.svg
 *.webp
 *.ico
+
+# Environment Variables
+.env

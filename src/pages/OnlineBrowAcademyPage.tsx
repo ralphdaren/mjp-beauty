@@ -1,6 +1,8 @@
 import { useEffect, useLayoutEffect, useState, useCallback, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { ChevronDown, HelpCircle } from 'lucide-react'
+import { getProductByHandle, createCheckoutUrl, formatPrice } from '@/lib/shopify'
+import type { ShopifyProduct } from '@/lib/shopify'
 import olHeadImg from '@/assets/online/ol-head.jpg'
 import optImg01 from '@/assets/online/opt-img-01.jpg'
 import optImg02 from '@/assets/online/opt-img-02.jpg'
@@ -327,6 +329,8 @@ export default function OnlineBrowAcademyPage() {
   const [activePart, setActivePart] = useState(0)
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
   const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0 })
+  const [shopifyProducts, setShopifyProducts] = useState<(ShopifyProduct | null)[]>([null, null])
+  const [enrolling, setEnrolling] = useState<number | null>(null)
 
   useLayoutEffect(() => {
     const el = tabRefs.current[activePart]
@@ -335,6 +339,28 @@ export default function OnlineBrowAcademyPage() {
 
   const handleOptionSwitch = useCallback(() => {
     setActiveOption((prev) => 1 - prev)
+  }, [])
+
+  const handleEnroll = useCallback(async (cardIndex: number) => {
+    const product = shopifyProducts[cardIndex]
+    if (!product?.variantId) return
+    setEnrolling(cardIndex)
+    try {
+      const url = await createCheckoutUrl(product.variantId)
+      if (url) window.location.href = url
+    } finally {
+      setEnrolling(null)
+    }
+  }, [shopifyProducts])
+
+  useEffect(() => {
+    const handles = [
+      import.meta.env.VITE_SHOPIFY_HANDLE_INDEPENDENT,
+      import.meta.env.VITE_SHOPIFY_HANDLE_VIP,
+    ]
+    Promise.all(handles.map((h: string) => h ? getProductByHandle(h) : Promise.resolve(null)))
+      .then(setShopifyProducts)
+      .catch(() => {})
   }, [])
 
   const advance = useCallback(() => {
@@ -503,7 +529,9 @@ export default function OnlineBrowAcademyPage() {
                   <h3 className="about-heading text-2xl font-semibold text-[#3d3028] leading-tight mb-4">{card.title}</h3>
                   <div className="mb-1 flex items-baseline gap-1.5">
                     <span className="text-sm text-[#a0948a] font-medium">Reg.</span>
-                    <span className="text-[3rem] font-semibold text-[#3d3028] leading-none">{card.price}</span>
+                    <span className="text-[3rem] font-semibold text-[#3d3028] leading-none">
+                      {shopifyProducts[i] ? formatPrice(shopifyProducts[i]!.price) : card.price}
+                    </span>
                     <span className="text-xl text-[#5a5047] ml-1">CAD</span>
                   </div>
                   <p className="text-[#5a5047] text-sm leading-relaxed mb-6">{card.subtitle}</p>
@@ -517,6 +545,13 @@ export default function OnlineBrowAcademyPage() {
                       </li>
                     ))}
                   </ul>
+                  <button
+                    onClick={() => handleEnroll(i)}
+                    disabled={enrolling === i || !shopifyProducts[i]}
+                    className="mt-6 w-full py-3.5 rounded-xl bg-[#3d3028] text-white text-[0.72rem] uppercase tracking-[0.2em] font-medium hover:bg-[#2a1a0e] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {enrolling === i ? 'Processing…' : 'Enroll Now'}
+                  </button>
                 </div>
               </div>
             ))}
@@ -551,6 +586,7 @@ export default function OnlineBrowAcademyPage() {
                     </li>
                   ))}
                 </ul>
+                <div className="mt-6 w-full py-3.5" aria-hidden="true" />
               </div>
             </div>
 
@@ -583,7 +619,9 @@ export default function OnlineBrowAcademyPage() {
                         </h3>
                         <div className="mb-1 flex items-baseline gap-1.5">
                           <span className="text-sm text-[#a0948a] font-medium">Reg.</span>
-                          <span className="text-[3rem] font-semibold text-[#3d3028] leading-none">{card.price}</span>
+                          <span className="text-[3rem] font-semibold text-[#3d3028] leading-none">
+                            {shopifyProducts[i] ? formatPrice(shopifyProducts[i]!.price) : card.price}
+                          </span>
                           <span className="text-xl text-[#5a5047] ml-1">CAD</span>
                         </div>
                         <p className="text-[#5a5047] text-sm leading-relaxed mb-6">{card.subtitle}</p>
@@ -597,6 +635,13 @@ export default function OnlineBrowAcademyPage() {
                             </li>
                           ))}
                         </ul>
+                        <button
+                          onClick={() => handleEnroll(i)}
+                          disabled={enrolling === i || !shopifyProducts[i]}
+                          className="mt-6 w-full py-3.5 rounded-xl bg-[#3d3028] text-white text-[0.72rem] uppercase tracking-[0.2em] font-medium hover:bg-[#2a1a0e] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {enrolling === i ? 'Processing…' : 'Enroll Now'}
+                        </button>
                       </div>
                     </div>
 
