@@ -9,6 +9,8 @@ export const shopifyClient = createStorefrontApiClient({
 export type ShopifyProduct = {
   id: string
   title: string
+  handle: string
+  description: string
   variantId: string
   price: string
   currencyCode: string
@@ -19,6 +21,8 @@ const PRODUCT_QUERY = `
     productByHandle(handle: $handle) {
       id
       title
+      handle
+      description
       variants(first: 1) {
         edges {
           node {
@@ -26,6 +30,34 @@ const PRODUCT_QUERY = `
             price {
               amount
               currencyCode
+            }
+          }
+        }
+      }
+    }
+  }
+`
+
+const COLLECTION_PRODUCTS_QUERY = `
+  query GetCollectionProducts($handle: String!, $first: Int!) {
+    collection(handle: $handle) {
+      products(first: $first) {
+        edges {
+          node {
+            id
+            title
+            handle
+            description
+            variants(first: 1) {
+              edges {
+                node {
+                  id
+                  price {
+                    amount
+                    currencyCode
+                  }
+                }
+              }
             }
           }
         }
@@ -63,12 +95,38 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
     return {
       id: product.id,
       title: product.title,
+      handle: product.handle ?? '',
+      description: product.description ?? '',
       variantId: variant?.id ?? '',
       price: variant?.price?.amount ?? '0',
       currencyCode: variant?.price?.currencyCode ?? 'CAD',
     }
   } catch {
     return null
+  }
+}
+
+export async function getCollectionProducts(collectionHandle: string, first = 50): Promise<ShopifyProduct[]> {
+  try {
+    const { data, errors } = await shopifyClient.request(COLLECTION_PRODUCTS_QUERY, {
+      variables: { handle: collectionHandle, first },
+    })
+    if (errors || !data?.collection) return []
+
+    return data.collection.products.edges.map(({ node }: { node: any }) => {
+      const variant = node.variants.edges[0]?.node
+      return {
+        id: node.id,
+        title: node.title,
+        handle: node.handle ?? '',
+        description: node.description ?? '',
+        variantId: variant?.id ?? '',
+        price: variant?.price?.amount ?? '0',
+        currencyCode: variant?.price?.currencyCode ?? 'CAD',
+      }
+    })
+  } catch {
+    return []
   }
 }
 

@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useState, useCallback, useRef } from 'react'
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { ChevronDown, HelpCircle } from 'lucide-react'
 import { getProductByHandle, createCheckoutUrl, formatPrice } from '@/lib/shopify'
 import type { ShopifyProduct } from '@/lib/shopify'
@@ -164,15 +165,14 @@ const onlineOptionCards = [
     title: 'Independent Artist',
     price: '$649',
     subtitle: 'For motivated Artists who prefer self-guided learning',
-    idealPrefix: 'Ideal for the Artist:',
+    idealPrefix: 'Ideal for the artist who:',
     shadowClass: 'shadow-[0_8px_32px_rgba(130,112,100,0.10)]',
     bullets: [
-      'Who is confident in their ability to learn and apply techniques without needing constant guidance',
-      'Who is self-motivated, driven, and prefers learning on their own time and terms',
-      'Looking for a budget-friendly training option without sacrificing quality, depth, or transformation',
-      'Enjoys working through structured modules at their own rhythm, with the freedom to revisit content as needed',
-      'Who is a seasoned Pro looking to elevate and refine the details of their craft',
-      'Who feels empowered by working independently and enjoys the challenge of figuring things out through structured guidance',
+      'Is confident learning and applying techniques independently',
+      'Is self-motivated and driven, learns on their own terms',
+      'Wants budget-friendly training without sacrificing quality or depth',
+      'Enjoys structured modules at their own pace, with freedom to revisit content',
+      'Is seasoned pro looking to refine the details of their craft',
     ],
   },
   {
@@ -181,17 +181,26 @@ const onlineOptionCards = [
     label: 'Option 02',
     title: 'VIP Mentorship',
     price: '$849',
-    subtitle: 'For artists who are motivated, independent learners but still want the security and guidance of expert mentorship.',
-    idealPrefix: 'Ideal for the Artist who:',
+    subtitle: 'For artists who are independent learners but still want the guidance of expert mentorship',
+    idealPrefix: 'Ideal for the artist who:',
     shadowClass: 'shadow-[0_12px_40px_rgba(130,112,100,0.15)]',
     bullets: [
-      'Thrives with self-paced learning but still wants expert guidance',
-      'Prefers to learn independently while having support when needed',
-      'Values personalized and detailed post-training feedback (Student is entitled to up to 3 model submissions)',
-      'Wants unlimited chat support for 6 months for questions, corrections, and technique reviews',
-      'Is ready to elevate their skills with both learning freedom and mentorship',
+      'Thrives with self-paced learning but values expert guidance',
+      'Prefers independent learning with support when needed',
+      'Values personalized post-training feedback (up to 3 model submissions)',
+      'Wants 6 months of unlimited chat support for questions, corrections, and technique reviews',
+      'Is ready to elevate their skills with both freedom and mentorship',
     ],
   },
+]
+
+const singleModuleData = [
+  { num: '01', name: 'Watch & Learn: Advanced Brow Demo Vault' },
+  { num: '02', name: 'Brow Mapping Fundamentals' },
+  { num: '03', name: 'Brow Tinting Fundamentals' },
+  { num: '04', name: 'Strip Waxing Online Brow Course' },
+  { num: '05', name: 'Mastering Brow Lamination: 10 Mistakes to Leave Behind' },
+  { num: '06', name: 'Glam Up Your Grid: A Brow Artist\'s Social Media Guide' },
 ]
 
 // ─── Online FAQ data ──────────────────────────────────────────────────────────
@@ -330,6 +339,7 @@ export default function OnlineBrowAcademyPage() {
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
   const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0 })
   const [shopifyProducts, setShopifyProducts] = useState<(ShopifyProduct | null)[]>([null, null])
+  const [moduleProducts, setModuleProducts] = useState<(ShopifyProduct | null)[]>(Array(6).fill(null))
   const [enrolling, setEnrolling] = useState<number | null>(null)
 
   useLayoutEffect(() => {
@@ -360,6 +370,20 @@ export default function OnlineBrowAcademyPage() {
     ]
     Promise.all(handles.map((h: string) => h ? getProductByHandle(h) : Promise.resolve(null)))
       .then(setShopifyProducts)
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    const handles = [
+      import.meta.env.VITE_SHOPIFY_HANDLE_MOD_01,
+      import.meta.env.VITE_SHOPIFY_HANDLE_MOD_02,
+      import.meta.env.VITE_SHOPIFY_HANDLE_MOD_03,
+      import.meta.env.VITE_SHOPIFY_HANDLE_MOD_04,
+      import.meta.env.VITE_SHOPIFY_HANDLE_MOD_05,
+      import.meta.env.VITE_SHOPIFY_HANDLE_MOD_06,
+    ]
+    Promise.all(handles.map((h: string) => h ? getProductByHandle(h) : Promise.resolve(null)))
+      .then(setModuleProducts)
       .catch(() => {})
   }, [])
 
@@ -512,10 +536,10 @@ export default function OnlineBrowAcademyPage() {
         </div>
 
         {/* Option cards */}
-        <div className="anim-fade-up mx-auto max-w-[1000px]">
+        <div className="anim-fade-up mx-auto max-w-[1300px]">
 
-          {/* ── Mobile stacked layout ── */}
-          <div className="sm:hidden flex flex-col gap-6">
+          {/* ── Stacked layout (below lg) ── */}
+          <div className="lg:hidden flex flex-col gap-6">
             {onlineOptionCards.map((card, i) => (
               <div
                 key={i}
@@ -555,121 +579,202 @@ export default function OnlineBrowAcademyPage() {
                 </div>
               </div>
             ))}
-          </div>
 
-          {/* ── Desktop animated layout ── */}
-          <div className="hidden sm:block relative">
-
-            {/* Ghost sizer — uses the longer card (index 0) to set container height */}
-            <div
-              className="invisible pointer-events-none flex flex-row"
-              style={{ width: 'calc(80% - 10px)' }}
-              aria-hidden="true"
-            >
-              <div className="w-[38%] flex-shrink-0" />
-              <div className="flex-1 p-10 flex flex-col">
-                <p className="text-[0.7rem] mb-4">{onlineOptionCards[0].label}</p>
-                <h3 className="about-heading text-2xl sm:text-3xl mb-4">{onlineOptionCards[0].title}</h3>
+            {/* Option 03: Single Modules (stacked) */}
+            <div className="rounded-2xl border border-[#e3e2de] bg-white shadow-[0_8px_32px_rgba(130,112,100,0.10)] flex flex-col">
+              <div className="p-8 flex flex-col">
+                <p className="text-[0.7rem] uppercase tracking-[0.28em] text-[#a0948a] mb-4">Option 03</p>
+                <h3 className="about-heading text-2xl font-semibold text-[#3d3028] leading-tight mb-4">Single Modules</h3>
                 <div className="mb-1 flex items-baseline gap-1.5">
-                  <span className="text-sm">Reg.</span>
-                  <span className="text-[3rem] leading-none">{onlineOptionCards[0].price}</span>
-                  <span className="text-xl ml-1">CAD</span>
+                  <span className="text-sm text-[#a0948a] font-medium">From</span>
+                  <span className="text-[3rem] font-semibold text-[#3d3028] leading-none">$67</span>
+                  <span className="text-xl text-[#5a5047] ml-1">CAD</span>
                 </div>
-                <p className="text-sm leading-relaxed mb-6">{onlineOptionCards[0].subtitle}</p>
-                <div className="h-px mb-4" />
-                <p className="text-[0.68rem] mb-3">{onlineOptionCards[0].idealPrefix}</p>
-                <ul className="flex flex-col gap-2">
-                  {onlineOptionCards[0].bullets.map((b, i) => (
-                    <li key={i} className="flex items-start gap-2.5">
-                      <span className="mt-[7px] w-1 h-1 rounded-full shrink-0" />
-                      <span className="text-sm leading-relaxed">{b}</span>
-                    </li>
+                <p className="text-[#5a5047] text-sm leading-relaxed mb-6">Purchase any module individually of your choice.</p>
+                <div className="h-px bg-[#e3e2de] mb-4" />
+                <div className="flex flex-col">
+                  {singleModuleData.map((mod, i) => (
+                    <div key={i} className="flex items-center justify-between py-3 border-b border-[#e3e2de] last:border-0">
+                      <div className="flex items-center gap-3">
+                        <span className="text-[0.67rem] font-medium text-[#827064] w-[28px] shrink-0">{mod.num}</span>
+                        <span className="text-[#3d3028] text-sm">{mod.name}</span>
+                      </div>
+                      {moduleProducts[i] && (
+                        <span className="text-[#5a5047] text-sm font-medium ml-2 shrink-0">
+                          {formatPrice(moduleProducts[i]!.price)}
+                        </span>
+                      )}
+                    </div>
                   ))}
-                </ul>
-                <div className="mt-6 w-full py-3.5" aria-hidden="true" />
+                </div>
+                <Link
+                  to="/online-modules"
+                  className="mt-6 w-full py-3.5 rounded-xl border border-[#3d3028] text-[#3d3028] text-[0.72rem] uppercase tracking-[0.2em] font-medium hover:bg-[#3d3028] hover:text-white transition-colors duration-200 text-center block"
+                >
+                  Browse Modules
+                </Link>
               </div>
             </div>
+          </div>
 
-            {/* Animated cards */}
-            <div className="absolute inset-0 flex gap-5">
-              {onlineOptionCards.map((card, i) => {
-                const isActive = activeOption === i
-                return (
-                  <div
-                    key={i}
-                    className={`relative overflow-hidden rounded-2xl border border-[#e3e2de] bg-white ${card.shadowClass} transition-[flex-grow] duration-700 ease-in-out`}
-                    style={{ flexGrow: isActive ? 4 : 1, flexShrink: 0, flexBasis: '0%' }}
-                  >
-                    {/* Full card content — visible when active */}
-                    <div
-                      className="absolute inset-0 flex flex-row"
-                      style={{
-                        opacity: isActive ? 1 : 0,
-                        transition: isActive ? 'opacity 0.45s ease' : 'opacity 0.2s ease',
-                      }}
-                      aria-hidden={!isActive}
-                    >
-                      <div className="relative w-[38%] flex-shrink-0 overflow-hidden">
-                        <img src={card.img} alt={card.alt} className="absolute inset-0 w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1 p-10 flex flex-col">
-                        <p className="text-[0.7rem] uppercase tracking-[0.28em] text-[#a0948a] mb-4">{card.label}</p>
-                        <h3 className="about-heading text-2xl sm:text-3xl font-semibold text-[#3d3028] leading-tight mb-4">
-                          {card.title}
-                        </h3>
-                        <div className="mb-1 flex items-baseline gap-1.5">
-                          <span className="text-sm text-[#a0948a] font-medium">Reg.</span>
-                          <span className="text-[3rem] font-semibold text-[#3d3028] leading-none">
-                            {shopifyProducts[i] ? formatPrice(shopifyProducts[i]!.price) : card.price}
-                          </span>
-                          <span className="text-xl text-[#5a5047] ml-1">CAD</span>
-                        </div>
-                        <p className="text-[#5a5047] text-sm leading-relaxed mb-6">{card.subtitle}</p>
-                        <div className="h-px bg-[#e3e2de] mb-4" />
-                        <p className="text-[0.68rem] uppercase tracking-[0.2em] text-[#a0948a] mb-3">{card.idealPrefix}</p>
-                        <ul className="flex flex-col gap-2">
-                          {card.bullets.map((b, j) => (
-                            <li key={j} className="flex items-start gap-2.5">
-                              <span className="mt-[7px] w-1 h-1 rounded-full bg-[#a0948a] shrink-0" />
-                              <span className="text-[#5a5047] text-sm leading-relaxed">{b}</span>
-                            </li>
-                          ))}
-                        </ul>
-                        <button
-                          onClick={() => handleEnroll(i)}
-                          disabled={enrolling === i || !shopifyProducts[i]}
-                          className="mt-6 w-full py-3.5 rounded-xl bg-[#3d3028] text-white text-[0.72rem] uppercase tracking-[0.2em] font-medium hover:bg-[#2a1a0e] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {enrolling === i ? 'Processing…' : 'Enroll Now'}
-                        </button>
-                      </div>
-                    </div>
+          {/* ── Desktop layout (lg+) ── */}
+          <div className="hidden lg:flex gap-6">
 
-                    {/* Peek overlay — visible when inactive, clickable to switch */}
-                    <button
-                      className="absolute inset-0 group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#a0948a]"
-                      style={{
-                        opacity: isActive ? 0 : 1,
-                        pointerEvents: isActive ? 'none' : 'auto',
-                        transition: isActive ? 'opacity 0.2s ease' : 'opacity 0.5s ease 0.3s',
-                      }}
-                      onClick={handleOptionSwitch}
-                      aria-label={`Switch to ${card.title}`}
-                      tabIndex={isActive ? -1 : 0}
-                    >
-                      <img src={card.img} alt="" className="absolute inset-0 w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-[#2a1a0e]/55 group-hover:bg-[#2a1a0e]/40 transition-colors duration-300" />
-                      <div className="absolute inset-x-0 bottom-0 p-5">
-                        <p className="text-[0.6rem] uppercase tracking-[0.22em] text-white/50 mb-1.5">{card.label}</p>
-                        <p className="text-white font-semibold text-sm leading-tight mb-3">{card.title}</p>
-                        <p className="text-[0.62rem] uppercase tracking-[0.18em] text-white/50 group-hover:text-white/80 transition-colors duration-300">
-                          View →
-                        </p>
-                      </div>
-                    </button>
+            {/* Animated pair (Options 01 & 02) */}
+            <div className="flex-[0_0_65%] relative">
+
+              {/* Ghost sizer — uses the longer card (index 0) to set container height */}
+              <div
+                className="invisible pointer-events-none flex flex-row"
+                style={{ width: 'calc(80% - 10px)' }}
+                aria-hidden="true"
+              >
+                <div className="w-[38%] flex-shrink-0" />
+                <div className="flex-1 p-10 flex flex-col">
+                  <p className="text-[0.7rem] mb-4">{onlineOptionCards[0].label}</p>
+                  <h3 className="about-heading text-2xl sm:text-3xl mb-4">{onlineOptionCards[0].title}</h3>
+                  <div className="mb-1 flex items-baseline gap-1.5">
+                    <span className="text-sm">Reg.</span>
+                    <span className="text-[3rem] leading-none">{onlineOptionCards[0].price}</span>
+                    <span className="text-xl ml-1">CAD</span>
                   </div>
-                )
-              })}
+                  <p className="text-sm leading-relaxed mb-6">{onlineOptionCards[0].subtitle}</p>
+                  <div className="h-px mb-4" />
+                  <p className="text-[0.68rem] mb-3">{onlineOptionCards[0].idealPrefix}</p>
+                  <ul className="flex flex-col gap-2">
+                    {onlineOptionCards[0].bullets.map((b, i) => (
+                      <li key={i} className="flex items-start gap-2.5">
+                        <span className="mt-[7px] w-1 h-1 rounded-full shrink-0" />
+                        <span className="text-sm leading-relaxed">{b}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-auto w-full py-3.5" aria-hidden="true" />
+                </div>
+              </div>
+
+              {/* Animated cards */}
+              <div className="absolute inset-0 flex gap-5">
+                {onlineOptionCards.map((card, i) => {
+                  const isActive = activeOption === i
+                  return (
+                    <div
+                      key={i}
+                      className={`relative overflow-hidden rounded-2xl border border-[#e3e2de] bg-white ${card.shadowClass} transition-[flex-grow] duration-700 ease-in-out`}
+                      style={{ flexGrow: isActive ? 4 : 1, flexShrink: 0, flexBasis: '0%' }}
+                    >
+                      {/* Full card content — visible when active */}
+                      <div
+                        className="absolute inset-0 flex flex-row"
+                        style={{
+                          opacity: isActive ? 1 : 0,
+                          transition: isActive ? 'opacity 0.45s ease' : 'opacity 0.2s ease',
+                        }}
+                        aria-hidden={!isActive}
+                      >
+                        <div className="relative w-[38%] flex-shrink-0 overflow-hidden">
+                          <img src={card.img} alt={card.alt} className="absolute inset-0 w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1 p-10 flex flex-col">
+                          <p className="text-[0.7rem] uppercase tracking-[0.28em] text-[#a0948a] mb-4">{card.label}</p>
+                          <h3 className="about-heading text-2xl sm:text-3xl font-semibold text-[#3d3028] leading-tight mb-4">
+                            {card.title}
+                          </h3>
+                          <div className="mb-1 flex items-baseline gap-1.5">
+                            <span className="text-sm text-[#a0948a] font-medium">Reg.</span>
+                            <span className="text-[3rem] font-semibold text-[#3d3028] leading-none">
+                              {shopifyProducts[i] ? formatPrice(shopifyProducts[i]!.price) : card.price}
+                            </span>
+                            <span className="text-xl text-[#5a5047] ml-1">CAD</span>
+                          </div>
+                          <p className="text-[#5a5047] text-sm leading-relaxed mb-6">{card.subtitle}</p>
+                          <div className="h-px bg-[#e3e2de] mb-4" />
+                          <p className="text-[0.68rem] uppercase tracking-[0.2em] text-[#a0948a] mb-3">{card.idealPrefix}</p>
+                          <ul className="flex flex-col gap-2">
+                            {card.bullets.map((b, j) => (
+                              <li key={j} className="flex items-start gap-2.5">
+                                <span className="mt-[7px] w-1 h-1 rounded-full bg-[#a0948a] shrink-0" />
+                                <span className="text-[#5a5047] text-sm leading-relaxed">{b}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          <button
+                            onClick={() => handleEnroll(i)}
+                            disabled={enrolling === i || !shopifyProducts[i]}
+                            className="mt-auto w-full py-3.5 rounded-xl bg-[#3d3028] text-white text-[0.72rem] uppercase tracking-[0.2em] font-medium hover:bg-[#2a1a0e] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {enrolling === i ? 'Processing…' : 'Enroll Now'}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Peek overlay — visible when inactive, clickable to switch */}
+                      <button
+                        className="absolute inset-0 group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#a0948a]"
+                        style={{
+                          opacity: isActive ? 0 : 1,
+                          pointerEvents: isActive ? 'none' : 'auto',
+                          transition: isActive ? 'opacity 0.2s ease' : 'opacity 0.5s ease 0.3s',
+                        }}
+                        onClick={handleOptionSwitch}
+                        aria-label={`Switch to ${card.title}`}
+                        tabIndex={isActive ? -1 : 0}
+                      >
+                        <img src={card.img} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-[#2a1a0e]/55 group-hover:bg-[#2a1a0e]/40 transition-colors duration-300" />
+                        <div className="absolute inset-x-0 bottom-0 p-5">
+                          <p className="text-[0.6rem] uppercase tracking-[0.22em] text-white/50 mb-1.5">{card.label}</p>
+                          <p className="text-white font-semibold text-sm leading-tight mb-3">{card.title}</p>
+                          <p className="text-[0.62rem] uppercase tracking-[0.18em] text-white/50 group-hover:text-white/80 transition-colors duration-300">
+                            View →
+                          </p>
+                        </div>
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+
+            </div>
+
+            {/* Option 03: Single Modules */}
+            <div className="flex-1 min-w-0">
+              <div className="rounded-2xl border border-[#e3e2de] bg-white shadow-[0_8px_32px_rgba(130,112,100,0.10)] overflow-hidden h-full flex flex-col">
+                <div className="p-10 flex flex-col flex-1">
+                  <p className="text-[0.7rem] uppercase tracking-[0.28em] text-[#a0948a] mb-4">Option 03</p>
+                  <h3 className="about-heading text-2xl sm:text-3xl font-semibold text-[#3d3028] leading-tight mb-4">
+                    Single Modules
+                  </h3>
+                  <div className="mb-1 flex items-baseline gap-1.5">
+                    <span className="text-sm text-[#a0948a] font-medium">From</span>
+                    <span className="text-[3rem] font-semibold text-[#3d3028] leading-none">$67</span>
+                    <span className="text-xl text-[#5a5047] ml-1">CAD</span>
+                  </div>
+                  <p className="text-[#5a5047] text-sm leading-relaxed mb-6">Purchase any module individually of your choice.</p>
+                  <div className="h-px bg-[#e3e2de] mb-4" />
+                  <div className="flex flex-col flex-1">
+                    {singleModuleData.map((mod, i) => (
+                      <div key={i} className="flex items-center justify-between py-3 border-b border-[#e3e2de] last:border-0">
+                        <div className="flex items-center gap-3">
+                          <span className="text-[0.67rem] font-medium text-[#827064] w-[28px] shrink-0">{mod.num}</span>
+                          <span className="text-[#3d3028] text-sm">{mod.name}</span>
+                        </div>
+                        {moduleProducts[i] && (
+                          <span className="text-[#5a5047] text-sm font-medium ml-2 shrink-0">
+                            {formatPrice(moduleProducts[i]!.price)}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <Link
+                    to="/online-modules"
+                    className="mt-6 w-full py-3.5 rounded-xl border border-[#3d3028] text-[#3d3028] text-[0.72rem] uppercase tracking-[0.2em] font-medium hover:bg-[#3d3028] hover:text-white transition-colors duration-200 text-center block"
+                  >
+                    Browse Modules
+                  </Link>
+                </div>
+              </div>
             </div>
 
           </div>
