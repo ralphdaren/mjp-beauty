@@ -76,12 +76,20 @@ export default function Footer() {
               <Link to="/online-brow-courses" className="text-sm text-white/75 hover:text-white underline-offset-4 hover:underline transition-colors duration-200">
                 Online Brow Academy
               </Link>
+              <Link to="/online-modules" className="text-sm text-white/75 hover:text-white underline-offset-4 hover:underline transition-colors duration-200">
+                Single Courses
+              </Link>
               <Link to="/freebies" className="text-sm text-white/75 hover:text-white underline-offset-4 hover:underline transition-colors duration-200">
                 Freebies
               </Link>
-              <Link to="/student-login" className="text-sm text-white/75 hover:text-white underline-offset-4 hover:underline transition-colors duration-200">
+              <a
+                href="https://mjpbeautyacademy.thinkific.com/users/sign_in"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-white/75 hover:text-white underline-offset-4 hover:underline transition-colors duration-200"
+              >
                 Student Login
-              </Link>
+              </a>
             </nav>
           </div>
 

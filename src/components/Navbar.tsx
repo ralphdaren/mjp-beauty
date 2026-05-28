@@ -165,12 +165,14 @@ export default function Navbar() {
           >
             Book an Appointment
           </NavLink>
-          <NavLink
-            to="/student-login"
+          <a
+            href="https://mjpbeautyacademy.thinkific.com/users/sign_in"
+            target="_blank"
+            rel="noopener noreferrer"
             className="px-6 py-2.5 text-base tracking-wide rounded-full text-brand border border-brand hover:bg-brand hover:text-white transition-colors duration-200 whitespace-nowrap"
           >
             Student Login
-          </NavLink>
+          </a>
         </div>
 
         {/* Mobile hamburger */}
@@ -352,13 +354,15 @@ export default function Navbar() {
             >
               Book an Appointment
             </NavLink>
-            <NavLink
-              to="/student-login"
+            <a
+              href="https://mjpbeautyacademy.thinkific.com/users/sign_in"
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={() => setIsOpen(false)}
               className="px-5 py-2.5 text-sm tracking-wide rounded-full text-brand border border-brand text-center hover:bg-brand hover:text-white transition-colors duration-200"
             >
               Student Login
-            </NavLink>
+            </a>
           </div>
         </div>
       </div>
