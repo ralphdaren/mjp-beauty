@@ -55,6 +55,7 @@
 
 .shopify-description ul,
 .shopify-description ol {
+  margin-top: 0.5rem;
   margin-bottom: 0.875rem;
   padding-left: 1.25rem;
 }
@@ -68,6 +69,10 @@
 }
 
 .shopify-description li {
+  margin-bottom: 0.3rem;
+}
+
+.shopify-description li p {
   margin-bottom: 0.3rem;
 }
 
