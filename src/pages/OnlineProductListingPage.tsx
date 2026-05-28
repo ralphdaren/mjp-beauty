@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { getCollectionProducts, createCheckoutUrl, formatPrice } from '@/lib/shopify'
 import type { ShopifyProduct } from '@/lib/shopify'
 
@@ -58,19 +59,23 @@ export default function OnlineModulesPage() {
                   key={product.id}
                   className="rounded-xl border border-[#e3e2de] bg-white shadow-[0_4px_16px_rgba(130,112,100,0.08)] overflow-hidden flex flex-col"
                 >
-                  {product.featuredImage ? (
-                    <div className="w-full aspect-square bg-[#f6f2ec]">
-                      <img
-                        src={product.featuredImage.url}
-                        alt={product.featuredImage.altText || product.title}
-                        className="w-full h-full object-contain"
-                      />
+                  <Link to={`/online-modules/${product.handle}`} className="block group">
+                    {product.featuredImage ? (
+                      <div className="w-full aspect-square bg-[#f6f2ec]">
+                        <img
+                          src={product.featuredImage.url}
+                          alt={product.featuredImage.altText || product.title}
+                          className="w-full h-full object-contain transition-opacity duration-200 group-hover:opacity-90"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full aspect-square bg-[#f6f2ec]" />
+                    )}
+                    <div className="px-4 pt-4 pb-2">
+                      <h3 className="text-sm font-semibold text-[#3d3028] leading-snug group-hover:underline">{product.title}</h3>
                     </div>
-                  ) : (
-                    <div className="w-full aspect-square bg-[#f6f2ec]" />
-                  )}
-                  <div className="p-4 flex flex-col flex-1">
-                    <h3 className="text-sm font-semibold text-[#3d3028] leading-snug mb-3">{product.title}</h3>
+                  </Link>
+                  <div className="px-4 pb-4 flex flex-col flex-1">
                     <div className="mt-auto">
                       <div className="h-px bg-[#e3e2de] mb-3" />
                       <div className="flex items-baseline gap-1 mb-3">

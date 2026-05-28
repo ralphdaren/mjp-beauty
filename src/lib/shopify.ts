@@ -11,10 +11,12 @@ export type ShopifyProduct = {
   title: string
   handle: string
   description: string
+  descriptionHtml: string
   variantId: string
   price: string
   currencyCode: string
   featuredImage: { url: string; altText: string } | null
+  images: { url: string; altText: string }[]
 }
 
 const PRODUCT_QUERY = `
@@ -24,9 +26,18 @@ const PRODUCT_QUERY = `
       title
       handle
       description
+      descriptionHtml
       featuredImage {
         url
         altText
+      }
+      images(first: 20) {
+        edges {
+          node {
+            url
+            altText
+          }
+        }
       }
       variants(first: 1) {
         edges {
@@ -106,10 +117,12 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
       title: product.title,
       handle: product.handle ?? '',
       description: product.description ?? '',
+      descriptionHtml: product.descriptionHtml ?? '',
       variantId: variant?.id ?? '',
       price: variant?.price?.amount ?? '0',
       currencyCode: variant?.price?.currencyCode ?? 'CAD',
       featuredImage: product.featuredImage ?? null,
+      images: (product.images?.edges ?? []).map(({ node }: { node: any }) => ({ url: node.url, altText: node.altText ?? '' })),
     }
   } catch {
     return null
@@ -130,10 +143,12 @@ export async function getCollectionProducts(collectionHandle: string, first = 50
         title: node.title,
         handle: node.handle ?? '',
         description: node.description ?? '',
+        descriptionHtml: '',
         variantId: variant?.id ?? '',
         price: variant?.price?.amount ?? '0',
         currencyCode: variant?.price?.currencyCode ?? 'CAD',
         featuredImage: node.featuredImage ?? null,
+        images: [],
       }
     })
   } catch {
