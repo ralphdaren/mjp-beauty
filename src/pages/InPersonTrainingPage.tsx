@@ -1,7 +1,9 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import type { ReactNode } from 'react'
-import { CircleAlert, ChevronDown, HelpCircle, BookOpen, ArrowRight } from 'lucide-react'
+import { CircleAlert, HelpCircle, BookOpen, ArrowRight } from 'lucide-react'
+import { useScrollAnimation } from '@/hooks/useScrollAnimation'
+import BackToTop from '@/components/BackToTop'
+import Accordion from '@/components/Accordion'
 import ipHeadImg from '@/assets/in-person/ip-head.jpg'
 import formatImg01 from '@/assets/in-person/format-img-01.jpg'
 import formatImg02 from '@/assets/in-person/format-img-02.jpg'
@@ -10,7 +12,6 @@ import optImg01 from '@/assets/in-person/opt-img-01.jpg'
 import optImg02 from '@/assets/in-person/opt-img-02.jpg'
 import perk01Img from '@/assets/in-person/perk-01.jpg'
 import perk02Img from '@/assets/in-person/perk-02.jpg'
-import '@/styles/HomePage.css'
 
 const idealForItems = [
   'Beginners who are passionate about launching a successful brow career and want a comprehensive, step-by-step education that covers all the essentials from the ground up.',
@@ -216,36 +217,6 @@ const TRAINING_FAQ = [
   },
 ]
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-function Accordion({ q, a }: { q: string; a: ReactNode }) {
-  const [open, setOpen] = useState(false)
-  return (
-    <div className="border-b border-[#e3e2de] last:border-0">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full text-left flex items-start justify-between gap-4 py-4"
-      >
-        <span className="text-sm font-medium text-[#3d3530] leading-snug">{q}</span>
-        <ChevronDown
-          size={16}
-          className={`mt-0.5 shrink-0 text-[#827064] transition-transform duration-200 ${
-            open ? 'rotate-180' : ''
-          }`}
-        />
-      </button>
-      <div
-        className={`grid transition-all duration-200 ${
-          open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-        }`}
-      >
-        <div className="overflow-hidden">
-          <div className="text-sm text-[#6b5f58] leading-relaxed pb-4">{a}</div>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 function HowToEnrollContent() {
   return (
@@ -334,13 +305,13 @@ function TrainingInfoTabs() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function InPersonTrainingPage() {
-  const [showBackToTop, setShowBackToTop] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const [animating, setAnimating] = useState(false)
   const [hoveredFormat, setHoveredFormat] = useState<number | null>(null)
   const [activeOption, setActiveOption] = useState(0)
   const [tooltipCard, setTooltipCard] = useState<number | null>(null)
   const [kitOpen, setKitOpen] = useState(false)
+  useScrollAnimation()
 
   const handleOptionSwitch = useCallback(() => {
     setActiveOption((prev) => 1 - prev)
@@ -358,30 +329,6 @@ export default function InPersonTrainingPage() {
     const id = setInterval(advance, 6000)
     return () => clearInterval(id)
   }, [advance])
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible')
-            observer.unobserve(entry.target)
-          }
-        })
-      },
-      { threshold: 0.12 }
-    )
-    document
-      .querySelectorAll('.anim-fade-up, .anim-fade-left, .anim-fade-right')
-      .forEach((el) => observer.observe(el))
-    return () => observer.disconnect()
-  }, [])
-
-  useEffect(() => {
-    const handleScroll = () => setShowBackToTop(window.scrollY > 300)
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   useEffect(() => {
     if (tooltipCard === null) return
@@ -1134,15 +1081,7 @@ export default function InPersonTrainingPage() {
       {/* ── Info Tabs ────────────────────────────────────────────── */}
       <TrainingInfoTabs />
 
-      {/* Back to top */}
-      <button
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        aria-label="Back to top"
-        className={['back-to-top', showBackToTop ? 'back-to-top--visible' : ''].join(' ')}
-      >
-        <span className="back-to-top-arrow">↑</span>
-        <span className="back-to-top-label">BACK TO TOP</span>
-      </button>
+      <BackToTop />
     </main>
   )
 }

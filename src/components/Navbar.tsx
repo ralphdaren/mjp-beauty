@@ -15,7 +15,7 @@ const featuredCourses = [
     img: optImg01,
     imgLabel: 'All-inclusive Course',
     title: 'Independent Artist',
-    description: 'Everything you need to launch your own brow studio — from technique to business.',
+    description: 'Everything you need to launch on your own — from technique to business.',
     to: '/online-brow-courses',
   },
   {

@@ -1,14 +1,16 @@
 import { useEffect, useLayoutEffect, useState, useCallback, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { ChevronDown, HelpCircle } from 'lucide-react'
+import { HelpCircle } from 'lucide-react'
+import { useScrollAnimation } from '@/hooks/useScrollAnimation'
+import BackToTop from '@/components/BackToTop'
+import Accordion from '@/components/Accordion'
 import { getProductByHandle, createCheckoutUrl, formatPrice } from '@/lib/shopify'
 import type { ShopifyProduct } from '@/lib/shopify'
 import olHeadImg from '@/assets/online/ol-head.jpg'
 import optImg01 from '@/assets/online/opt-img-01.jpg'
 import optImg02 from '@/assets/online/opt-img-02.jpg'
 import curriculumImg from '@/assets/online/curriculum-img.jpg'
-import '@/styles/HomePage.css'
 
 const youWillItems = [
   'Master the technique of knowing exactly when to remove the perm solution — no more relying on your timers. No more under- or over-processing of the brows. Just beautifully lifted, natural-looking lamination results every time.',
@@ -271,28 +273,6 @@ const ONLINE_FAQ: { q: string; a: ReactNode }[] = [
   },
 ]
 
-function Accordion({ q, a }: { q: string; a: ReactNode }) {
-  const [open, setOpen] = useState(false)
-  return (
-    <div className="border-b border-[#e3e2de] last:border-0">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full text-left flex items-start justify-between gap-4 py-4"
-      >
-        <span className="text-sm font-medium text-[#3d3530] leading-snug">{q}</span>
-        <ChevronDown
-          size={16}
-          className={`mt-0.5 shrink-0 text-[#827064] transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-        />
-      </button>
-      <div className={`grid transition-all duration-200 ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-        <div className="overflow-hidden">
-          <div className="text-sm text-[#6b5f58] leading-relaxed pb-4">{a}</div>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 function OnlineFaqSection() {
   return (
@@ -331,7 +311,6 @@ function OnlineFaqSection() {
 }
 
 export default function OnlineBrowAcademyPage() {
-  const [showBackToTop, setShowBackToTop] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const [animating, setAnimating] = useState(false)
   const [activeOption, setActiveOption] = useState(0)
@@ -409,29 +388,7 @@ export default function OnlineBrowAcademyPage() {
     return () => clearInterval(id)
   }, [advance])
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible')
-            observer.unobserve(entry.target)
-          }
-        })
-      },
-      { threshold: 0.12 }
-    )
-    document
-      .querySelectorAll('.anim-fade-up, .anim-fade-left, .anim-fade-right')
-      .forEach((el) => observer.observe(el))
-    return () => observer.disconnect()
-  }, [])
-
-  useEffect(() => {
-    const handleScroll = () => setShowBackToTop(window.scrollY > 300)
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  useScrollAnimation()
 
   return (
     <main>
@@ -932,15 +889,7 @@ export default function OnlineBrowAcademyPage() {
 
       <OnlineFaqSection />
 
-      {/* Back to top */}
-      <button
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        aria-label="Back to top"
-        className={['back-to-top', showBackToTop ? 'back-to-top--visible' : ''].join(' ')}
-      >
-        <span className="back-to-top-arrow">↑</span>
-        <span className="back-to-top-label">BACK TO TOP</span>
-      </button>
+      <BackToTop />
     </main>
   )
 }

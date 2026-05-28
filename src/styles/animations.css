@@ -1,0 +1,75 @@
+/* ─── Keyframes ─────────────────────────────────────────────────── */
+
+@keyframes hero-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tabFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes reviews-scroll-up {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-25%); }
+}
+
+/* ─── Hero Entrance Animations ──────────────────────────────────── */
+
+.hero-eyebrow {
+  opacity: 0;
+  animation: hero-fade-up 0.8s ease forwards;
+  animation-delay: 0.4s;
+}
+
+.hero-heading {
+  opacity: 0;
+  animation: hero-fade-up 1s ease forwards;
+  animation-delay: 0.65s;
+}
+
+.hero-tagline {
+  opacity: 0;
+  animation: hero-fade-up 0.8s ease forwards;
+  animation-delay: 0.9s;
+}
+
+/* ─── Tab Fade-In ────────────────────────────────────────────────── */
+
+.tab-fade-in {
+  animation: tabFadeIn 0.25s ease-out both;
+}
+
+/* ─── Scroll-triggered Animations ───────────────────────────────── */
+
+.anim-fade-up {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.75s ease, transform 0.75s ease;
+}
+
+.anim-fade-left {
+  opacity: 0;
+  transform: translateX(-32px);
+  transition: opacity 0.75s ease, transform 0.75s ease;
+}
+
+.anim-fade-right {
+  opacity: 0;
+  transform: translateX(32px);
+  transition: opacity 0.75s ease, transform 0.75s ease;
+}
+
+.anim-fade-up.is-visible,
+.anim-fade-left.is-visible,
+.anim-fade-right.is-visible {
+  opacity: 1;
+  transform: translate(0);
+}

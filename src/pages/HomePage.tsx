@@ -1,16 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import headVid from '@/assets/home/home-head-vid.mp4'
 import aboutImg from '@/assets/home/about-me.jpg'
 import inPersonCourseImg from '@/assets/home/in-person.jpg'
 import onlineCourseImg from '@/assets/home/online.jpg'
 import { Link, useLocation } from 'react-router-dom'
 import { CircleCheck } from 'lucide-react'
-import '@/styles/HomePage.css'
+import { useScrollAnimation } from '@/hooks/useScrollAnimation'
+import BackToTop from '@/components/BackToTop'
 import TestimonialsSection from '@/components/TestimonialsSection'
 
 export default function Home() {
   const location = useLocation()
-  const [showBackToTop, setShowBackToTop] = useState(false)
+  useScrollAnimation()
 
   useEffect(() => {
     const target = (location.state as { scrollTo?: string } | null)?.scrollTo
@@ -19,32 +20,6 @@ export default function Home() {
       if (el) el.scrollIntoView({ behavior: 'smooth' })
     }
   }, [location.state])
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible')
-            observer.unobserve(entry.target)
-          }
-        })
-      },
-      { threshold: 0.12 }
-    )
-
-    document
-      .querySelectorAll('.anim-fade-up, .anim-fade-left, .anim-fade-right')
-      .forEach((el) => observer.observe(el))
-
-    return () => observer.disconnect()
-  }, [])
-
-  useEffect(() => {
-    const handleScroll = () => setShowBackToTop(window.scrollY > 300)
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   return (
     <main>
@@ -262,14 +237,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-      <button
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        className={`back-to-top${showBackToTop ? ' back-to-top--visible' : ''}`}
-        aria-label="Back to top"
-      >
-        <span className="back-to-top-arrow">↑</span>
-        <span className="back-to-top-label">BACK TO TOP</span>
-      </button>
+      <BackToTop />
     </main>
   )
 }
