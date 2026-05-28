@@ -5,6 +5,7 @@ import InPersonTrainingPage from '@/pages/InPersonTrainingPage'
 import OnlineBrowAcademyPage from '@/pages/OnlineBrowAcademyPage'
 import OnlineModulesPage from '@/pages/OnlineProductListingPage'
 import ProductDetailPage from '@/pages/ProductDetailPage'
+import FreebiesPage from '@/pages/FreebiesPage'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import ScrollToTop from '@/components/ScrollToTop'
@@ -21,6 +22,7 @@ function App() {
         <Route path="/online-brow-courses" element={<OnlineBrowAcademyPage />} />
         <Route path="/online-modules" element={<OnlineModulesPage />} />
         <Route path="/online-modules/:handle" element={<ProductDetailPage />} />
+        <Route path="/freebies" element={<FreebiesPage />} />
       </Routes>
       <Footer />
     </BrowserRouter>
