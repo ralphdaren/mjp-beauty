@@ -282,7 +282,7 @@ export default function ProductDetailPage() {
 
             {product.descriptionHtml ? (
               <div
-                className="text-sm text-[#6b5f58] leading-relaxed mb-8 prose prose-sm max-w-none"
+                className="shopify-description mb-8"
                 dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
               />
             ) : product.description ? (

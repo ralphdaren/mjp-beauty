@@ -36,3 +36,77 @@
   line-height: 1;
   color: #827064;
 }
+
+/* ─── Shopify Product Description ────────────────────────────────── */
+
+.shopify-description {
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: #6b5f58;
+}
+
+.shopify-description p {
+  margin-bottom: 0.875rem;
+}
+
+.shopify-description p:last-child {
+  margin-bottom: 0;
+}
+
+.shopify-description ul,
+.shopify-description ol {
+  margin-bottom: 0.875rem;
+  padding-left: 1.25rem;
+}
+
+.shopify-description ul {
+  list-style-type: disc;
+}
+
+.shopify-description ol {
+  list-style-type: decimal;
+}
+
+.shopify-description li {
+  margin-bottom: 0.3rem;
+}
+
+.shopify-description strong,
+.shopify-description b {
+  font-weight: 600;
+  color: #3d3028;
+}
+
+.shopify-description em,
+.shopify-description i {
+  font-style: italic;
+}
+
+.shopify-description h1,
+.shopify-description h2,
+.shopify-description h3,
+.shopify-description h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #3d3028;
+  margin-bottom: 0.5rem;
+  margin-top: 1rem;
+  line-height: 1.7;
+}
+
+.shopify-description h1:first-child,
+.shopify-description h2:first-child,
+.shopify-description h3:first-child,
+.shopify-description h4:first-child {
+  margin-top: 0;
+}
+
+.shopify-description a {
+  color: #3d3028;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.shopify-description a:hover {
+  color: #2a1a0e;
+}
