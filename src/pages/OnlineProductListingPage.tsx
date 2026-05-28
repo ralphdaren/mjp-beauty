@@ -2,6 +2,9 @@ import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { getCollectionProducts, createCheckoutUrl, formatPrice } from '@/lib/shopify'
 import type { ShopifyProduct } from '@/lib/shopify'
+import { getAllPublishedReviews } from '@/lib/judgeme'
+
+type ReviewSummary = { avg: number; count: number }
 
 const COLLECTION_HANDLE = import.meta.env.VITE_SHOPIFY_COLLECTION_MODULES as string | undefined
 
@@ -9,6 +12,7 @@ export default function OnlineModulesPage() {
   const [products, setProducts] = useState<ShopifyProduct[]>([])
   const [loading, setLoading] = useState(true)
   const [addingToCart, setAddingToCart] = useState<string | null>(null)
+  const [reviewSummaries, setReviewSummaries] = useState<Record<string, ReviewSummary>>({})
 
   useEffect(() => {
     if (!COLLECTION_HANDLE) { setLoading(false); return }
@@ -16,6 +20,22 @@ export default function OnlineModulesPage() {
       .then(setProducts)
       .catch(() => {})
       .finally(() => setLoading(false))
+  }, [])
+
+  useEffect(() => {
+    getAllPublishedReviews().then(reviews => {
+      const map: Record<string, ReviewSummary> = {}
+      for (const r of reviews) {
+        const h = r.product_handle
+        if (!map[h]) map[h] = { avg: 0, count: 0 }
+        map[h].count += 1
+        map[h].avg += r.rating
+      }
+      for (const h of Object.keys(map)) {
+        map[h].avg = map[h].avg / map[h].count
+      }
+      setReviewSummaries(map)
+    })
   }, [])
 
   const handleAddToCart = useCallback(async (product: ShopifyProduct) => {
@@ -78,11 +98,26 @@ export default function OnlineModulesPage() {
                   <div className="px-4 pb-4 flex flex-col flex-1">
                     <div className="mt-auto">
                       <div className="h-px bg-[#e3e2de] mb-3" />
-                      <div className="flex items-baseline gap-1 mb-3">
-                        <span className="text-xl font-semibold text-[#3d3028] leading-none">
-                          {formatPrice(product.price)}
-                        </span>
-                        <span className="text-xs text-[#5a5047] ml-1">CAD</span>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-xl font-semibold text-[#3d3028] leading-none">
+                            {formatPrice(product.price)}
+                          </span>
+                          <span className="text-xs text-[#5a5047] ml-1">CAD</span>
+                        </div>
+                        {reviewSummaries[product.handle] && (
+                          <div className="flex items-center gap-1">
+                            <svg width="11" height="11" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M10 1l2.39 4.843L18 6.908l-4 3.897.944 5.504L10 13.77l-4.944 2.539L6 10.805 2 6.908l5.61-1.065L10 1z" fill="#3d3028" />
+                            </svg>
+                            <span className="text-xs text-[#3d3028] font-medium leading-none">
+                              {reviewSummaries[product.handle].avg.toFixed(1)}
+                            </span>
+                            <span className="text-xs text-[#a0948a] leading-none">
+                              ({reviewSummaries[product.handle].count} reviews)
+                            </span>
+                          </div>
+                        )}
                       </div>
                       <button
                         onClick={() => handleAddToCart(product)}

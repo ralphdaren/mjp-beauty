@@ -20,6 +20,19 @@ export type ReviewSubmission = {
   body: string
 }
 
+export async function getAllPublishedReviews(): Promise<JudgeMeReview[]> {
+  try {
+    const res = await fetch('/api/judgeme-reviews')
+    if (!res.ok) return []
+    const data = await res.json()
+    return (data.reviews ?? []).filter(
+      (r: JudgeMeReview) => r.body && r.published === true && r.hidden === false
+    )
+  } catch {
+    return []
+  }
+}
+
 export async function getProductReviews(productHandle: string): Promise<JudgeMeReview[]> {
   try {
     const res = await fetch('/api/judgeme-reviews')
