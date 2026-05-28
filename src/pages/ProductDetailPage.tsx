@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, X, ChevronLeft, ChevronRight, Star } from 'lucide-react'
 import { getProductByHandle, createCheckoutUrl, formatPrice } from '@/lib/shopify'
 import type { ShopifyProduct } from '@/lib/shopify'
 import { getProductReviews, submitReview } from '@/lib/judgeme'
@@ -14,12 +14,13 @@ function Stars({ rating, size = 15 }: { rating: number; size?: number }) {
   return (
     <div className="flex gap-0.5">
       {[1, 2, 3, 4, 5].map(i => (
-        <svg key={i} width={size} height={size} viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M10 1l2.39 4.843L18 6.908l-4 3.897.944 5.504L10 13.77l-4.944 2.539L6 10.805 2 6.908l5.61-1.065L10 1z"
-            fill={i <= rating ? '#3d3028' : '#e3e2de'}
-          />
-        </svg>
+        <Star
+          key={i}
+          width={size}
+          height={size}
+          fill={i <= rating ? '#3d3028' : '#e3e2de'}
+          stroke={i <= rating ? '#3d3028' : '#e3e2de'}
+        />
       ))}
     </div>
   )
@@ -27,12 +28,12 @@ function Stars({ rating, size = 15 }: { rating: number; size?: number }) {
 
 function StarIcon({ filled, size = 20 }: { filled: boolean; size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M10 1l2.39 4.843L18 6.908l-4 3.897.944 5.504L10 13.77l-4.944 2.539L6 10.805 2 6.908l5.61-1.065L10 1z"
-        fill={filled ? '#3d3028' : '#e3e2de'}
-      />
-    </svg>
+    <Star
+      width={size}
+      height={size}
+      fill={filled ? '#3d3028' : '#e3e2de'}
+      stroke={filled ? '#3d3028' : '#e3e2de'}
+    />
   )
 }
 
@@ -263,9 +264,18 @@ export default function ProductDetailPage() {
             <p className="text-[10px] tracking-[0.35em] uppercase text-[#a0948a] mb-2">MJP Beauty</p>
             <h1 className="text-2xl font-semibold text-[#3d3028] mb-4 leading-snug">{product.title}</h1>
 
-            <div className="flex items-baseline gap-1 mb-6">
-              <span className="text-3xl font-semibold text-[#3d3028]">{formatPrice(product.price)}</span>
-              <span className="text-sm text-[#5a5047] ml-1">CAD</span>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-semibold text-[#3d3028]">{formatPrice(product.price)}</span>
+                <span className="text-sm text-[#5a5047] ml-1">CAD</span>
+              </div>
+              {reviews.length > 0 && (
+                <div className="flex items-center gap-1">
+                  <Star size={13} fill="#3d3028" stroke="#3d3028" />
+                  <span className="text-sm text-[#3d3028] font-medium leading-none">{avg.toFixed(1)}</span>
+                  <span className="text-sm text-[#a0948a] leading-none">({reviews.length})</span>
+                </div>
+              )}
             </div>
 
             <div className="h-px bg-[#e3e2de] mb-6" />

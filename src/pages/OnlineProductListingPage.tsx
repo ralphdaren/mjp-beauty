@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
+import { Star } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { getCollectionProducts, createCheckoutUrl, formatPrice } from '@/lib/shopify'
 import type { ShopifyProduct } from '@/lib/shopify'
@@ -107,9 +108,7 @@ export default function OnlineModulesPage() {
                         </div>
                         {reviewSummaries[product.handle] && (
                           <div className="flex items-center gap-1">
-                            <svg width="11" height="11" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M10 1l2.39 4.843L18 6.908l-4 3.897.944 5.504L10 13.77l-4.944 2.539L6 10.805 2 6.908l5.61-1.065L10 1z" fill="#3d3028" />
-                            </svg>
+                            <Star size={11} fill="#3d3028" stroke="#3d3028" />
                             <span className="text-xs text-[#3d3028] font-medium leading-none">
                               {reviewSummaries[product.handle].avg.toFixed(1)}
                             </span>
