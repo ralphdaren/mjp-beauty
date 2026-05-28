@@ -94,14 +94,14 @@ export default function Navbar() {
       {/* Thin decorative top accent line */}
       <div className="h-[2px] bg-brand w-full" />
 
-      <nav className="max-w-7xl mx-auto px-8 h-20 flex items-center justify-between gap-8">
+      <nav className="max-w-7xl mx-auto px-8 h-20 flex items-center justify-center gap-8">
         {/* Logo */}
         <NavLink to="/" className="shrink-0">
           <img src={logoBrown} alt="MJP Beauty" className="h-16 w-auto" />
         </NavLink>
 
         {/* Desktop — center links */}
-        <div className="hidden lg:flex items-center gap-9 flex-1 justify-center">
+        <div className="hidden lg:flex items-center gap-9">
           {regularLinks.map(({ label, to, end }) => (
             <NavLink
               key={to}
@@ -154,6 +154,21 @@ export default function Navbar() {
             }
           >
             Freebies
+          </NavLink>
+
+          <NavLink
+            to="/biz-mentorship"
+            className={({ isActive }) =>
+              [
+                'text-base tracking-wide pb-0.5 transition-colors duration-200 whitespace-nowrap',
+                'border-b-[1.5px]',
+                isActive
+                  ? 'text-brand border-brand font-medium'
+                  : 'text-[#5a5047] border-transparent hover:text-brand hover:border-brand',
+              ].join(' ')
+            }
+          >
+            BIZ Mentorship
           </NavLink>
         </div>
 
@@ -330,6 +345,7 @@ export default function Navbar() {
             { label: 'In-Person Academy', to: '/in-person-training', end: false },
             { label: 'Online Brow Academy', to: '/online-brow-courses', end: false },
             { label: 'Freebies', to: '/freebies', end: false },
+            { label: 'BIZ Mentorship', to: '/biz-mentorship', end: false },
           ].map(({ label, to, end }) => (
             <NavLink
               key={to}

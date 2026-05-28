@@ -6,6 +6,9 @@ import OnlineBrowAcademyPage from '@/pages/OnlineBrowAcademyPage'
 import OnlineModulesPage from '@/pages/OnlineProductListingPage'
 import ProductDetailPage from '@/pages/ProductDetailPage'
 import FreebiesPage from '@/pages/FreebiesPage'
+import BizMentorshipPage from '@/pages/BizMentorshipPage'
+import PrivacyPolicyPage from '@/pages/PrivacyPolicyPage'
+import TermsOfUsePage from '@/pages/TermsOfUsePage'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import ScrollToTop from '@/components/ScrollToTop'
@@ -23,6 +26,9 @@ function App() {
         <Route path="/online-modules" element={<OnlineModulesPage />} />
         <Route path="/online-modules/:handle" element={<ProductDetailPage />} />
         <Route path="/freebies" element={<FreebiesPage />} />
+        <Route path="/biz-mentorship" element={<BizMentorshipPage />} />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms" element={<TermsOfUsePage />} />
       </Routes>
       <Footer />
     </BrowserRouter>

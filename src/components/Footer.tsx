@@ -68,7 +68,7 @@ export default function Footer() {
 
           {/* Training */}
           <div className="flex flex-col gap-4">
-            <p className="text-[0.68rem] uppercase tracking-[0.28em] text-white/45 font-medium">Training</p>
+            <p className="text-[0.68rem] uppercase tracking-[0.28em] text-white/45 font-medium">Trainings</p>
             <nav className="flex flex-col gap-3">
               <Link to="/in-person-training" className="text-sm text-white/75 hover:text-white underline-offset-4 hover:underline transition-colors duration-200">
                 In-Person Academy
@@ -78,6 +78,9 @@ export default function Footer() {
               </Link>
               <Link to="/online-modules" className="text-sm text-white/75 hover:text-white underline-offset-4 hover:underline transition-colors duration-200">
                 Single Courses
+              </Link>
+              <Link to="/biz-mentorship" className="text-sm text-white/75 hover:text-white underline-offset-4 hover:underline transition-colors duration-200">
+                BIZ Mentorship
               </Link>
               <Link to="/freebies" className="text-sm text-white/75 hover:text-white underline-offset-4 hover:underline transition-colors duration-200">
                 Freebies
@@ -114,8 +117,16 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/10">
-          <div className="max-w-[1200px] mx-auto px-6 md:px-12 py-5">
+          <div className="max-w-[1200px] mx-auto px-6 md:px-12 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <p className="text-xs text-white/35">© 2026 MJP Beauty. All rights reserved.</p>
+            <nav className="flex gap-4">
+              <Link to="/privacy" className="text-xs text-white/35 hover:text-white/70 transition-colors duration-200">
+                Privacy Policy
+              </Link>
+              <Link to="/terms" className="text-xs text-white/35 hover:text-white/70 transition-colors duration-200">
+                Terms of Use
+              </Link>
+            </nav>
           </div>
         </div>
       </footer>
