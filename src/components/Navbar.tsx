@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { NavLink, Link, useLocation } from 'react-router-dom'
 import { Menu, X, ChevronDown, ArrowRight } from 'lucide-react'
-import logoBlack from '@/assets/brand-kit/logo-black.png'
+import logoBrown from '@/assets/brand-kit/logo-brown.png'
 import optImg01 from '@/assets/online/opt-img-01.jpg'
 import optImg02 from '@/assets/online/opt-img-02.jpg'
 
@@ -97,7 +97,7 @@ export default function Navbar() {
       <nav className="max-w-7xl mx-auto px-8 h-20 flex items-center justify-between gap-8">
         {/* Logo */}
         <NavLink to="/" className="shrink-0">
-          <img src={logoBlack} alt="MJP Beauty" className="h-16 w-auto" />
+          <img src={logoBrown} alt="MJP Beauty" className="h-16 w-auto" />
         </NavLink>
 
         {/* Desktop — center links */}
