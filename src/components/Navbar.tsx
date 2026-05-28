@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, Link, useLocation } from 'react-router-dom'
 import { Menu, X, ChevronDown, ArrowRight } from 'lucide-react'
 import logoBlack from '@/assets/brand-kit/logo-black.png'
 import optImg01 from '@/assets/online/opt-img-01.jpg'
@@ -28,12 +28,12 @@ const featuredCourses = [
 ]
 
 const singleModules = [
-  { num: '01', name: 'Watch & Learn: Advanced Brow Demo Vault', href: 'https://mjpbeautyacademy.thinkific.com/courses/advanced-brow-demo-vault-watch-and-learn' },
-  { num: '02', name: 'Brow Mapping Fundamentals', href: 'https://mjpbeautyacademy.thinkific.com/courses/browmappingfundamentals' },
-  { num: '03', name: 'Brow Tinting Fundamentals', href: 'https://mjpbeautyacademy.thinkific.com/courses/browtintingfundamentals' },
-  { num: '04', name: 'Strip Waxing Online Brow Course', href: 'https://mjpbeautyacademy.thinkific.com/courses/stripwaxingonlinecourse' },
-  { num: '05', name: 'Mastering Brow Lamination: 10 Mistakes to Leave Behind', href: 'https://mjpbeautyacademy.thinkific.com/courses/browlaminationmistakes' },
-  { num: '06', name: "Glam Up Your Grid: A Brow Artist's Social Media Guide", href: 'https://mjpbeautyacademy.thinkific.com/products/digital_downloads/Glam-Up-Your-Grid-Social-Media-Ebook' },
+  { num: '01', name: 'Watch & Learn: Advanced Brow Demo Vault', to: '/online-modules/watch-learn-advanced-brow-demo-vault' },
+  { num: '02', name: 'Brow Mapping Fundamentals', to: '/online-modules/brow-mapping-fundamentals' },
+  { num: '03', name: 'Brow Tinting Fundamentals', to: '/online-modules/brow-tinting-fundamentals' },
+  { num: '04', name: 'Strip Waxing Online Brow Course', to: '/online-modules/strip-waxing-online-brow-course' },
+  { num: '05', name: 'Mastering Brow Lamination: 10 Mistakes to Leave Behind', to: '/online-modules/mastering-brow-lamination-10-mistakes-to-leave-behind' },
+  { num: '06', name: "Glam Up Your Grid: A Brow Artist's Social Media Guide", to: '/online-modules/glam-up-your-grid-a-brow-artists-social-media-guide' },
 ]
 
 export default function Navbar() {
@@ -254,18 +254,16 @@ export default function Navbar() {
                   }}
                   className="text-[0.65rem] tracking-[0.3em] uppercase text-[#3d3028] mb-4 flex-none font-medium"
                 >
-                  Single Modules
+                  Single Courses
                 </p>
 
                 <div className="flex flex-col flex-1 min-h-0">
                   {singleModules.map((mod, i) => {
                     const delay = isAcademyOpen ? 460 + i * 75 : 0
                     return (
-                      <a
+                      <Link
                         key={mod.num}
-                        href={mod.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        to={mod.to}
                         onClick={() => setIsAcademyOpen(false)}
                         style={{
                           opacity: isAcademyOpen ? 1 : 0,
@@ -284,7 +282,7 @@ export default function Navbar() {
                           size={14}
                           className="text-transparent shrink-0 -translate-x-2 opacity-0 group-hover:text-brand group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-200 ease-out"
                         />
-                      </a>
+                      </Link>
                     )
                   })}
                 </div>
@@ -300,14 +298,14 @@ export default function Navbar() {
                   className="mt-4 flex-none flex items-center justify-between gap-4"
                 >
                   <p className="text-[0.82rem] text-[#a0948a] leading-relaxed">
-                    Purchase any module individually of your choice.
+                    Purchase any course individually of your choice.
                   </p>
                   <NavLink
                     to="/online-modules"
                     onClick={() => setIsAcademyOpen(false)}
                     className="shrink-0 flex items-center gap-1.5 px-4 py-2 text-[0.75rem] tracking-[0.12em] uppercase rounded-full border border-brand text-brand hover:bg-brand hover:text-white transition-colors duration-200"
                   >
-                    Browse Modules <ArrowRight size={12} />
+                    Browse Courses <ArrowRight size={12} />
                   </NavLink>
                 </div>
               </div>

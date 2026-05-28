@@ -709,7 +709,7 @@ export default function OnlineBrowAcademyPage() {
                 <div className="p-10 flex flex-col flex-1">
                   <p className="text-[0.7rem] uppercase tracking-[0.28em] text-[#a0948a] mb-4">Option 03</p>
                   <h3 className="about-heading text-2xl sm:text-3xl font-semibold text-[#3d3028] leading-tight mb-4">
-                    Single Modules
+                    Single Courses
                   </h3>
                   <div className="mb-1 flex items-baseline gap-1.5">
                     <span className="text-sm text-[#a0948a] font-medium">From</span>
@@ -737,7 +737,7 @@ export default function OnlineBrowAcademyPage() {
                     to="/online-modules"
                     className="mt-6 w-full py-3.5 rounded-xl border border-[#3d3028] text-[#3d3028] text-[0.72rem] uppercase tracking-[0.2em] font-medium hover:bg-[#3d3028] hover:text-white transition-colors duration-200 text-center block"
                   >
-                    Browse Modules
+                    Browse Courses
                   </Link>
                 </div>
               </div>
