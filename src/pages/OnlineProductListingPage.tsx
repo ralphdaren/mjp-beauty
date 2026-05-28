@@ -7,7 +7,7 @@ const COLLECTION_HANDLE = import.meta.env.VITE_SHOPIFY_COLLECTION_MODULES as str
 export default function OnlineModulesPage() {
   const [products, setProducts] = useState<ShopifyProduct[]>([])
   const [loading, setLoading] = useState(true)
-  const [enrolling, setEnrolling] = useState<string | null>(null)
+  const [addingToCart, setAddingToCart] = useState<string | null>(null)
 
   useEffect(() => {
     if (!COLLECTION_HANDLE) { setLoading(false); return }
@@ -17,14 +17,14 @@ export default function OnlineModulesPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  const handleEnroll = useCallback(async (product: ShopifyProduct) => {
+  const handleAddToCart = useCallback(async (product: ShopifyProduct) => {
     if (!product.variantId) return
-    setEnrolling(product.id)
+    setAddingToCart(product.id)
     try {
       const url = await createCheckoutUrl(product.variantId)
       if (url) window.location.href = url
     } finally {
-      setEnrolling(null)
+      setAddingToCart(null)
     }
   }, [])
 
@@ -33,9 +33,9 @@ export default function OnlineModulesPage() {
       {/* Hero */}
       <div className="bg-[#f6f2ec] border-b border-[#e3e2de] py-14 text-center px-6">
         <p className="text-[10px] tracking-[0.35em] uppercase text-[#a0948a] mb-3">MJP Beauty</p>
-        <h1 className="text-3xl font-semibold text-[#3d3530] mb-3">Online Modules</h1>
+        <h1 className="text-3xl font-semibold text-[#3d3530] mb-3">Explore Courses</h1>
         <p className="text-sm text-[#6b5f58] max-w-md mx-auto leading-relaxed">
-          Purchase any module individually of your choice — each one packed with expert-led video lessons and downloadable resources.
+          Purchase any courses individually of your choice — each one packed with expert-led video lessons and downloadable resources.
         </p>
       </div>
 
@@ -52,31 +52,41 @@ export default function OnlineModulesPage() {
           )}
 
           {!loading && products.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {products.map((product) => (
                 <div
                   key={product.id}
-                  className="rounded-2xl border border-[#e3e2de] bg-white shadow-[0_8px_32px_rgba(130,112,100,0.10)] p-8 flex flex-col"
+                  className="rounded-xl border border-[#e3e2de] bg-white shadow-[0_4px_16px_rgba(130,112,100,0.08)] overflow-hidden flex flex-col"
                 >
-                  <h3 className="text-lg font-semibold text-[#3d3028] leading-snug mb-3">{product.title}</h3>
-                  {product.description && (
-                    <p className="text-[#5a5047] text-sm leading-relaxed flex-1 mb-6">{product.description}</p>
-                  )}
-                  <div className="mt-auto">
-                    <div className="h-px bg-[#e3e2de] mb-4" />
-                    <div className="flex items-baseline gap-1.5 mb-5">
-                      <span className="text-[2rem] font-semibold text-[#3d3028] leading-none">
-                        {formatPrice(product.price)}
-                      </span>
-                      <span className="text-sm text-[#5a5047] ml-1">CAD</span>
+                  {product.featuredImage ? (
+                    <div className="w-full aspect-square bg-[#f6f2ec]">
+                      <img
+                        src={product.featuredImage.url}
+                        alt={product.featuredImage.altText || product.title}
+                        className="w-full h-full object-contain"
+                      />
                     </div>
-                    <button
-                      onClick={() => handleEnroll(product)}
-                      disabled={enrolling === product.id}
-                      className="w-full py-3.5 rounded-xl bg-[#3d3028] text-white text-[0.72rem] uppercase tracking-[0.2em] font-medium hover:bg-[#2a1a0e] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {enrolling === product.id ? 'Processing…' : 'Enroll Now'}
-                    </button>
+                  ) : (
+                    <div className="w-full aspect-square bg-[#f6f2ec]" />
+                  )}
+                  <div className="p-4 flex flex-col flex-1">
+                    <h3 className="text-sm font-semibold text-[#3d3028] leading-snug mb-3">{product.title}</h3>
+                    <div className="mt-auto">
+                      <div className="h-px bg-[#e3e2de] mb-3" />
+                      <div className="flex items-baseline gap-1 mb-3">
+                        <span className="text-xl font-semibold text-[#3d3028] leading-none">
+                          {formatPrice(product.price)}
+                        </span>
+                        <span className="text-xs text-[#5a5047] ml-1">CAD</span>
+                      </div>
+                      <button
+                        onClick={() => handleAddToCart(product)}
+                        disabled={addingToCart === product.id}
+                        className="w-full py-2.5 rounded-lg bg-[#3d3028] text-white text-[0.65rem] uppercase tracking-[0.2em] font-medium hover:bg-[#2a1a0e] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {addingToCart === product.id ? 'Processing…' : 'Add to Cart'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

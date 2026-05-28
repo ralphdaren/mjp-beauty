@@ -14,6 +14,7 @@ export type ShopifyProduct = {
   variantId: string
   price: string
   currencyCode: string
+  featuredImage: { url: string; altText: string } | null
 }
 
 const PRODUCT_QUERY = `
@@ -23,6 +24,10 @@ const PRODUCT_QUERY = `
       title
       handle
       description
+      featuredImage {
+        url
+        altText
+      }
       variants(first: 1) {
         edges {
           node {
@@ -48,6 +53,10 @@ const COLLECTION_PRODUCTS_QUERY = `
             title
             handle
             description
+            featuredImage {
+              url
+              altText
+            }
             variants(first: 1) {
               edges {
                 node {
@@ -100,6 +109,7 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
       variantId: variant?.id ?? '',
       price: variant?.price?.amount ?? '0',
       currencyCode: variant?.price?.currencyCode ?? 'CAD',
+      featuredImage: product.featuredImage ?? null,
     }
   } catch {
     return null
@@ -123,6 +133,7 @@ export async function getCollectionProducts(collectionHandle: string, first = 50
         variantId: variant?.id ?? '',
         price: variant?.price?.amount ?? '0',
         currencyCode: variant?.price?.currencyCode ?? 'CAD',
+        featuredImage: node.featuredImage ?? null,
       }
     })
   } catch {
