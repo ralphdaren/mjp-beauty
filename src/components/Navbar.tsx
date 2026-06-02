@@ -36,6 +36,15 @@ const singleModules = [
   { num: '06', name: "Glam Up Your Grid: A Brow Artist's Social Media Guide", to: '/online-modules/glam-up-your-grid-a-brow-artists-social-media-guide' },
 ]
 
+const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+  [
+    'text-base tracking-wide pb-0.5 transition-colors duration-200 whitespace-nowrap',
+    'border-b-[1.5px]',
+    isActive
+      ? 'text-brand border-brand font-medium'
+      : 'text-[#5a5047] border-transparent hover:text-brand hover:border-brand',
+  ].join(' ')
+
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -94,111 +103,87 @@ export default function Navbar() {
       {/* Thin decorative top accent line */}
       <div className="h-[2px] bg-brand w-full" />
 
-      <nav className="max-w-7xl mx-auto px-8 h-20 flex items-center justify-center gap-8">
-        {/* Logo */}
-        <NavLink to="/" className="shrink-0">
-          <img src={logoBrown} alt="MJP Beauty" className="h-16 w-auto" />
-        </NavLink>
+      <nav className="max-w-7xl mx-auto px-8">
 
-        {/* Desktop — center links */}
-        <div className="hidden lg:flex items-center gap-9">
-          {regularLinks.map(({ label, to, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              className={({ isActive }) =>
-                [
-                  'text-base tracking-wide pb-0.5 transition-colors duration-200 whitespace-nowrap',
-                  'border-b-[1.5px]',
-                  isActive
-                    ? 'text-brand border-brand font-medium'
-                    : 'text-[#5a5047] border-transparent hover:text-brand hover:border-brand',
-                ].join(' ')
-              }
-            >
-              {label}
-            </NavLink>
-          ))}
-
-          {/* Online Brow Academy — dropdown trigger */}
+        {/* ── Mobile header bar ─────────────────────────────────────────── */}
+        <div className="lg:hidden h-16 flex items-center justify-between">
+          <NavLink to="/" className="shrink-0">
+            <img src={logoBrown} alt="MJP Beauty" className="h-12 w-auto" />
+          </NavLink>
           <button
-            onClick={() => setIsAcademyOpen((prev) => !prev)}
-            aria-expanded={isAcademyOpen}
-            aria-haspopup="true"
-            className={[
-              'flex items-center gap-1.5 text-base tracking-wide pb-0.5 transition-colors duration-200 whitespace-nowrap',
-              'border-b-[1.5px]',
-              isAcademyOpen || isOnAcademyPage
-                ? 'text-brand border-brand font-medium'
-                : 'text-[#5a5047] border-transparent hover:text-brand hover:border-brand',
-            ].join(' ')}
+            className="p-2 text-brand rounded-md"
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label="Toggle menu"
+            aria-expanded={isOpen}
           >
-            Online Brow Academy
-            <ChevronDown
-              size={14}
-              className={`mt-px transition-transform duration-300 ${isAcademyOpen ? 'rotate-180' : ''}`}
-            />
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
-
-          <NavLink
-            to="/freebies"
-            className={({ isActive }) =>
-              [
-                'text-base tracking-wide pb-0.5 transition-colors duration-200 whitespace-nowrap',
-                'border-b-[1.5px]',
-                isActive
-                  ? 'text-brand border-brand font-medium'
-                  : 'text-[#5a5047] border-transparent hover:text-brand hover:border-brand',
-              ].join(' ')
-            }
-          >
-            Freebies
-          </NavLink>
-
-          <NavLink
-            to="/biz-mentorship"
-            className={({ isActive }) =>
-              [
-                'text-base tracking-wide pb-0.5 transition-colors duration-200 whitespace-nowrap',
-                'border-b-[1.5px]',
-                isActive
-                  ? 'text-brand border-brand font-medium'
-                  : 'text-[#5a5047] border-transparent hover:text-brand hover:border-brand',
-              ].join(' ')
-            }
-          >
-            BIZ Mentorship
-          </NavLink>
         </div>
 
-        {/* Desktop — right actions */}
-        <div className="hidden lg:flex items-center gap-4 shrink-0">
-          <NavLink
-            to="/book-appointment"
-            className="px-6 py-2.5 text-base tracking-wide rounded-full text-white bg-brand hover:opacity-90 transition-opacity duration-200 whitespace-nowrap"
-          >
-            Book an Appointment
-          </NavLink>
-          <a
-            href="https://mjpbeautyacademy.thinkific.com/users/sign_in"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-6 py-2.5 text-base tracking-wide rounded-full text-brand border border-brand hover:bg-brand hover:text-white transition-colors duration-200 whitespace-nowrap"
-          >
-            Student Login
-          </a>
-        </div>
+        {/* ── Desktop layout ────────────────────────────────────────────── */}
+        <div className="hidden lg:flex flex-col items-center py-5 gap-3">
 
-        {/* Mobile hamburger */}
-        <button
-          className="lg:hidden p-2 text-brand rounded-md"
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label="Toggle menu"
-          aria-expanded={isOpen}
-        >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+          {/* Row 1: Student Login | Logo | Book an Appointment */}
+          <div className="w-full flex items-center justify-between">
+            <a
+              href="https://mjpbeautyacademy.thinkific.com/users/sign_in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 py-2.5 text-base tracking-wide rounded-full text-brand border border-brand hover:bg-brand hover:text-white transition-colors duration-200 whitespace-nowrap"
+            >
+              Student Login
+            </a>
+
+            <NavLink to="/" className="shrink-0">
+              <img src={logoBrown} alt="MJP Beauty" className="h-16 w-auto" />
+            </NavLink>
+
+            <NavLink
+              to="/book-appointment"
+              className="px-6 py-2.5 text-base tracking-wide rounded-full text-white bg-brand hover:opacity-90 transition-opacity duration-200 whitespace-nowrap"
+            >
+              Book an Appointment
+            </NavLink>
+          </div>
+
+          {/* Row 2: Nav links centered */}
+          <div className="flex items-center gap-9">
+            {regularLinks.map(({ label, to, end }) => (
+              <NavLink key={to} to={to} end={end} className={navLinkClass}>
+                {label}
+              </NavLink>
+            ))}
+
+            {/* Online Brow Academy — dropdown trigger */}
+            <button
+              onClick={() => setIsAcademyOpen((prev) => !prev)}
+              aria-expanded={isAcademyOpen}
+              aria-haspopup="true"
+              className={[
+                'flex items-center gap-1.5 text-base tracking-wide pb-0.5 transition-colors duration-200 whitespace-nowrap',
+                'border-b-[1.5px]',
+                isAcademyOpen || isOnAcademyPage
+                  ? 'text-brand border-brand font-medium'
+                  : 'text-[#5a5047] border-transparent hover:text-brand hover:border-brand',
+              ].join(' ')}
+            >
+              Online Brow Academy
+              <ChevronDown
+                size={14}
+                className={`mt-px transition-transform duration-300 ${isAcademyOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+
+            <NavLink to="/freebies" className={navLinkClass}>
+              Freebies
+            </NavLink>
+
+            <NavLink to="/biz-mentorship" className={navLinkClass}>
+              BIZ Mentorship
+            </NavLink>
+          </div>
+
+        </div>
       </nav>
 
       {/* ── Desktop Academy Dropdown Panel (absolute — overlays page) ── */}
