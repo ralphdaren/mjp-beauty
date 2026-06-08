@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronLeft, ChevronRight, Play, Clock, ChevronDown, X, FileText, HelpCircle, Heart } from 'lucide-react'
+import { Play, Clock, ChevronDown, ChevronLeft, ChevronRight, X, FileText, HelpCircle, Heart } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import browLamImg1 from '@/assets/booking/brow-lam/brow-lm-img-01.jpg'
@@ -21,7 +21,7 @@ const BOOKING_URL_BASE =
 interface PriceTier {
   label: string
   price: string
-  note?: string
+  duration?: string
 }
 
 interface Service {
@@ -42,15 +42,16 @@ const SERVICES: Service[] = [
   {
     id: 'brow-lam',
     name: 'Brow Lamination',
-    tagline: 'Lift · Define · Fluff',
+    tagline: 'Lift • Define • Fluff',
     description:
-      'The process of lifting the brow hairs to add fullness, symmetry, and definition. Softens the structure of the hairs allowing endless styling options — from fluffy soap brows to clean and sleek. Lasts up to 6–8 weeks.',
-    duration: '45 min+',
+      'The process of lifting the brow hairs to add fullness, symmetry, and definition. Softens the structure of the hairs allowing endless styling options from fluffy soap brows to clean and sleek. Lasts up to 6–8 weeks.',
+    duration: '20 – 75 min',
     tiers: [
-      { label: 'Lamination Only', price: '$85' },
-      { label: 'Naked Brow Lamination (No Tint)', price: '$115', note: '$100 in Jan' },
-      { label: 'Full Package', price: '$130', note: '$115 in Jan' },
-      { label: 'Maintenance Appointment', price: '$65' },
+      { label: 'Signature Lamination Package (with Tint)', price: '$123.81', duration: '1 hr 15 min' },
+      { label: 'Naked Brow Lamination (No Tint)', price: '$109.52', duration: '1 hr' },
+      { label: 'Brow Lamination Only (No Shaping, No Tint)', price: '$80.95', duration: '45 min' },
+      { label: 'Brow Lamination Maintenance (with Tint)', price: '$61.90', duration: '30 min' },
+      { label: 'Brow Lamination Maintenance (No Tint)', price: '$47.62', duration: '20 min' },
     ],
     bookingUrl: `${BOOKING_URL_BASE}/YC5WXRVSX5IZ3UW7DYKPZZEE`,
     images: [browLamImg1, browLamImg2],
@@ -59,11 +60,14 @@ const SERVICES: Service[] = [
   {
     id: 'brow-st',
     name: 'Brow Shape & Tint',
-    tagline: 'Sculpted · Tinted · Polished',
+    tagline: 'Sculpted • Tinted • Polished',
     description:
       'A complete brow enhancement package — brow shaping, waxing, and tinting all in one. Brow tint lasts up to 1 week on the skin and 4+ weeks on the hairs for a defined, polished finish.',
     duration: '40 min+',
-    tiers: [{ label: 'Shape & Tint Package', price: '$65' }],
+    tiers: [
+      { label: 'Returning Client', price: '$61.90', duration: '30 min' },
+      { label: 'New Client', price: '$66.67', duration: '30 min' },
+    ],
     bookingUrl: BOOKING_URL_BASE,
     images: [browStImg1, browStImg2],
     video: null,
@@ -71,11 +75,14 @@ const SERVICES: Service[] = [
   {
     id: 'brow-wt',
     name: 'Brow Shape & Wax',
-    tagline: 'Clean · Shaped · Fresh',
+    tagline: 'Clean • Shaped • Fresh',
     description:
       'Give your brows life again with a quick and easy brow shaping and waxing package. Includes the option of filling in the brows with a brow pencil and highlighting the brow bone to further accentuate your new brows.',
     duration: '20 min+',
-    tiers: [{ label: 'Shape & Wax Package', price: '$50' }],
+    tiers: [
+      { label: 'Returning Client', price: '$47.62', duration: '20 min' },
+      { label: 'New Client', price: '$52.38', duration: '30 min' },
+    ],
     bookingUrl: BOOKING_URL_BASE,
     images: [browWtImg1, browWtImg2],
     video: browWtVid,
@@ -83,13 +90,13 @@ const SERVICES: Service[] = [
   {
     id: 'keratin-lt',
     name: 'Keratin Lash Lift',
-    tagline: 'Lifted · Curled · Luminous',
+    tagline: 'Lifted • Curled • Luminous',
     description:
       'Enhances and lifts your natural lashes making them appear longer, fuller, and freshly curled. Paired with a vitamin mask for deep nourishment. Lasts 6-8 weeks — the most low-maintenance service you can get.',
     duration: '45 min+',
     tiers: [
-      { label: 'With Tint', price: '$110' },
-      { label: 'Without Tint', price: '$100' },
+      { label: 'With Tint', price: '$104.76', duration: '1 hr' },
+      { label: 'No Tint', price: '$95.24', duration: '45 min' },
     ],
     bookingUrl: `${BOOKING_URL_BASE}/BVWO65BJPHOOPXK4ZMMVRXC3`,
     images: [keratinImg1, keratinImg2],
@@ -204,53 +211,109 @@ const AFTERCARE_DATA = [
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function ServiceCard({
+function FlipTier({ tier }: { tier: PriceTier }) {
+  const [flipped, setFlipped] = useState(false)
+
+  return (
+    <div
+      style={{ perspective: '800px' }}
+      className="cursor-pointer select-none"
+      onClick={() => setFlipped((f) => !f)}
+    >
+      <div
+        style={{
+          transformStyle: 'preserve-3d',
+          transform: flipped ? 'rotateX(180deg)' : 'rotateX(0deg)',
+          transition: 'transform 0.4s ease',
+          position: 'relative',
+        }}
+      >
+        {/* Front — label */}
+        <div
+          style={{ backfaceVisibility: 'hidden' }}
+          className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[#f6f2ec] hover:bg-[#ede8e0] transition-colors text-sm text-[#6b5f58] leading-snug"
+        >
+          <span className="flex-1 min-w-0">{tier.label}</span>
+          <ChevronRight size={12} className="shrink-0 text-[#c0b4ac]" />
+        </div>
+
+        {/* Back — duration + price */}
+        <div
+          style={{
+            backfaceVisibility: 'hidden',
+            transform: 'rotateX(180deg)',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+          className="flex items-center justify-between gap-3 px-3 rounded-lg bg-[#f6f2ec] border border-[#a0948a]"
+        >
+          {tier.duration && (
+            <div className="flex items-center gap-1.5 text-[#a0948a] text-xs">
+              <Clock size={11} />
+              <span>{tier.duration}</span>
+            </div>
+          )}
+          <span className="font-semibold text-sm text-[#3d3530] ml-auto">{tier.price}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ServiceRow({
   service,
+  index,
   onVideoOpen,
 }: {
   service: Service
+  index: number
   onVideoOpen: (src: string) => void
 }) {
   const [imgIdx, setImgIdx] = useState(0)
-
-  const prev = () =>
-    setImgIdx((i) => (i - 1 + service.images.length) % service.images.length)
-  const next = () =>
-    setImgIdx((i) => (i + 1) % service.images.length)
+  const prev = () => setImgIdx((i) => (i - 1 + service.images.length) % service.images.length)
+  const next = () => setImgIdx((i) => (i + 1) % service.images.length)
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden border border-[#e3e2de] shadow-sm group hover:shadow-lg transition-shadow duration-300 flex flex-col">
-      {/* Image gallery */}
-      <div className="relative aspect-[3/4] overflow-hidden bg-[#f6f2ec] shrink-0">
-        <div
-          className="flex h-full transition-transform duration-500 ease-in-out"
-          style={{ transform: `translateX(-${imgIdx * 100}%)` }}
-        >
-          {service.images.map((img, i) => (
-            <div key={i} className="w-full h-full shrink-0">
-              <img src={img} alt={`${service.name} ${i + 1}`} className="w-full h-full object-cover" />
-            </div>
-          ))}
+    <div className="flex flex-col md:flex-row md:items-center gap-6 md:gap-0 py-10 md:py-14">
+
+      {/* Image carousel */}
+      <div className="relative shrink-0 w-full aspect-[4/3] md:w-52 lg:w-60 md:aspect-[3/4] overflow-hidden rounded-xl bg-[#ede8e0] group/img">
+
+        {/* Absolute wrapper ensures slides fill the flex-stretched height on desktop */}
+        <div className="absolute inset-0">
+          <div
+            className="flex h-full transition-transform duration-500 ease-in-out"
+            style={{ transform: `translateX(-${imgIdx * 100}%)` }}
+          >
+            {service.images.map((img, i) => (
+              <div key={i} className="w-full h-full shrink-0">
+                <img src={img} alt={`${service.name} ${i + 1}`} className="w-full h-full object-cover" />
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Nav arrows — visible on hover */}
+        {/* Nav arrows */}
         <button
           onClick={prev}
-          className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/70 backdrop-blur-sm rounded-full flex items-center justify-center text-[#827064] opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
+          className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-white/70 backdrop-blur-sm rounded-full flex items-center justify-center text-[#827064] opacity-0 group-hover/img:opacity-100 transition-opacity hover:bg-white"
           aria-label="Previous photo"
         >
-          <ChevronLeft size={15} />
+          <ChevronLeft size={13} />
         </button>
         <button
           onClick={next}
-          className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/70 backdrop-blur-sm rounded-full flex items-center justify-center text-[#827064] opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
+          className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-white/70 backdrop-blur-sm rounded-full flex items-center justify-center text-[#827064] opacity-0 group-hover/img:opacity-100 transition-opacity hover:bg-white"
           aria-label="Next photo"
         >
-          <ChevronRight size={15} />
+          <ChevronRight size={13} />
         </button>
 
         {/* Dot indicators */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+        <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex gap-1.5">
           {service.images.map((_, i) => (
             <button
               key={i}
@@ -267,46 +330,63 @@ function ServiceCard({
         {service.video && (
           <button
             onClick={() => onVideoOpen(service.video!)}
-            className="absolute top-3 right-3 flex items-center gap-1.5 bg-white/80 backdrop-blur-sm text-[#827064] text-xs font-medium px-3 py-1.5 rounded-full hover:bg-white transition-colors shadow-sm"
+            className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-white/80 backdrop-blur-sm text-[#827064] text-xs font-medium px-3 py-1.5 rounded-full hover:bg-white transition-colors shadow-sm whitespace-nowrap"
           >
-            <Play size={11} fill="currentColor" />
+            <Play size={10} fill="currentColor" />
             Watch
           </button>
         )}
       </div>
 
-      {/* Card body */}
-      <div className="p-5 flex flex-col flex-1">
-        <p className="text-[10px] tracking-[0.2em] uppercase text-[#a0948a] mb-1">
-          {service.tagline}
-        </p>
-        <h3 className="text-[1.05rem] font-semibold text-[#3d3530] mb-2">{service.name}</h3>
-        <p className="text-sm text-[#6b5f58] leading-relaxed mb-4 flex-1">{service.description}</p>
+      {/* Content — tagline, name, description, options */}
+      <div className="flex-1 min-w-0 md:px-10 lg:px-14">
 
-        <div className="inline-flex items-center gap-1.5 text-xs text-[#827064] bg-[#f6f2ec] px-3 py-1 rounded-full mb-3">
-          <Clock size={11} />
-          {service.duration}
+        {/* Mobile: number + name */}
+        <div className="flex items-center gap-3 mb-3 md:hidden">
+          <span className="text-[#cdc1b9] text-2xl select-none">
+            {String(index + 1).padStart(2, '0')}
+          </span>
+          <h3 className="text-xl font-semibold text-[#3d3530]">{service.name}</h3>
         </div>
 
-        <div className="space-y-1.5 mb-4">
+        <p className="text-[10px] tracking-[0.25em] uppercase text-[#a0948a] mb-2">
+          {service.tagline}
+        </p>
+        <h3 className="hidden md:block text-2xl font-semibold text-[#3d3530] mb-3 leading-snug">
+          {service.name}
+        </h3>
+        <p className="text-sm text-[#6b5f58] leading-relaxed mb-5">
+          {service.description}
+        </p>
+
+        {/* Flip cards */}
+        <div className="space-y-2 max-w-md">
           {service.tiers.map((tier) => (
-            <div key={tier.label} className="flex items-center justify-between text-xs">
-              <span className="text-[#6b5f58]">{tier.label}</span>
-              <div className="text-right">
-                <span className="font-semibold text-[#3d3530]">{tier.price}</span>
-                {tier.note && (
-                  <span className="ml-1.5 text-[10px] text-[#a0948a]">({tier.note})</span>
-                )}
-              </div>
-            </div>
+            <FlipTier key={tier.label} tier={tier} />
           ))}
         </div>
 
+        {/* Mobile: book now button */}
         <a
           href={service.bookingUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="block w-full py-2.5 bg-[#827064] text-white text-sm tracking-wide rounded-full text-center hover:opacity-90 active:scale-[0.98] transition-all"
+          className="md:hidden mt-6 block w-full py-3 bg-[#3d3530] text-white text-xs tracking-[0.15em] uppercase text-center rounded-full hover:bg-[#2a2320] active:scale-[0.98] transition-all"
+        >
+          Book Now
+        </a>
+      </div>
+
+      {/* Right column: number + book now (desktop only) */}
+      <div className="hidden md:flex md:self-stretch shrink-0 w-36 lg:w-44 flex-col items-center justify-between px-5">
+        <span className="text-[#d0c4bc] text-4xl select-none">
+          {String(index + 1).padStart(2, '0')}
+        </span>
+        <a
+          href={service.bookingUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-full py-3 bg-[#3d3530] text-white text-xs tracking-[0.15em] uppercase text-center rounded-full hover:bg-[#2a2320] active:scale-[0.98] transition-all"
         >
           Book Now
         </a>
@@ -518,13 +598,11 @@ function InfoTabs() {
     <section className="bg-[#f6f2ec] border-t border-[#e3e2de] py-16">
       <div className="max-w-4xl mx-auto px-6">
 
-        {/* Section heading */}
         <div className="text-center mb-10">
           <p className="text-[10px] tracking-[0.25em] uppercase text-[#a0948a] mb-2">Good to Know</p>
           <h2 className="text-2xl font-semibold text-[#3d3530]">Policies & Aftercare</h2>
         </div>
 
-        {/* Tab navigator */}
         <div className="flex justify-center mb-8">
           <div className="flex gap-0 border-b border-[#d9d4cf] w-full max-w-lg">
             {INFO_TABS.map(({ id, label, Icon }) => {
@@ -537,15 +615,10 @@ function InfoTabs() {
                     isActive ? 'text-[#6e5f55]' : 'text-[#a0948a] hover:text-[#6e5f55]'
                   }`}
                 >
-                  <Icon
-                    size={15}
-                    className="transition-colors duration-200"
-                  />
+                  <Icon size={15} className="transition-colors duration-200" />
                   <span className="text-[11px] tracking-[0.1em] uppercase font-semibold whitespace-nowrap transition-colors duration-200">
                     {label}
                   </span>
-
-                  {/* Active underline */}
                   <span
                     className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] bg-[#827064] rounded-full transition-all duration-300 ${
                       isActive ? 'w-3/4 opacity-100' : 'w-0 opacity-0'
@@ -557,7 +630,6 @@ function InfoTabs() {
           </div>
         </div>
 
-        {/* Content panel */}
         <div className="bg-white border border-[#e3e2de] rounded-2xl px-8 py-10 shadow-sm">
           <div key={active} className="tab-fade-in">
             {active === 'policies'  && <BookingPoliciesContent />}
@@ -588,11 +660,16 @@ export default function BookAppointmentPage() {
         </p>
       </div>
 
-      {/* Services grid */}
-      <main className="bg-[#fefefe] py-16 px-6">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {SERVICES.map((service) => (
-            <ServiceCard key={service.id} service={service} onVideoOpen={setVideoSrc} />
+      {/* Services list */}
+      <main className="bg-[#fefefe] py-4 px-6 md:px-10 lg:px-16">
+        <div className="max-w-5xl mx-auto divide-y divide-[#e3e2de]">
+          {SERVICES.map((service, index) => (
+            <ServiceRow
+              key={service.id}
+              service={service}
+              index={index}
+              onVideoOpen={setVideoSrc}
+            />
           ))}
         </div>
       </main>
