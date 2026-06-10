@@ -1,31 +1,26 @@
 import { useState, useEffect, useRef } from 'react'
 import { NavLink, Link, useLocation } from 'react-router-dom'
-import { Menu, X, ChevronDown, ArrowRight } from 'lucide-react'
+import { Menu, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react'
 import logoBrown from '@/assets/brand-kit/logo-brown.png'
 import optImg01 from '@/assets/online/opt-img-01.jpg'
-import optImg02 from '@/assets/online/opt-img-02.jpg'
+import { getCollectionProducts } from '@/lib/shopify'
+import type { ShopifyProduct } from '@/lib/shopify'
+
+const COLLECTION_HANDLE = import.meta.env.VITE_SHOPIFY_COLLECTION_MODULES as string | undefined
+const ITEMS_PER_SLIDE = 2
 
 const regularLinks = [
   { label: 'Home', to: '/', end: true },
   { label: 'In-Person Academy', to: '/in-person-training', end: false },
 ]
 
-const featuredCourses = [
-  {
-    img: optImg01,
-    imgLabel: 'All-inclusive Course',
-    title: 'Independent Artist',
-    description: 'Everything you need to launch on your own — from technique to business.',
-    to: '/online-brow-courses',
-  },
-  {
-    img: optImg02,
-    imgLabel: 'All-inclusive Course',
-    title: 'VIP Mentorship',
-    description: 'Personalised guidance, portfolio reviews and direct mentorship from Micah.',
-    to: '/online-brow-courses',
-  },
-]
+const featuredCourse = {
+  img: optImg01,
+  imgLabel: 'All-inclusive Course',
+  title: 'All-In-One Online Course',
+  description: 'Everything you need to launch on your own — from technique to business.',
+  to: '/online-brow-courses',
+}
 
 const singleModules = [
   { num: '01', name: 'Watch & Learn: Advanced Brow Demo Vault', to: '/online-modules/watch-learn-advanced-brow-demo-vault' },
@@ -50,8 +45,38 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
   const [isAcademyOpen, setIsAcademyOpen] = useState(false)
+  const [shopifyProducts, setShopifyProducts] = useState<ShopifyProduct[]>([])
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const productsFetched = useRef(false)
   const prevScrollY = useRef(0)
   const headerRef = useRef<HTMLElement>(null)
+  const gridRef = useRef<HTMLDivElement>(null)
+  const isAnimatingRef = useRef(false)
+
+  const goToSlide = (next: number, dir: -1 | 1) => {
+    const target = ((next % totalSlides) + totalSlides) % totalSlides
+    if (target === currentSlide || isAnimatingRef.current) return
+    isAnimatingRef.current = true
+    const el = gridRef.current
+    if (!el) { setCurrentSlide(target); isAnimatingRef.current = false; return }
+
+    el.style.transition = 'transform 280ms ease, opacity 280ms ease'
+    el.style.transform = `translateX(${dir * -40}px)`
+    el.style.opacity = '0'
+
+    setTimeout(() => {
+      setCurrentSlide(target)
+      el.style.transition = 'none'
+      el.style.transform = `translateX(${dir * 40}px)`
+      el.style.opacity = '0'
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        el.style.transition = 'transform 280ms ease, opacity 280ms ease'
+        el.style.transform = 'translateX(0)'
+        el.style.opacity = '1'
+        isAnimatingRef.current = false
+      }))
+    }, 280)
+  }
   const location = useLocation()
 
   const isOnAcademyPage = location.pathname === '/online-brow-courses'
@@ -86,7 +111,30 @@ export default function Navbar() {
 
   useEffect(() => {
     setIsAcademyOpen(false)
+    setCurrentSlide(0)
   }, [location.pathname])
+
+  useEffect(() => {
+    if (!isAcademyOpen || productsFetched.current || !COLLECTION_HANDLE) return
+    productsFetched.current = true
+    getCollectionProducts(COLLECTION_HANDLE, 10).then(setShopifyProducts).catch(() => {})
+  }, [isAcademyOpen])
+
+  useEffect(() => {
+    if (!isAcademyOpen) setCurrentSlide(0)
+  }, [isAcademyOpen])
+
+  const enrichedModules = singleModules.map(mod => {
+    const handle = mod.to.split('/').pop() ?? ''
+    const shopify = shopifyProducts.find(p => p.handle === handle)
+    return { ...mod, image: shopify?.featuredImage ?? null }
+  })
+
+  const totalSlides = Math.ceil(enrichedModules.length / ITEMS_PER_SLIDE)
+  const visibleModules = enrichedModules.slice(
+    currentSlide * ITEMS_PER_SLIDE,
+    (currentSlide + 1) * ITEMS_PER_SLIDE,
+  )
 
   return (
     <header
@@ -121,7 +169,7 @@ export default function Navbar() {
         </div>
 
         {/* ── Desktop layout ────────────────────────────────────────────── */}
-        <div className="hidden lg:flex flex-col items-center py-5 gap-3">
+        <div className="hidden lg:flex flex-col items-center py-5 gap-6">
 
           {/* Row 1: Student Login | Logo | Book an Appointment */}
           <div className="w-full flex items-center justify-between">
@@ -202,49 +250,43 @@ export default function Navbar() {
           <div className="max-w-7xl mx-auto px-8 pt-10 pb-8 h-full flex flex-col">
             <div className="flex-1 grid grid-cols-[5fr_7fr] gap-14 min-h-0">
 
-              {/* Left: Featured course cards */}
-              <div className="grid grid-cols-2 gap-5 h-full min-h-0">
-                {featuredCourses.map((course, i) => {
-                  const delay = isAcademyOpen ? 450 + i * 80 : 0
-                  return (
-                    <NavLink
-                      key={course.title}
-                      to={course.to}
-                      onClick={() => setIsAcademyOpen(false)}
-                      style={{
-                        opacity: isAcademyOpen ? 1 : 0,
-                        transform: isAcademyOpen ? 'translateY(0)' : 'translateY(14px)',
-                        transition: isAcademyOpen
-                          ? `opacity 380ms ease ${delay}ms, transform 380ms ease ${delay}ms, box-shadow 300ms ease`
-                          : 'opacity 150ms ease 0ms, transform 150ms ease 0ms, box-shadow 300ms ease',
-                      }}
-                      className="group border border-brand-border bg-white flex flex-col overflow-hidden rounded-2xl hover:shadow-[0_8px_32px_rgba(130,112,100,0.18)]"
-                    >
-                      {/* Image — 58% of card height */}
-                      <div className="relative overflow-hidden flex-[0_0_58%] min-h-0">
-                        <img
-                          src={course.img}
-                          alt={course.title}
-                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
-                        />
-                        <p className="absolute top-3 left-4 text-[0.6rem] tracking-[0.22em] uppercase text-white/80 font-light">
-                          {course.imgLabel}
-                        </p>
-                      </div>
-                      {/* Content */}
-                      <div className="p-6 flex flex-col gap-3 flex-1 min-h-0">
-                        <h3 className="font-semibold text-[#3d3028] text-base leading-snug">{course.title}</h3>
-                        <p className="text-[#5a5047] text-sm leading-relaxed flex-1">{course.description}</p>
-                        <p className="text-[0.62rem] tracking-[0.22em] uppercase text-[#a0948a] flex items-center gap-1.5 group-hover:text-brand transition-colors duration-200">
-                          EXPLORE <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform duration-200" />
-                        </p>
-                      </div>
-                    </NavLink>
-                  )
-                })}
+              {/* Left: Featured course card */}
+              <div className="h-full min-h-0">
+                <NavLink
+                  to={featuredCourse.to}
+                  onClick={() => setIsAcademyOpen(false)}
+                  style={{
+                    opacity: isAcademyOpen ? 1 : 0,
+                    transform: isAcademyOpen ? 'translateY(0)' : 'translateY(14px)',
+                    transition: isAcademyOpen
+                      ? 'opacity 380ms ease 450ms, transform 380ms ease 450ms, box-shadow 300ms ease'
+                      : 'opacity 150ms ease 0ms, transform 150ms ease 0ms, box-shadow 300ms ease',
+                  }}
+                  className="group border border-brand-border bg-white flex flex-col overflow-hidden rounded-2xl hover:shadow-[0_8px_32px_rgba(130,112,100,0.18)] h-full"
+                >
+                  {/* Image — 58% of card height */}
+                  <div className="relative overflow-hidden flex-[0_0_58%] min-h-0">
+                    <img
+                      src={featuredCourse.img}
+                      alt={featuredCourse.title}
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
+                    />
+                    <p className="absolute top-3 left-4 text-[0.6rem] tracking-[0.22em] uppercase text-white/80 font-light">
+                      {featuredCourse.imgLabel}
+                    </p>
+                  </div>
+                  {/* Content */}
+                  <div className="p-6 flex flex-col gap-3 flex-1 min-h-0">
+                    <h3 className="font-semibold text-[#3d3028] text-base leading-snug">{featuredCourse.title}</h3>
+                    <p className="text-[#5a5047] text-sm leading-relaxed flex-1">{featuredCourse.description}</p>
+                    <p className="text-[0.62rem] tracking-[0.22em] uppercase text-[#a0948a] flex items-center gap-1.5 group-hover:text-brand transition-colors duration-200">
+                      EXPLORE <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform duration-200" />
+                    </p>
+                  </div>
+                </NavLink>
               </div>
 
-              {/* Right: Single modules */}
+              {/* Right: Single modules carousel */}
               <div className="flex flex-col min-h-0 h-full">
                 <p
                   style={{
@@ -259,36 +301,50 @@ export default function Navbar() {
                   Single Courses
                 </p>
 
-                <div className="flex flex-col flex-1 min-h-0">
-                  {singleModules.map((mod, i) => {
-                    const delay = isAcademyOpen ? 460 + i * 75 : 0
-                    return (
-                      <Link
-                        key={mod.num}
-                        to={mod.to}
-                        onClick={() => setIsAcademyOpen(false)}
-                        style={{
-                          opacity: isAcademyOpen ? 1 : 0,
-                          transform: isAcademyOpen ? 'translateY(0)' : 'translateY(8px)',
-                          transition: isAcademyOpen
-                            ? `opacity 480ms ease ${delay}ms, transform 480ms ease ${delay}ms`
-                            : 'opacity 150ms ease 0ms, transform 150ms ease 0ms',
-                        }}
-                        className="group flex items-center gap-5 flex-1 border-b border-brand-border last:border-b-0 transition-all duration-200"
-                      >
-                        <span className="text-sm text-[#c4b8b0] min-w-[28px] shrink-0 font-light group-hover:text-brand transition-colors duration-200">{mod.num}</span>
-                        <span className="text-base text-[#3d3028] flex-1 leading-snug group-hover:text-brand group-hover:translate-x-1.5 transition-all duration-200 ease-out">
-                          {mod.name}
-                        </span>
-                        <ArrowRight
-                          size={14}
-                          className="text-transparent shrink-0 -translate-x-2 opacity-0 group-hover:text-brand group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-200 ease-out"
-                        />
-                      </Link>
-                    )
-                  })}
+                {/* Cards */}
+                <div className="flex-1 min-h-0 flex flex-col pr-10">
+                  <div ref={gridRef} className="grid grid-cols-2 gap-4 flex-1 min-h-0">
+                    {visibleModules.map((mod, i) => {
+                      const delay = isAcademyOpen ? 460 + i * 75 : 0
+                      return (
+                        <Link
+                          key={mod.num}
+                          to={mod.to}
+                          onClick={() => setIsAcademyOpen(false)}
+                          style={{
+                            opacity: isAcademyOpen ? 1 : 0,
+                            transform: isAcademyOpen ? 'translateY(0)' : 'translateY(10px)',
+                            transition: isAcademyOpen
+                              ? `opacity 480ms ease ${delay}ms, transform 480ms ease ${delay}ms`
+                              : 'opacity 150ms ease 0ms, transform 150ms ease 0ms',
+                          }}
+                          className="group flex flex-col min-h-0"
+                        >
+                          <div className="rounded-xl overflow-hidden bg-[#f6f2ec] aspect-square mb-2.5 flex-none">
+                            {mod.image ? (
+                              <img
+                                src={mod.image.url}
+                                alt={mod.image.altText || mod.name}
+                                className="w-full h-full object-contain group-hover:scale-[1.04] transition-transform duration-500"
+                              />
+                            ) : (
+                              <div className="w-full h-full" />
+                            )}
+                          </div>
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-[0.6rem] text-[#c4b8b0] font-light shrink-0">{mod.num}</span>
+                            <span className="text-[0.8rem] text-[#3d3028] leading-snug group-hover:text-brand transition-colors duration-200">
+                              {mod.name}
+                            </span>
+                          </div>
+                        </Link>
+                      )
+                    })}
+                  </div>
+
                 </div>
 
+                {/* Bottom bar: arrows + dots on left, text + CTA on right */}
                 <div
                   style={{
                     opacity: isAcademyOpen ? 1 : 0,
@@ -299,9 +355,39 @@ export default function Navbar() {
                   }}
                   className="mt-4 flex-none flex items-center justify-between gap-4"
                 >
-                  <p className="text-[0.82rem] text-[#a0948a] leading-relaxed">
-                    Purchase any course individually of your choice.
-                  </p>
+                  {/* Left: arrow buttons + dot nav */}
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => goToSlide(currentSlide - 1, 1)}
+                      aria-label="Previous slide"
+                      className="w-7 h-7 rounded-full border border-brand-border flex items-center justify-center text-[#5a5047] hover:border-brand hover:text-brand transition-colors duration-200"
+                    >
+                      <ChevronLeft size={14} />
+                    </button>
+                    <div className="flex items-center gap-1.5">
+                      {Array.from({ length: totalSlides }).map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => goToSlide(i, i > currentSlide ? -1 : 1)}
+                          aria-label={`Slide ${i + 1}`}
+                          className={`rounded-full transition-all duration-300 ${
+                            i === currentSlide
+                              ? 'w-5 h-1.5 bg-brand'
+                              : 'w-1.5 h-1.5 bg-[#c4b8b0] hover:bg-brand/60'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => goToSlide(currentSlide + 1, -1)}
+                      aria-label="Next slide"
+                      className="w-7 h-7 rounded-full border border-brand-border flex items-center justify-center text-[#5a5047] hover:border-brand hover:text-brand transition-colors duration-200"
+                    >
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+
+                  {/* Right: Browse CTA */}
                   <NavLink
                     to="/online-modules"
                     onClick={() => setIsAcademyOpen(false)}
