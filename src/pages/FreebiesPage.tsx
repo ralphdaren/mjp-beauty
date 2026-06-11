@@ -1,8 +1,9 @@
 import { Download } from 'lucide-react'
-import freebie01 from '../assets/freebies/freebie-01.jpg'
+import freebie01 from '../assets/freebies/freebie-01.png'
 import freebie02 from '../assets/freebies/freebie-02.jpg'
 import freebie03 from '../assets/freebies/freebie-03.jpg'
 import freebie04 from '../assets/freebies/freebie-04.jpg'
+import freebie05 from '../assets/freebies/freebie-05.png'
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -52,6 +53,14 @@ const FREEBIES: Freebie[] = [
       "Watch a free, mini tutorial on how I conceal my client's brows! This is a game-changing step that helps to top off the brows and give your clients stunning, carved, eye-catching brows!",
     url: 'https://mjpbeauty.myflodesk.com/browconcealingfreebie',
   },
+  {
+    id: 'brow-business-starter-guide',
+    type: 'PDF Guide',
+    image: freebie05,
+    title: 'Brow Business Starter Guide',
+    description: '',
+    url: '',
+  },
 ]
 
 // ─── Freebie card ─────────────────────────────────────────────────────────────
@@ -61,7 +70,7 @@ function FreebieCard({ freebie }: { freebie: Freebie }) {
 
   return (
     <div className="bg-white rounded-2xl border border-[#e3e2de] shadow-sm overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300">
-      <div className="w-full h-[24rem] overflow-hidden">
+      <div className="w-full aspect-[940/788] overflow-hidden">
         <img src={image} alt={title} className="w-full h-full object-cover" />
       </div>
 
@@ -102,7 +111,7 @@ export default function FreebiesPage() {
 
       {/* Cards */}
       <main className="bg-[#fefefe] py-16 px-6">
-        <div className="max-w-7xl mx-auto grid grid-cols-4 gap-5">
+        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-5">
           {FREEBIES.map((freebie) => (
             <FreebieCard key={freebie.id} freebie={freebie} />
           ))}
