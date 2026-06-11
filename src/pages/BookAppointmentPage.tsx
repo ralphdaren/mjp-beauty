@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Play, Clock, ChevronDown, ChevronLeft, ChevronRight, X, FileText, HelpCircle, Heart } from 'lucide-react'
+import { useState, Fragment, useEffect } from 'react'
+import { Play, Clock, ChevronDown, ChevronLeft, ChevronRight, X, FileText, HelpCircle, Heart, Check } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import browLamImg1 from '@/assets/booking/brow-lam/brow-lm-img-01.jpg'
@@ -12,9 +12,6 @@ import browWtImg2 from '@/assets/booking/brow-wt/brow-wt-img-02.jpg'
 import browWtVid from '@/assets/booking/brow-wt/brow-wt-vid-01.mp4'
 import keratinImg1 from '@/assets/booking/keratin-lt/keratin-lt-img-01.jpg'
 import keratinImg2 from '@/assets/booking/keratin-lt/keratin-lt-img-02.jpg'
-
-const BOOKING_URL_BASE =
-  'https://book.squareup.com/appointments/c1bakh50mrxokq/location/LZ9HGYQ7385ST/services'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -31,7 +28,6 @@ interface Service {
   description: string
   duration: string
   tiers: PriceTier[]
-  bookingUrl: string
   images: string[]
   video: string | null
 }
@@ -53,7 +49,6 @@ const SERVICES: Service[] = [
       { label: 'Brow Lamination Maintenance (with Tint)', price: '$61.90', duration: '30 min' },
       { label: 'Brow Lamination Maintenance (No Tint)', price: '$47.62', duration: '20 min' },
     ],
-    bookingUrl: `${BOOKING_URL_BASE}/YC5WXRVSX5IZ3UW7DYKPZZEE`,
     images: [browLamImg1, browLamImg2],
     video: browLamVid,
   },
@@ -68,7 +63,6 @@ const SERVICES: Service[] = [
       { label: 'Returning Client', price: '$61.90', duration: '30 min' },
       { label: 'New Client', price: '$66.67', duration: '30 min' },
     ],
-    bookingUrl: BOOKING_URL_BASE,
     images: [browStImg1, browStImg2],
     video: null,
   },
@@ -83,7 +77,6 @@ const SERVICES: Service[] = [
       { label: 'Returning Client', price: '$47.62', duration: '20 min' },
       { label: 'New Client', price: '$52.38', duration: '30 min' },
     ],
-    bookingUrl: BOOKING_URL_BASE,
     images: [browWtImg1, browWtImg2],
     video: browWtVid,
   },
@@ -98,7 +91,6 @@ const SERVICES: Service[] = [
       { label: 'With Tint', price: '$104.76', duration: '1 hr' },
       { label: 'No Tint', price: '$95.24', duration: '45 min' },
     ],
-    bookingUrl: `${BOOKING_URL_BASE}/BVWO65BJPHOOPXK4ZMMVRXC3`,
     images: [keratinImg1, keratinImg2],
     video: null,
   },
@@ -209,6 +201,38 @@ const AFTERCARE_DATA = [
   },
 ]
 
+// ─── Mock availability ────────────────────────────────────────────────────────
+
+function buildMockAvailability(): Record<string, string[]> {
+  const allSlots = ['9:00 AM', '10:00 AM', '11:30 AM', '1:00 PM', '2:30 PM', '4:00 PM']
+  const result: Record<string, string[]> = {}
+  const base = new Date()
+  base.setHours(0, 0, 0, 0)
+  for (let i = 1; i <= 60; i++) {
+    const d = new Date(base)
+    d.setDate(base.getDate() + i)
+    if (d.getDay() === 0 || d.getDay() === 6) continue
+    const n = d.getDate()
+    if (n % 7 === 0) continue
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    result[key] = allSlots.filter((_, idx) => (n + idx) % 4 !== 0)
+  }
+  return result
+}
+
+const MOCK_AVAILABILITY = buildMockAvailability()
+
+// ─── Helper ───────────────────────────────────────────────────────────────────
+
+function formatDate(dateStr: string): string {
+  const [y, m, d] = dateStr.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function FlipTier({ tier }: { tier: PriceTier }) {
@@ -228,7 +252,6 @@ function FlipTier({ tier }: { tier: PriceTier }) {
           position: 'relative',
         }}
       >
-        {/* Front — label */}
         <div
           style={{ backfaceVisibility: 'hidden' }}
           className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[#f6f2ec] hover:bg-[#ede8e0] transition-colors text-sm text-[#6b5f58] leading-snug"
@@ -236,8 +259,6 @@ function FlipTier({ tier }: { tier: PriceTier }) {
           <span className="flex-1 min-w-0">{tier.label}</span>
           <ChevronRight size={12} className="shrink-0 text-[#c0b4ac]" />
         </div>
-
-        {/* Back — duration + price */}
         <div
           style={{
             backfaceVisibility: 'hidden',
@@ -267,10 +288,12 @@ function ServiceRow({
   service,
   index,
   onVideoOpen,
+  onBook,
 }: {
   service: Service
   index: number
   onVideoOpen: (src: string) => void
+  onBook: () => void
 }) {
   const [imgIdx, setImgIdx] = useState(0)
   const prev = () => setImgIdx((i) => (i - 1 + service.images.length) % service.images.length)
@@ -281,8 +304,6 @@ function ServiceRow({
 
       {/* Image carousel */}
       <div className="relative shrink-0 w-full aspect-[4/3] md:w-52 lg:w-60 md:aspect-[3/4] overflow-hidden rounded-xl bg-[#ede8e0] group/img">
-
-        {/* Absolute wrapper ensures slides fill the flex-stretched height on desktop */}
         <div className="absolute inset-0">
           <div
             className="flex h-full transition-transform duration-500 ease-in-out"
@@ -296,7 +317,6 @@ function ServiceRow({
           </div>
         </div>
 
-        {/* Nav arrows */}
         <button
           onClick={prev}
           className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-white/70 backdrop-blur-sm rounded-full flex items-center justify-center text-[#827064] opacity-0 group-hover/img:opacity-100 transition-opacity hover:bg-white"
@@ -312,7 +332,6 @@ function ServiceRow({
           <ChevronRight size={13} />
         </button>
 
-        {/* Dot indicators */}
         <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex gap-1.5">
           {service.images.map((_, i) => (
             <button
@@ -326,7 +345,6 @@ function ServiceRow({
           ))}
         </div>
 
-        {/* Watch video button */}
         {service.video && (
           <button
             onClick={() => onVideoOpen(service.video!)}
@@ -338,10 +356,8 @@ function ServiceRow({
         )}
       </div>
 
-      {/* Content — tagline, name, description, options */}
+      {/* Content */}
       <div className="flex-1 min-w-0 md:px-10 lg:px-14">
-
-        {/* Mobile: number + name */}
         <div className="flex items-center gap-3 mb-3 md:hidden">
           <span className="text-[#cdc1b9] text-2xl select-none">
             {String(index + 1).padStart(2, '0')}
@@ -359,37 +375,31 @@ function ServiceRow({
           {service.description}
         </p>
 
-        {/* Flip cards */}
         <div className="space-y-2 max-w-md">
           {service.tiers.map((tier) => (
             <FlipTier key={tier.label} tier={tier} />
           ))}
         </div>
 
-        {/* Mobile: book now button */}
-        <a
-          href={service.bookingUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={onBook}
           className="md:hidden mt-6 block w-full py-3 bg-[#3d3530] text-white text-xs tracking-[0.15em] uppercase text-center rounded-full hover:bg-[#2a2320] active:scale-[0.98] transition-all"
         >
           Book Now
-        </a>
+        </button>
       </div>
 
-      {/* Right column: number + book now (desktop only) */}
+      {/* Desktop right column */}
       <div className="hidden md:flex md:self-stretch shrink-0 w-36 lg:w-44 flex-col items-center justify-between px-5">
         <span className="text-[#d0c4bc] text-4xl select-none">
           {String(index + 1).padStart(2, '0')}
         </span>
-        <a
-          href={service.bookingUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={onBook}
           className="block w-full py-3 bg-[#3d3530] text-white text-xs tracking-[0.15em] uppercase text-center rounded-full hover:bg-[#2a2320] active:scale-[0.98] transition-all"
         >
           Book Now
-        </a>
+        </button>
       </div>
     </div>
   )
@@ -643,10 +653,436 @@ function InfoTabs() {
   )
 }
 
+// ─── Mini calendar ────────────────────────────────────────────────────────────
+
+function MiniCalendar({
+  selected,
+  onSelect,
+}: {
+  selected: string | null
+  onSelect: (date: string) => void
+}) {
+  const todayDate = new Date()
+  todayDate.setHours(0, 0, 0, 0)
+
+  const [viewYear, setViewYear] = useState(todayDate.getFullYear())
+  const [viewMonth, setViewMonth] = useState(todayDate.getMonth())
+
+  const firstDay = new Date(viewYear, viewMonth, 1)
+  const lastDate = new Date(viewYear, viewMonth + 1, 0).getDate()
+  const startDow = firstDay.getDay()
+
+  const monthLabel = firstDay.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+
+  function toKey(d: Date) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  }
+  const todayKey = toKey(todayDate)
+
+  function prevMonth() {
+    if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11) }
+    else setViewMonth(m => m - 1)
+  }
+  function nextMonth() {
+    if (viewMonth === 11) { setViewYear(y => y + 1); setViewMonth(0) }
+    else setViewMonth(m => m + 1)
+  }
+
+  const cells: Array<{ date: Date; key: string } | null> = []
+  for (let i = 0; i < startDow; i++) cells.push(null)
+  for (let d = 1; d <= lastDate; d++) {
+    const date = new Date(viewYear, viewMonth, d)
+    cells.push({ date, key: toKey(date) })
+  }
+
+  return (
+    <div className="select-none">
+      <div className="flex items-center justify-between mb-3">
+        <button
+          onClick={prevMonth}
+          className="p-1 rounded-md hover:bg-[#f0ece6] text-[#827064] transition-colors"
+        >
+          <ChevronLeft size={14} />
+        </button>
+        <span className="text-xs font-semibold text-[#3d3530]">{monthLabel}</span>
+        <button
+          onClick={nextMonth}
+          className="p-1 rounded-md hover:bg-[#f0ece6] text-[#827064] transition-colors"
+        >
+          <ChevronRight size={14} />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-7 mb-1">
+        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => (
+          <div key={d} className="text-center text-[10px] text-[#a0948a] font-medium py-0.5">{d}</div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-7 gap-y-0.5">
+        {cells.map((cell, i) => {
+          if (!cell) return <div key={`e-${i}`} />
+          const { date, key } = cell
+          const isPast = date < todayDate
+          const isAvailable = !isPast && !!MOCK_AVAILABILITY[key]
+          const isSelected = selected === key
+          const isToday = key === todayKey
+
+          return (
+            <button
+              key={key}
+              disabled={!isAvailable}
+              onClick={() => onSelect(key)}
+              className={[
+                'mx-auto flex items-center justify-center w-7 h-7 rounded-full text-xs transition-all duration-150',
+                isSelected
+                  ? 'bg-[#3d3530] text-white font-semibold'
+                  : isAvailable
+                  ? 'text-[#3d3530] hover:bg-[#ede8e0] cursor-pointer'
+                  : 'text-[#d0c4bc] cursor-not-allowed',
+                isToday && !isSelected ? 'ring-1 ring-[#827064]' : '',
+              ].join(' ')}
+            >
+              {date.getDate()}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ─── Booking drawer ───────────────────────────────────────────────────────────
+
+const DRAWER_STEPS = ['Service', 'Date & Options', 'Confirm'] as const
+
+interface BookingDrawerProps {
+  open: boolean
+  onClose: () => void
+  step: 1 | 2 | 3
+  selectedService: Service | null
+  selectedTier: PriceTier | null
+  selectedDate: string | null
+  selectedTime: string | null
+  onSelectService: (s: Service) => void
+  onSelectTier: (t: PriceTier) => void
+  onSelectDate: (d: string) => void
+  onSelectTime: (t: string) => void
+  onBack: () => void
+  onContinue: () => void
+}
+
+function BookingDrawer({
+  open,
+  onClose,
+  step,
+  selectedService,
+  selectedTier,
+  selectedDate,
+  selectedTime,
+  onSelectService,
+  onSelectTier,
+  onSelectDate,
+  onSelectTime,
+  onBack,
+  onContinue,
+}: BookingDrawerProps) {
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [open])
+
+  const canContinue = !!selectedTier && !!selectedDate && !!selectedTime
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] transition-opacity duration-300 ${
+          open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={onClose}
+      />
+
+      {/* Drawer panel */}
+      <div
+        className={`fixed left-0 top-0 z-50 h-full w-full max-w-[420px] bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${
+          open ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[#e3e2de] shrink-0">
+          <div>
+            <p className="text-[10px] tracking-[0.25em] uppercase text-[#a0948a]">MJP Beauty</p>
+            <h2 className="text-lg font-semibold text-[#3d3530]">Book an Appointment</h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-full hover:bg-[#f0ece6] text-[#827064] transition-colors"
+            aria-label="Close"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Step indicator */}
+        <div className="px-6 pt-5 pb-4 shrink-0">
+          <div className="flex items-start">
+            {DRAWER_STEPS.map((label, idx) => {
+              const stepNum = (idx + 1) as 1 | 2 | 3
+              const isComplete = step > stepNum
+              const isCurrent = step === stepNum
+              return (
+                <Fragment key={label}>
+                  <div className="flex flex-col items-center gap-1.5">
+                    {/* Circle — scales up when active, glows; shrinks back and darkens when complete */}
+                    <div className={`relative w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300 ease-in-out ${
+                      isComplete
+                        ? 'bg-[#3d3530] text-white scale-100'
+                        : isCurrent
+                        ? 'bg-[#827064] text-white scale-110 ring-[3px] ring-[#827064]/25'
+                        : 'bg-[#e3e2de] text-[#a0948a] scale-100'
+                    }`}>
+                      {/* Number — fades + shrinks away when step completes */}
+                      <span className={`absolute transition-all duration-300 ease-in-out ${
+                        isComplete ? 'opacity-0 scale-50' : 'opacity-100 scale-100'
+                      }`}>
+                        {stepNum}
+                      </span>
+                      {/* Check — grows in when step completes */}
+                      <span className={`absolute transition-all duration-300 ease-in-out ${
+                        isComplete ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
+                      }`}>
+                        <Check size={11} />
+                      </span>
+                    </div>
+                    {/* Label — transitions color smoothly */}
+                    <span className={`text-[10px] text-center leading-tight whitespace-nowrap transition-all duration-300 ${
+                      isCurrent ? 'text-[#3d3530] font-medium' : 'text-[#a0948a]'
+                    }`}>
+                      {label}
+                    </span>
+                  </div>
+                  {/* Connecting line — grey track with a dark fill that slides left-to-right */}
+                  {idx < DRAWER_STEPS.length - 1 && (
+                    <div className="flex-1 mt-3.5 mx-2 h-px bg-[#e3e2de] relative overflow-hidden">
+                      <div
+                        className="absolute inset-y-0 left-0 bg-[#3d3530] transition-all duration-500 ease-out"
+                        style={{ width: step > stepNum ? '100%' : '0%' }}
+                      />
+                    </div>
+                  )}
+                </Fragment>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Scrollable step content */}
+        <div className="flex-1 overflow-y-auto px-6 pb-8">
+
+          {/* ── Step 1: Service selection ── */}
+          {step === 1 && (
+            <div>
+              <p className="text-sm text-[#6b5f58] mb-5">Which service are you booking today?</p>
+              <div className="space-y-3">
+                {SERVICES.map((service) => (
+                  <button
+                    key={service.id}
+                    onClick={() => onSelectService(service)}
+                    className="w-full text-left flex items-center justify-between gap-4 p-4 rounded-xl border border-[#e3e2de] hover:border-[#a0948a] hover:bg-[#fdf9f6] transition-all group"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm text-[#3d3530] mb-0.5">{service.name}</p>
+                      <p className="text-xs text-[#a0948a]">{service.tagline}</p>
+                    </div>
+                    <ChevronRight size={15} className="shrink-0 text-[#c0b4ac] group-hover:text-[#827064] transition-colors" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 2: Options + calendar ── */}
+          {step === 2 && selectedService && (
+            <div>
+              <button
+                onClick={onBack}
+                className="flex items-center gap-1 text-xs text-[#827064] hover:text-[#3d3530] transition-colors mb-5"
+              >
+                <ChevronLeft size={13} />
+                Back
+              </button>
+
+              <div className="mb-5">
+                <p className="text-[10px] tracking-[0.2em] uppercase text-[#a0948a] mb-0.5">{selectedService.tagline}</p>
+                <h3 className="text-base font-semibold text-[#3d3530]">{selectedService.name}</h3>
+              </div>
+
+              {/* Tier options */}
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a0948a] mb-3">Choose an option</p>
+              <div className="space-y-2 mb-6">
+                {selectedService.tiers.map((tier) => {
+                  const isSelected = selectedTier?.label === tier.label
+                  return (
+                    <button
+                      key={tier.label}
+                      onClick={() => onSelectTier(tier)}
+                      className={`w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
+                        isSelected
+                          ? 'border-[#3d3530] bg-[#f6f2ec]'
+                          : 'border-[#e3e2de] hover:border-[#c0b4ac] hover:bg-[#fdf9f6]'
+                      }`}
+                    >
+                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                        isSelected ? 'border-[#3d3530]' : 'border-[#c0b4ac]'
+                      }`}>
+                        {isSelected && <div className="w-2 h-2 rounded-full bg-[#3d3530]" />}
+                      </div>
+                      <span className="flex-1 text-sm text-[#3d3530] leading-snug">{tier.label}</span>
+                      <div className="text-right shrink-0">
+                        <p className="text-sm font-semibold text-[#3d3530]">{tier.price}</p>
+                        {tier.duration && (
+                          <p className="flex items-center gap-0.5 text-[10px] text-[#a0948a] justify-end">
+                            <Clock size={9} />
+                            {tier.duration}
+                          </p>
+                        )}
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+
+              <div className="border-t border-[#e3e2de] mb-6" />
+
+              {/* Calendar */}
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a0948a] mb-4">Pick a date</p>
+              <MiniCalendar selected={selectedDate} onSelect={onSelectDate} />
+
+              {/* Time slots */}
+              {selectedDate && (
+                <div className="mt-6">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a0948a] mb-3">
+                    Available times — {formatDate(selectedDate)}
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(MOCK_AVAILABILITY[selectedDate] ?? []).map((time) => {
+                      const isSelected = selectedTime === time
+                      return (
+                        <button
+                          key={time}
+                          onClick={() => onSelectTime(time)}
+                          className={`py-2.5 rounded-lg text-xs font-medium border transition-all ${
+                            isSelected
+                              ? 'bg-[#3d3530] text-white border-[#3d3530]'
+                              : 'text-[#3d3530] border-[#e3e2de] hover:border-[#827064] hover:bg-[#fdf9f6]'
+                          }`}
+                        >
+                          {time}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <button
+                disabled={!canContinue}
+                onClick={onContinue}
+                className="mt-8 w-full py-3.5 bg-[#3d3530] text-white text-xs tracking-[0.15em] uppercase rounded-full disabled:opacity-35 disabled:cursor-not-allowed hover:enabled:bg-[#2a2320] active:enabled:scale-[0.98] transition-all"
+              >
+                Continue
+              </button>
+            </div>
+          )}
+
+          {/* ── Step 3: Confirm ── */}
+          {step === 3 && selectedService && selectedTier && selectedDate && selectedTime && (
+            <div>
+              <button
+                onClick={onBack}
+                className="flex items-center gap-1 text-xs text-[#827064] hover:text-[#3d3530] transition-colors mb-5"
+              >
+                <ChevronLeft size={13} />
+                Back
+              </button>
+
+              <p className="text-sm font-medium text-[#3d3530] mb-5">Review your appointment</p>
+
+              <div className="bg-[#f6f2ec] rounded-2xl p-5 space-y-4 mb-6">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Service</p>
+                  <p className="text-sm font-medium text-[#3d3530]">{selectedService.name}</p>
+                </div>
+                <div className="border-t border-[#e3e2de]" />
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Option</p>
+                  <p className="text-sm text-[#3d3530] leading-snug">{selectedTier.label}</p>
+                </div>
+                <div className="border-t border-[#e3e2de]" />
+                <div className="flex gap-8">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Date</p>
+                    <p className="text-sm text-[#3d3530]">{formatDate(selectedDate)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Time</p>
+                    <p className="text-sm text-[#3d3530]">{selectedTime}</p>
+                  </div>
+                </div>
+                <div className="border-t border-[#e3e2de]" />
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a]">Total</p>
+                  <p className="text-base font-semibold text-[#3d3530]">{selectedTier.price}</p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  // TODO: wire to Square Checkout in step 3
+                  alert('Booking confirmed (mock — Square Checkout coming soon)')
+                }}
+                className="w-full py-3.5 bg-[#3d3530] text-white text-xs tracking-[0.15em] uppercase rounded-full hover:bg-[#2a2320] active:scale-[0.98] transition-all"
+              >
+                Confirm & Pay
+              </button>
+
+              <p className="text-center text-[11px] text-[#a0948a] mt-4 leading-relaxed">
+                You'll be redirected to complete payment securely through Square.
+              </p>
+            </div>
+          )}
+
+        </div>
+      </div>
+    </>
+  )
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function BookAppointmentPage() {
   const [videoSrc, setVideoSrc] = useState<string | null>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [step, setStep] = useState<1 | 2 | 3>(1)
+  const [selectedService, setSelectedService] = useState<Service | null>(null)
+  const [selectedTier, setSelectedTier] = useState<PriceTier | null>(null)
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [selectedTime, setSelectedTime] = useState<string | null>(null)
+
+  function openDrawer() {
+    setStep(1)
+    setSelectedService(null)
+    setSelectedTier(null)
+    setSelectedDate(null)
+    setSelectedTime(null)
+    setDrawerOpen(true)
+  }
+
+  function closeDrawer() {
+    setDrawerOpen(false)
+  }
 
   return (
     <>
@@ -669,6 +1105,7 @@ export default function BookAppointmentPage() {
               service={service}
               index={index}
               onVideoOpen={setVideoSrc}
+              onBook={openDrawer}
             />
           ))}
         </div>
@@ -679,6 +1116,29 @@ export default function BookAppointmentPage() {
 
       {/* Video modal */}
       {videoSrc && <VideoModal src={videoSrc} onClose={() => setVideoSrc(null)} />}
+
+      {/* Booking drawer */}
+      <BookingDrawer
+        open={drawerOpen}
+        onClose={closeDrawer}
+        step={step}
+        selectedService={selectedService}
+        selectedTier={selectedTier}
+        selectedDate={selectedDate}
+        selectedTime={selectedTime}
+        onSelectService={(s) => {
+          setSelectedService(s)
+          setSelectedTier(null)
+          setSelectedDate(null)
+          setSelectedTime(null)
+          setStep(2)
+        }}
+        onSelectTier={setSelectedTier}
+        onSelectDate={(d) => { setSelectedDate(d); setSelectedTime(null) }}
+        onSelectTime={setSelectedTime}
+        onBack={() => setStep((s) => Math.max(1, s - 1) as 1 | 2 | 3)}
+        onContinue={() => setStep((s) => Math.min(3, s + 1) as 1 | 2 | 3)}
+      />
     </>
   )
 }
