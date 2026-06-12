@@ -2,6 +2,7 @@ import { useState, Fragment, useEffect } from 'react'
 import { Play, Clock, ChevronDown, ChevronLeft, ChevronRight, X, FileText, HelpCircle, Heart, Check } from 'lucide-react'
 import type { ReactNode } from 'react'
 
+import { useScrollAnimation } from '../hooks/useScrollAnimation'
 import browLamImg1 from '@/assets/booking/brow-lam/brow-lm-img-01.jpg'
 import browLamImg2 from '@/assets/booking/brow-lam/brow-lm-img-02.jpg'
 import browLamVid from '@/assets/booking/brow-lam/brow-lm-vid-01.mp4'
@@ -300,7 +301,10 @@ function ServiceRow({
   const next = () => setImgIdx((i) => (i + 1) % service.images.length)
 
   return (
-    <div className="flex flex-col md:flex-row md:items-center gap-6 md:gap-0 py-10 md:py-14">
+    <div
+      className="anim-fade-up flex flex-col md:flex-row md:items-center gap-6 md:gap-0 py-10 md:py-14"
+      style={{ transitionDelay: `${index * 120}ms` }}
+    >
 
       {/* Image carousel */}
       <div className="relative shrink-0 w-full aspect-[4/3] md:w-52 lg:w-60 md:aspect-[3/4] overflow-hidden rounded-xl bg-[#ede8e0] group/img">
@@ -408,10 +412,10 @@ function ServiceRow({
 function VideoModal({ src, onClose }: { src: string; onClose: () => void }) {
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
       onClick={onClose}
     >
-      <div className="relative max-w-xs w-full" onClick={(e) => e.stopPropagation()}>
+      <div className="relative max-w-xs w-full animate-in zoom-in-95 fade-in duration-200" onClick={(e) => e.stopPropagation()}>
         <button
           onClick={onClose}
           className="absolute -top-10 right-0 text-white/70 hover:text-white transition-colors"
@@ -608,7 +612,7 @@ function InfoTabs() {
     <section className="bg-[#f6f2ec] border-t border-[#e3e2de] py-16">
       <div className="max-w-4xl mx-auto px-6">
 
-        <div className="text-center mb-10">
+        <div className="anim-fade-up text-center mb-10">
           <p className="text-[10px] tracking-[0.25em] uppercase text-[#a0948a] mb-2">Good to Know</p>
           <h2 className="text-2xl font-semibold text-[#3d3530]">Policies & Aftercare</h2>
         </div>
@@ -1063,6 +1067,7 @@ function BookingDrawer({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function BookAppointmentPage() {
+  useScrollAnimation()
   const [videoSrc, setVideoSrc] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [step, setStep] = useState<1 | 2 | 3>(1)
@@ -1088,9 +1093,9 @@ export default function BookAppointmentPage() {
     <>
       {/* Page hero */}
       <div className="bg-[#f6f2ec] border-b border-[#e3e2de] py-14 text-center px-6">
-        <p className="text-[10px] tracking-[0.35em] uppercase text-[#a0948a] mb-3">MJP Beauty</p>
-        <h1 className="text-3xl font-semibold text-[#3d3530] mb-3">Our Services</h1>
-        <p className="text-sm text-[#6b5f58] max-w-md mx-auto leading-relaxed">
+        <p className="hero-eyebrow text-[10px] tracking-[0.35em] uppercase text-[#a0948a] mb-3">MJP Beauty</p>
+        <h1 className="hero-heading text-3xl font-semibold text-[#3d3530] mb-3">Our Services</h1>
+        <p className="hero-tagline text-sm text-[#6b5f58] max-w-md mx-auto leading-relaxed">
           Choose your treatment below and book your appointment. All services are performed by
           Micah — a certified brow and lash artist.
         </p>
