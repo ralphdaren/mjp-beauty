@@ -4,7 +4,7 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { randomUUID } from 'crypto'
-import { squareFetch, getLocationId, getCatalogItems, findVariationByLabel } from '../_square'
+import { squareFetch, getLocationId, getCatalogItems, findVariationByLabel } from '../_square.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')

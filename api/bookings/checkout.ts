@@ -4,7 +4,7 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { randomUUID } from 'crypto'
-import { squareFetch, getLocationId } from '../_square'
+import { squareFetch, getLocationId } from '../_square.js'
 
 // Parse "$123.81" → 12381 (smallest currency unit, CAD cents)
 function priceInCents(priceStr: string): number {

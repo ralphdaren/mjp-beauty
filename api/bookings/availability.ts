@@ -3,7 +3,7 @@
 // Each slot includes the ISO startAt and teamMemberId needed by the create route.
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { squareFetch, getCatalogItems, findVariationByLabel } from '../_square'
+import { squareFetch, getCatalogItems, findVariationByLabel } from '../_square.js'
 
 const CLIENT_TIMEZONE = 'America/Edmonton'
 

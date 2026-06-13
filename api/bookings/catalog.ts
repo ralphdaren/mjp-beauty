@@ -3,7 +3,7 @@
 // Not used by the UI in production; useful for confirming tier label → Square variation name mapping.
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getCatalogItems } from '../_square'
+import { getCatalogItems } from '../_square.js'
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')
