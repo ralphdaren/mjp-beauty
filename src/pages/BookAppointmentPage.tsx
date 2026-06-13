@@ -20,6 +20,13 @@ interface PriceTier {
   label: string
   price: string
   duration?: string
+  squareVariationName?: string
+}
+
+interface Slot {
+  time: string
+  startAt: string
+  teamMemberId: string | null
 }
 
 interface Service {
@@ -75,8 +82,8 @@ const SERVICES: Service[] = [
       'Give your brows life again with a quick and easy brow shaping and waxing package. Includes the option of filling in the brows with a brow pencil and highlighting the brow bone to further accentuate your new brows.',
     duration: '20 min+',
     tiers: [
-      { label: 'Returning Client', price: '$47.62', duration: '20 min' },
-      { label: 'New Client', price: '$52.38', duration: '30 min' },
+      { label: 'Returning Client', price: '$47.62', duration: '20 min', squareVariationName: 'Brow Shape & Wax (Returning Client)' },
+      { label: 'New Client', price: '$52.38', duration: '30 min', squareVariationName: 'Brow Shape & Wax (New Client)' },
     ],
     images: [browWtImg1, browWtImg2],
     video: browWtVid,
@@ -201,27 +208,6 @@ const AFTERCARE_DATA = [
     ],
   },
 ]
-
-// ─── Mock availability ────────────────────────────────────────────────────────
-
-function buildMockAvailability(): Record<string, string[]> {
-  const allSlots = ['9:00 AM', '10:00 AM', '11:30 AM', '1:00 PM', '2:30 PM', '4:00 PM']
-  const result: Record<string, string[]> = {}
-  const base = new Date()
-  base.setHours(0, 0, 0, 0)
-  for (let i = 1; i <= 60; i++) {
-    const d = new Date(base)
-    d.setDate(base.getDate() + i)
-    if (d.getDay() === 0 || d.getDay() === 6) continue
-    const n = d.getDate()
-    if (n % 7 === 0) continue
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-    result[key] = allSlots.filter((_, idx) => (n + idx) % 4 !== 0)
-  }
-  return result
-}
-
-const MOCK_AVAILABILITY = buildMockAvailability()
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
 
@@ -728,7 +714,7 @@ function MiniCalendar({
           if (!cell) return <div key={`e-${i}`} />
           const { date, key } = cell
           const isPast = date < todayDate
-          const isAvailable = !isPast && !!MOCK_AVAILABILITY[key]
+          const isAvailable = !isPast
           const isSelected = selected === key
           const isToday = key === todayKey
 
@@ -768,12 +754,17 @@ interface BookingDrawerProps {
   selectedTier: PriceTier | null
   selectedDate: string | null
   selectedTime: string | null
+  slots: Slot[] | null
+  slotsLoading: boolean
+  slotsError: string | null
+  confirmLoading: boolean
   onSelectService: (s: Service) => void
   onSelectTier: (t: PriceTier) => void
   onSelectDate: (d: string) => void
-  onSelectTime: (t: string) => void
+  onSelectSlot: (slot: Slot) => void
   onBack: () => void
   onContinue: () => void
+  onConfirm: () => void
 }
 
 function BookingDrawer({
@@ -784,12 +775,17 @@ function BookingDrawer({
   selectedTier,
   selectedDate,
   selectedTime,
+  slots,
+  slotsLoading,
+  slotsError,
+  confirmLoading,
   onSelectService,
   onSelectTier,
   onSelectDate,
-  onSelectTime,
+  onSelectSlot,
   onBack,
   onContinue,
+  onConfirm,
 }: BookingDrawerProps) {
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
@@ -965,29 +961,37 @@ function BookingDrawer({
               <MiniCalendar selected={selectedDate} onSelect={onSelectDate} />
 
               {/* Time slots */}
-              {selectedDate && (
+              {selectedDate && selectedTier && (
                 <div className="mt-6">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a0948a] mb-3">
                     Available times — {formatDate(selectedDate)}
                   </p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {(MOCK_AVAILABILITY[selectedDate] ?? []).map((time) => {
-                      const isSelected = selectedTime === time
-                      return (
-                        <button
-                          key={time}
-                          onClick={() => onSelectTime(time)}
-                          className={`py-2.5 rounded-lg text-xs font-medium border transition-all ${
-                            isSelected
-                              ? 'bg-[#3d3530] text-white border-[#3d3530]'
-                              : 'text-[#3d3530] border-[#e3e2de] hover:border-[#827064] hover:bg-[#fdf9f6]'
-                          }`}
-                        >
-                          {time}
-                        </button>
-                      )
-                    })}
-                  </div>
+                  {slotsLoading ? (
+                    <p className="text-sm text-[#a0948a] text-center py-4">Checking availability…</p>
+                  ) : slotsError ? (
+                    <p className="text-sm text-red-400 text-center py-4">Could not load times. Please try again.</p>
+                  ) : !slots || slots.length === 0 ? (
+                    <p className="text-sm text-[#a0948a] text-center py-4">No availability on this date.</p>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-2">
+                      {slots.map((slot) => {
+                        const isSelected = selectedTime === slot.time
+                        return (
+                          <button
+                            key={slot.startAt}
+                            onClick={() => onSelectSlot(slot)}
+                            className={`py-2.5 rounded-lg text-xs font-medium border transition-all ${
+                              isSelected
+                                ? 'bg-[#3d3530] text-white border-[#3d3530]'
+                                : 'text-[#3d3530] border-[#e3e2de] hover:border-[#827064] hover:bg-[#fdf9f6]'
+                            }`}
+                          >
+                            {slot.time}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1043,13 +1047,11 @@ function BookingDrawer({
               </div>
 
               <button
-                onClick={() => {
-                  // TODO: wire to Square Checkout in step 3
-                  alert('Booking confirmed (mock — Square Checkout coming soon)')
-                }}
-                className="w-full py-3.5 bg-[#3d3530] text-white text-xs tracking-[0.15em] uppercase rounded-full hover:bg-[#2a2320] active:scale-[0.98] transition-all"
+                onClick={onConfirm}
+                disabled={confirmLoading}
+                className="w-full py-3.5 bg-[#3d3530] text-white text-xs tracking-[0.15em] uppercase rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:bg-[#2a2320] active:enabled:scale-[0.98] transition-all"
               >
-                Confirm & Pay
+                {confirmLoading ? 'Processing…' : 'Confirm & Pay'}
               </button>
 
               <p className="text-center text-[11px] text-[#a0948a] mt-4 leading-relaxed">
@@ -1075,6 +1077,55 @@ export default function BookAppointmentPage() {
   const [selectedTier, setSelectedTier] = useState<PriceTier | null>(null)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
+  const [selectedStartAt, setSelectedStartAt] = useState<string | null>(null)
+  const [selectedTeamMemberId, setSelectedTeamMemberId] = useState<string | null>(null)
+  const [slots, setSlots] = useState<Slot[] | null>(null)
+  const [slotsLoading, setSlotsLoading] = useState(false)
+  const [slotsError, setSlotsError] = useState<string | null>(null)
+  const [confirmLoading, setConfirmLoading] = useState(false)
+
+  useEffect(() => {
+    if (!selectedTier || !selectedDate) { setSlots(null); return }
+    setSlotsLoading(true)
+    setSlotsError(null)
+    const label = encodeURIComponent(selectedTier.squareVariationName ?? selectedTier.label)
+    fetch(`/api/bookings/availability?tierLabel=${label}&date=${selectedDate}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) setSlotsError(data.error)
+        else setSlots(data.slots ?? [])
+      })
+      .catch(err => setSlotsError(String(err)))
+      .finally(() => setSlotsLoading(false))
+  }, [selectedTier?.label, selectedDate])
+
+  async function handleConfirm() {
+    if (!selectedService || !selectedTier || !selectedStartAt) return
+    setConfirmLoading(true)
+    try {
+      const squareTierLabel = selectedTier.squareVariationName ?? selectedTier.label
+      const createRes = await fetch('/api/bookings/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tierLabel: squareTierLabel, startAt: selectedStartAt, teamMemberId: selectedTeamMemberId }),
+      })
+      const createData = await createRes.json()
+      if (!createRes.ok) throw new Error(createData.error ?? 'Booking failed')
+
+      const checkoutRes = await fetch('/api/bookings/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingId: createData.bookingId, serviceName: selectedService.name, tierLabel: selectedTier.label, price: selectedTier.price }),
+      })
+      const checkoutData = await checkoutRes.json()
+      if (!checkoutRes.ok) throw new Error(checkoutData.error ?? 'Checkout failed')
+
+      window.location.href = checkoutData.checkoutUrl
+    } catch (err) {
+      alert(String(err))
+      setConfirmLoading(false)
+    }
+  }
 
   function openDrawer() {
     setStep(1)
@@ -1082,6 +1133,10 @@ export default function BookAppointmentPage() {
     setSelectedTier(null)
     setSelectedDate(null)
     setSelectedTime(null)
+    setSelectedStartAt(null)
+    setSelectedTeamMemberId(null)
+    setSlots(null)
+    setSlotsError(null)
     setDrawerOpen(true)
   }
 
@@ -1131,18 +1186,40 @@ export default function BookAppointmentPage() {
         selectedTier={selectedTier}
         selectedDate={selectedDate}
         selectedTime={selectedTime}
+        slots={slots}
+        slotsLoading={slotsLoading}
+        slotsError={slotsError}
+        confirmLoading={confirmLoading}
         onSelectService={(s) => {
           setSelectedService(s)
           setSelectedTier(null)
           setSelectedDate(null)
           setSelectedTime(null)
+          setSelectedStartAt(null)
+          setSelectedTeamMemberId(null)
+          setSlots(null)
           setStep(2)
         }}
-        onSelectTier={setSelectedTier}
-        onSelectDate={(d) => { setSelectedDate(d); setSelectedTime(null) }}
-        onSelectTime={setSelectedTime}
+        onSelectTier={(t) => {
+          setSelectedTier(t)
+          setSelectedTime(null)
+          setSelectedStartAt(null)
+          setSelectedTeamMemberId(null)
+        }}
+        onSelectDate={(d) => {
+          setSelectedDate(d)
+          setSelectedTime(null)
+          setSelectedStartAt(null)
+          setSelectedTeamMemberId(null)
+        }}
+        onSelectSlot={(slot) => {
+          setSelectedTime(slot.time)
+          setSelectedStartAt(slot.startAt)
+          setSelectedTeamMemberId(slot.teamMemberId)
+        }}
         onBack={() => setStep((s) => Math.max(1, s - 1) as 1 | 2 | 3)}
         onContinue={() => setStep((s) => Math.min(3, s + 1) as 1 | 2 | 3)}
+        onConfirm={handleConfirm}
       />
     </>
   )
