@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import headVid from '@/assets/home/home-head-vid.mp4'
+const headVid = 'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1781343345/home-head-vid_jlpxxp.mp4'
 import aboutImg from '@/assets/home/about-me.jpg'
 import inPersonCourseImg from '@/assets/home/in-person.jpg'
 import onlineCourseImg from '@/assets/home/online.jpg'

@@ -36,15 +36,7 @@ dist-ssr
 *.mpeg
 *.mpg
 
-# Images
-*.jpg
-*.jpeg
-*.png
-*.gif
-*.bmp
-*.svg
-*.webp
-*.ico
+# Images (tracked in git — videos excluded separately due to size)
 
 # Environment Variables
 .env
