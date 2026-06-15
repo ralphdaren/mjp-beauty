@@ -31,7 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       })
     }
 
-    const { id: variationId, version: variationVersion } = match
+    const { id: variationId, version: variationVersion } = match as { id: string; version: number }
 
     // 2. Build the time window. Square rejects start_at values in the past, so
     //    use the current time when searching today's date.

@@ -32,9 +32,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       })
     }
 
+    const { id: variationId, version: variationVersion } = match as { id: string; version: number }
     const appointmentSegment: Record<string, unknown> = {
-      service_variation_id: match.id,
-      service_variation_version: match.version,
+      service_variation_id: variationId,
+      service_variation_version: variationVersion,
     }
     if (teamMemberId) {
       appointmentSegment.team_member_id = String(teamMemberId)
