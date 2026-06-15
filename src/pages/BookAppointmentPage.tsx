@@ -647,10 +647,16 @@ function InfoTabs() {
 
 function MiniCalendar({
   selected,
+  availableDates,
+  datesLoading,
   onSelect,
+  onMonthChange,
 }: {
   selected: string | null
+  availableDates: Set<string>
+  datesLoading: boolean
   onSelect: (date: string) => void
+  onMonthChange: (year: number, month: number) => void
 }) {
   const todayDate = new Date()
   todayDate.setHours(0, 0, 0, 0)
@@ -670,12 +676,18 @@ function MiniCalendar({
   const todayKey = toKey(todayDate)
 
   function prevMonth() {
-    if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11) }
-    else setViewMonth(m => m - 1)
+    const newYear = viewMonth === 0 ? viewYear - 1 : viewYear
+    const newMonth = viewMonth === 0 ? 11 : viewMonth - 1
+    setViewYear(newYear)
+    setViewMonth(newMonth)
+    onMonthChange(newYear, newMonth)
   }
   function nextMonth() {
-    if (viewMonth === 11) { setViewYear(y => y + 1); setViewMonth(0) }
-    else setViewMonth(m => m + 1)
+    const newYear = viewMonth === 11 ? viewYear + 1 : viewYear
+    const newMonth = viewMonth === 11 ? 0 : viewMonth + 1
+    setViewYear(newYear)
+    setViewMonth(newMonth)
+    onMonthChange(newYear, newMonth)
   }
 
   const cells: Array<{ date: Date; key: string } | null> = []
@@ -709,12 +721,12 @@ function MiniCalendar({
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-y-0.5">
+      <div className={`grid grid-cols-7 gap-y-0.5 transition-opacity duration-200 ${datesLoading ? 'opacity-40' : 'opacity-100'}`}>
         {cells.map((cell, i) => {
           if (!cell) return <div key={`e-${i}`} />
           const { date, key } = cell
           const isPast = date < todayDate
-          const isAvailable = !isPast
+          const isAvailable = !isPast && availableDates.has(key)
           const isSelected = selected === key
           const isToday = key === todayKey
 
@@ -757,11 +769,14 @@ interface BookingDrawerProps {
   slots: Slot[] | null
   slotsLoading: boolean
   slotsError: string | null
+  availableDates: Set<string>
+  datesLoading: boolean
   confirmLoading: boolean
   onSelectService: (s: Service) => void
   onSelectTier: (t: PriceTier) => void
   onSelectDate: (d: string) => void
   onSelectSlot: (slot: Slot) => void
+  onMonthChange: (year: number, month: number) => void
   onBack: () => void
   onContinue: () => void
   onConfirm: () => void
@@ -778,11 +793,14 @@ function BookingDrawer({
   slots,
   slotsLoading,
   slotsError,
+  availableDates,
+  datesLoading,
   confirmLoading,
   onSelectService,
   onSelectTier,
   onSelectDate,
   onSelectSlot,
+  onMonthChange,
   onBack,
   onContinue,
   onConfirm,
@@ -958,7 +976,13 @@ function BookingDrawer({
 
               {/* Calendar */}
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a0948a] mb-4">Pick a date</p>
-              <MiniCalendar selected={selectedDate} onSelect={onSelectDate} />
+              <MiniCalendar
+                selected={selectedDate}
+                availableDates={availableDates}
+                datesLoading={datesLoading}
+                onSelect={onSelectDate}
+                onMonthChange={onMonthChange}
+              />
 
               {/* Time slots */}
               {selectedDate && selectedTier && (
@@ -1082,7 +1106,26 @@ export default function BookAppointmentPage() {
   const [slots, setSlots] = useState<Slot[] | null>(null)
   const [slotsLoading, setSlotsLoading] = useState(false)
   const [slotsError, setSlotsError] = useState<string | null>(null)
+  const [availableDates, setAvailableDates] = useState<Set<string>>(new Set())
+  const [datesLoading, setDatesLoading] = useState(false)
   const [confirmLoading, setConfirmLoading] = useState(false)
+
+  function fetchAvailableDates(tier: PriceTier, year: number, month: number) {
+    const label = encodeURIComponent(tier.squareVariationName ?? tier.label)
+    const monthStr = `${year}-${String(month + 1).padStart(2, '0')}`
+    setDatesLoading(true)
+    fetch(`/api/bookings/available-dates?tierLabel=${label}&month=${monthStr}`)
+      .then(r => r.json())
+      .then(data => setAvailableDates(new Set<string>(data.dates ?? [])))
+      .catch(() => setAvailableDates(new Set()))
+      .finally(() => setDatesLoading(false))
+  }
+
+  useEffect(() => {
+    if (!selectedTier) { setAvailableDates(new Set()); return }
+    const now = new Date()
+    fetchAvailableDates(selectedTier, now.getFullYear(), now.getMonth())
+  }, [selectedTier?.label])
 
   useEffect(() => {
     if (!selectedTier || !selectedDate) { setSlots(null); return }
@@ -1189,6 +1232,8 @@ export default function BookAppointmentPage() {
         slots={slots}
         slotsLoading={slotsLoading}
         slotsError={slotsError}
+        availableDates={availableDates}
+        datesLoading={datesLoading}
         confirmLoading={confirmLoading}
         onSelectService={(s) => {
           setSelectedService(s)
@@ -1216,6 +1261,9 @@ export default function BookAppointmentPage() {
           setSelectedTime(slot.time)
           setSelectedStartAt(slot.startAt)
           setSelectedTeamMemberId(slot.teamMemberId)
+        }}
+        onMonthChange={(year, month) => {
+          if (selectedTier) fetchAvailableDates(selectedTier, year, month)
         }}
         onBack={() => setStep((s) => Math.max(1, s - 1) as 1 | 2 | 3)}
         onContinue={() => setStep((s) => Math.min(3, s + 1) as 1 | 2 | 3)}

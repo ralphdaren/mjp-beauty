@@ -3,7 +3,7 @@
 // Each slot includes the ISO startAt and teamMemberId needed by the create route.
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { squareFetch, getCatalogItems, findVariationByLabel } from '../_square.js'
+import { squareFetch, getCatalogItems, getLocationId, findVariationByLabel } from '../_square.js'
 
 const CLIENT_TIMEZONE = 'America/Edmonton'
 
@@ -20,8 +20,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // 1. Resolve the Square variation ID from the tier label
-    const catalogItems = await getCatalogItems()
+    // 1. Resolve location ID and catalog in parallel
+    const [locationId, catalogItems] = await Promise.all([getLocationId(), getCatalogItems()])
     const match = findVariationByLabel(catalogItems, tierLabel)
 
     if (!match.id) {
@@ -33,10 +33,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { id: variationId, version: variationVersion } = match
 
-    // 2. Search availability for the full UTC day.
-    //    Edmonton is UTC-6 (MDT) / UTC-7 (MST). All business-hours slots
-    //    (9 AM – 5 PM local) fall within the UTC window below.
-    const startAt = `${date}T00:00:00.000Z`
+    // 2. Build the time window. Square rejects start_at values in the past, so
+    //    use the current time when searching today's date.
+    const now = new Date()
+    const dayStart = new Date(`${date}T00:00:00.000Z`)
+    const startAt = dayStart > now ? dayStart.toISOString() : now.toISOString()
     const endAt = `${date}T23:59:59.999Z`
 
     const availData = await squareFetch('/v2/bookings/availability/search', {
@@ -44,6 +45,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       body: JSON.stringify({
         query: {
           filter: {
+            location_id: locationId,
             start_at_range: { start_at: startAt, end_at: endAt },
             segment_filters: [{ service_variation_id: variationId }],
           },
@@ -67,6 +69,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     res.status(200).json({ slots })
   } catch (err) {
+    console.error('[availability] Square error:', String(err))
     res.status(500).json({ error: String(err) })
   }
 }
