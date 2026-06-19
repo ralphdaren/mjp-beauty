@@ -1,5 +1,5 @@
-import { useState, Fragment, useEffect } from 'react'
-import { Play, Clock, ChevronDown, ChevronLeft, ChevronRight, X, FileText, HelpCircle, Heart, Check } from 'lucide-react'
+import { useState, useRef, Fragment, useEffect } from 'react'
+import { Play, Clock, ChevronDown, ChevronLeft, ChevronRight, X, FileText, HelpCircle, Heart, Check, CheckCircle2 } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import { useScrollAnimation } from '../hooks/useScrollAnimation'
@@ -756,12 +756,14 @@ function MiniCalendar({
 
 // ─── Booking drawer ───────────────────────────────────────────────────────────
 
-const DRAWER_STEPS = ['Service', 'Date & Options', 'Confirm'] as const
+const DRAWER_STEPS = ['Service', 'Date & Options', 'Your Details', 'Confirm'] as const
+
+type DrawerStep = 1 | 2 | 3 | 4
 
 interface BookingDrawerProps {
   open: boolean
   onClose: () => void
-  step: 1 | 2 | 3
+  step: DrawerStep
   selectedService: Service | null
   selectedTier: PriceTier | null
   selectedDate: string | null
@@ -772,6 +774,16 @@ interface BookingDrawerProps {
   availableDates: Set<string>
   datesLoading: boolean
   confirmLoading: boolean
+  bookingSuccess: boolean
+  // Customer form
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  cardConsent: boolean
+  policyConsent: boolean
+  locationId: string | null
+  // Handlers
   onSelectService: (s: Service) => void
   onSelectTier: (t: PriceTier) => void
   onSelectDate: (d: string) => void
@@ -780,6 +792,13 @@ interface BookingDrawerProps {
   onBack: () => void
   onContinue: () => void
   onConfirm: () => void
+  onStep3Continue: (sourceId: string) => void
+  onFirstNameChange: (v: string) => void
+  onLastNameChange: (v: string) => void
+  onEmailChange: (v: string) => void
+  onPhoneChange: (v: string) => void
+  onCardConsentChange: (v: boolean) => void
+  onPolicyConsentChange: (v: boolean) => void
 }
 
 function BookingDrawer({
@@ -796,6 +815,14 @@ function BookingDrawer({
   availableDates,
   datesLoading,
   confirmLoading,
+  bookingSuccess,
+  firstName,
+  lastName,
+  email,
+  phone,
+  cardConsent,
+  policyConsent,
+  locationId,
   onSelectService,
   onSelectTier,
   onSelectDate,
@@ -804,13 +831,105 @@ function BookingDrawer({
   onBack,
   onContinue,
   onConfirm,
+  onStep3Continue,
+  onFirstNameChange,
+  onLastNameChange,
+  onEmailChange,
+  onPhoneChange,
+  onCardConsentChange,
+  onPolicyConsentChange,
 }: BookingDrawerProps) {
+  const cardRef = useRef<any>(null)
+  const [step3Loading, setStep3Loading] = useState(false)
+  const [cardError, setCardError] = useState<string | null>(null)
+
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [open])
 
-  const canContinue = !!selectedTier && !!selectedDate && !!selectedTime
+  // Initialize / destroy Square card form when step 3 is shown
+  useEffect(() => {
+    if (step !== 3 || !open || !locationId) {
+      if (cardRef.current) {
+        cardRef.current.destroy().catch(() => {})
+        cardRef.current = null
+      }
+      return
+    }
+
+    const sq = (window as any).Square
+    if (!sq) {
+      setCardError('Payment system failed to load. Please refresh the page.')
+      return
+    }
+
+    let cancelled = false
+    setCardError(null)
+
+    async function init() {
+      try {
+        const payments = sq.payments(import.meta.env.VITE_SQUARE_APP_ID, locationId)
+        if (cancelled) return
+        const card = await payments.card({
+          style: {
+            '.input-container': { borderColor: '#e3e2de', borderRadius: '8px' },
+            '.input-container.is-focus': { borderColor: '#827064' },
+            '.input-container.is-error': { borderColor: '#ef4444' },
+            input: { color: '#3d3530', fontSize: '14px' },
+            'input::placeholder': { color: '#c0b4ac' },
+          },
+        })
+        if (cancelled) { card.destroy(); return }
+        await card.attach('#card-container')
+        cardRef.current = card
+      } catch {
+        if (!cancelled) setCardError('Failed to load card form. Please try again.')
+      }
+    }
+
+    init()
+
+    return () => {
+      cancelled = true
+      if (cardRef.current) {
+        cardRef.current.destroy().catch(() => {})
+        cardRef.current = null
+      }
+    }
+  }, [step, open, locationId])
+
+  async function handleCardContinue() {
+    if (!cardRef.current) return
+    setStep3Loading(true)
+    setCardError(null)
+    try {
+      const result = await cardRef.current.tokenize()
+      if (result.status === 'OK') {
+        onStep3Continue(result.token as string)
+      } else {
+        setCardError(result.errors?.[0]?.message ?? 'Card verification failed. Please check your details.')
+      }
+    } catch (err) {
+      setCardError(String(err))
+    } finally {
+      setStep3Loading(false)
+    }
+  }
+
+  const canContinueStep2 = !!selectedTier && !!selectedDate && !!selectedTime
+
+  const canContinueStep3 = (
+    firstName.trim() !== '' &&
+    lastName.trim() !== '' &&
+    email.trim().includes('@') &&
+    phone.trim() !== '' &&
+    cardConsent &&
+    policyConsent
+  )
+
+  const inputCls = 'w-full px-3 py-2.5 rounded-lg border border-[#e3e2de] text-sm text-[#3d3530] placeholder:text-[#c0b4ac] focus:outline-none focus:border-[#827064] bg-white transition-colors'
+  const labelCls = 'block text-[10px] font-semibold uppercase tracking-[0.15em] text-[#a0948a] mb-1.5'
 
   return (
     <>
@@ -828,263 +947,417 @@ function BookingDrawer({
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[#e3e2de] shrink-0">
-          <div>
-            <p className="text-[10px] tracking-[0.25em] uppercase text-[#a0948a]">MJP Beauty</p>
-            <h2 className="text-lg font-semibold text-[#3d3530]">Book an Appointment</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-[#f0ece6] text-[#827064] transition-colors"
-            aria-label="Close"
-          >
-            <X size={18} />
-          </button>
-        </div>
+        {bookingSuccess ? (
+          /* ── Success screen ── */
+          <div className="flex-1 flex flex-col items-center justify-center px-8 py-12 text-center overflow-y-auto">
+            <div className="w-16 h-16 bg-[#f0f7f2] rounded-full flex items-center justify-center mb-5">
+              <CheckCircle2 size={32} className="text-[#4a9d6f]" />
+            </div>
+            <h2 className="text-xl font-semibold text-[#3d3530] mb-2">You're all booked!</h2>
+            <p className="text-sm text-[#6b5f58] leading-relaxed mb-8">
+              Your appointment request has been received. Check your email and phone — you'll receive a confirmation with all your appointment details shortly.
+            </p>
 
-        {/* Step indicator */}
-        <div className="px-6 pt-5 pb-4 shrink-0">
-          <div className="flex items-start">
-            {DRAWER_STEPS.map((label, idx) => {
-              const stepNum = (idx + 1) as 1 | 2 | 3
-              const isComplete = step > stepNum
-              const isCurrent = step === stepNum
-              return (
-                <Fragment key={label}>
-                  <div className="flex flex-col items-center gap-1.5">
-                    {/* Circle — scales up when active, glows; shrinks back and darkens when complete */}
-                    <div className={`relative w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300 ease-in-out ${
-                      isComplete
-                        ? 'bg-[#3d3530] text-white scale-100'
-                        : isCurrent
-                        ? 'bg-[#827064] text-white scale-110 ring-[3px] ring-[#827064]/25'
-                        : 'bg-[#e3e2de] text-[#a0948a] scale-100'
-                    }`}>
-                      {/* Number — fades + shrinks away when step completes */}
-                      <span className={`absolute transition-all duration-300 ease-in-out ${
-                        isComplete ? 'opacity-0 scale-50' : 'opacity-100 scale-100'
-                      }`}>
-                        {stepNum}
-                      </span>
-                      {/* Check — grows in when step completes */}
-                      <span className={`absolute transition-all duration-300 ease-in-out ${
-                        isComplete ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
-                      }`}>
-                        <Check size={11} />
-                      </span>
-                    </div>
-                    {/* Label — transitions color smoothly */}
-                    <span className={`text-[10px] text-center leading-tight whitespace-nowrap transition-all duration-300 ${
-                      isCurrent ? 'text-[#3d3530] font-medium' : 'text-[#a0948a]'
-                    }`}>
-                      {label}
-                    </span>
-                  </div>
-                  {/* Connecting line — grey track with a dark fill that slides left-to-right */}
-                  {idx < DRAWER_STEPS.length - 1 && (
-                    <div className="flex-1 mt-3.5 mx-2 h-px bg-[#e3e2de] relative overflow-hidden">
-                      <div
-                        className="absolute inset-y-0 left-0 bg-[#3d3530] transition-all duration-500 ease-out"
-                        style={{ width: step > stepNum ? '100%' : '0%' }}
-                      />
-                    </div>
-                  )}
-                </Fragment>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Scrollable step content */}
-        <div className="flex-1 overflow-y-auto px-6 pb-8">
-
-          {/* ── Step 1: Service selection ── */}
-          {step === 1 && (
-            <div>
-              <p className="text-sm text-[#6b5f58] mb-5">Which service are you booking today?</p>
-              <div className="space-y-3">
-                {SERVICES.map((service) => (
-                  <button
-                    key={service.id}
-                    onClick={() => onSelectService(service)}
-                    className="w-full text-left flex items-center justify-between gap-4 p-4 rounded-xl border border-[#e3e2de] hover:border-[#a0948a] hover:bg-[#fdf9f6] transition-all group"
-                  >
-                    <div className="min-w-0">
-                      <p className="font-medium text-sm text-[#3d3530] mb-0.5">{service.name}</p>
-                      <p className="text-xs text-[#a0948a]">{service.tagline}</p>
-                    </div>
-                    <ChevronRight size={15} className="shrink-0 text-[#c0b4ac] group-hover:text-[#827064] transition-colors" />
-                  </button>
-                ))}
+            <div className="bg-[#f6f2ec] rounded-2xl p-5 w-full text-left space-y-4 mb-8">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Service</p>
+                <p className="text-sm font-medium text-[#3d3530]">{selectedService?.name}</p>
+              </div>
+              <div className="border-t border-[#e3e2de]" />
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Option</p>
+                <p className="text-sm text-[#3d3530] leading-snug">{selectedTier?.label}</p>
+              </div>
+              <div className="border-t border-[#e3e2de]" />
+              <div className="flex gap-8">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Date</p>
+                  <p className="text-sm text-[#3d3530]">{selectedDate ? formatDate(selectedDate) : ''}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Time</p>
+                  <p className="text-sm text-[#3d3530]">{selectedTime}</p>
+                </div>
               </div>
             </div>
-          )}
 
-          {/* ── Step 2: Options + calendar ── */}
-          {step === 2 && selectedService && (
-            <div>
-              <button
-                onClick={onBack}
-                className="flex items-center gap-1 text-xs text-[#827064] hover:text-[#3d3530] transition-colors mb-5"
-              >
-                <ChevronLeft size={13} />
-                Back
-              </button>
-
-              <div className="mb-5">
-                <p className="text-[10px] tracking-[0.2em] uppercase text-[#a0948a] mb-0.5">{selectedService.tagline}</p>
-                <h3 className="text-base font-semibold text-[#3d3530]">{selectedService.name}</h3>
+            <button
+              onClick={onClose}
+              className="w-full py-3.5 bg-[#3d3530] text-white text-xs tracking-[0.15em] uppercase rounded-full hover:bg-[#2a2320] active:scale-[0.98] transition-all"
+            >
+              Done
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[#e3e2de] shrink-0">
+              <div>
+                <p className="text-[10px] tracking-[0.25em] uppercase text-[#a0948a]">MJP Beauty</p>
+                <h2 className="text-lg font-semibold text-[#3d3530]">Book an Appointment</h2>
               </div>
+              <button
+                onClick={onClose}
+                className="p-1.5 rounded-full hover:bg-[#f0ece6] text-[#827064] transition-colors"
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
 
-              {/* Tier options */}
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a0948a] mb-3">Choose an option</p>
-              <div className="space-y-2 mb-6">
-                {selectedService.tiers.map((tier) => {
-                  const isSelected = selectedTier?.label === tier.label
+            {/* Step indicator */}
+            <div className="px-6 pt-5 pb-4 shrink-0">
+              <div className="flex items-start">
+                {DRAWER_STEPS.map((label, idx) => {
+                  const stepNum = (idx + 1) as DrawerStep
+                  const isComplete = step > stepNum
+                  const isCurrent = step === stepNum
                   return (
-                    <button
-                      key={tier.label}
-                      onClick={() => onSelectTier(tier)}
-                      className={`w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
-                        isSelected
-                          ? 'border-[#3d3530] bg-[#f6f2ec]'
-                          : 'border-[#e3e2de] hover:border-[#c0b4ac] hover:bg-[#fdf9f6]'
-                      }`}
-                    >
-                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-                        isSelected ? 'border-[#3d3530]' : 'border-[#c0b4ac]'
-                      }`}>
-                        {isSelected && <div className="w-2 h-2 rounded-full bg-[#3d3530]" />}
+                    <Fragment key={label}>
+                      <div className="flex flex-col items-center gap-1.5">
+                        <div className={`relative w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300 ease-in-out ${
+                          isComplete
+                            ? 'bg-[#3d3530] text-white scale-100'
+                            : isCurrent
+                            ? 'bg-[#827064] text-white scale-110 ring-[3px] ring-[#827064]/25'
+                            : 'bg-[#e3e2de] text-[#a0948a] scale-100'
+                        }`}>
+                          <span className={`absolute transition-all duration-300 ease-in-out ${
+                            isComplete ? 'opacity-0 scale-50' : 'opacity-100 scale-100'
+                          }`}>
+                            {stepNum}
+                          </span>
+                          <span className={`absolute transition-all duration-300 ease-in-out ${
+                            isComplete ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
+                          }`}>
+                            <Check size={11} />
+                          </span>
+                        </div>
+                        <span className={`text-[10px] text-center leading-tight whitespace-nowrap transition-all duration-300 ${
+                          isCurrent ? 'text-[#3d3530] font-medium' : 'text-[#a0948a]'
+                        }`}>
+                          {label}
+                        </span>
                       </div>
-                      <span className="flex-1 text-sm text-[#3d3530] leading-snug">{tier.label}</span>
-                      <div className="text-right shrink-0">
-                        <p className="text-sm font-semibold text-[#3d3530]">{tier.price}</p>
-                        {tier.duration && (
-                          <p className="flex items-center gap-0.5 text-[10px] text-[#a0948a] justify-end">
-                            <Clock size={9} />
-                            {tier.duration}
-                          </p>
-                        )}
-                      </div>
-                    </button>
+                      {idx < DRAWER_STEPS.length - 1 && (
+                        <div className="flex-1 mt-3.5 mx-1 h-px bg-[#e3e2de] relative overflow-hidden">
+                          <div
+                            className="absolute inset-y-0 left-0 bg-[#3d3530] transition-all duration-500 ease-out"
+                            style={{ width: step > stepNum ? '100%' : '0%' }}
+                          />
+                        </div>
+                      )}
+                    </Fragment>
                   )
                 })}
               </div>
+            </div>
 
-              <div className="border-t border-[#e3e2de] mb-6" />
+            {/* Scrollable step content */}
+            <div className="flex-1 overflow-y-auto px-6 pb-8">
 
-              {/* Calendar */}
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a0948a] mb-4">Pick a date</p>
-              <MiniCalendar
-                selected={selectedDate}
-                availableDates={availableDates}
-                datesLoading={datesLoading}
-                onSelect={onSelectDate}
-                onMonthChange={onMonthChange}
-              />
-
-              {/* Time slots */}
-              {selectedDate && selectedTier && (
-                <div className="mt-6">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a0948a] mb-3">
-                    Available times — {formatDate(selectedDate)}
-                  </p>
-                  {slotsLoading ? (
-                    <p className="text-sm text-[#a0948a] text-center py-4">Checking availability…</p>
-                  ) : slotsError ? (
-                    <p className="text-sm text-red-400 text-center py-4">Could not load times. Please try again.</p>
-                  ) : !slots || slots.length === 0 ? (
-                    <p className="text-sm text-[#a0948a] text-center py-4">No availability on this date.</p>
-                  ) : (
-                    <div className="grid grid-cols-3 gap-2">
-                      {slots.map((slot) => {
-                        const isSelected = selectedTime === slot.time
-                        return (
-                          <button
-                            key={slot.startAt}
-                            onClick={() => onSelectSlot(slot)}
-                            className={`py-2.5 rounded-lg text-xs font-medium border transition-all ${
-                              isSelected
-                                ? 'bg-[#3d3530] text-white border-[#3d3530]'
-                                : 'text-[#3d3530] border-[#e3e2de] hover:border-[#827064] hover:bg-[#fdf9f6]'
-                            }`}
-                          >
-                            {slot.time}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  )}
+              {/* ── Step 1: Service selection ── */}
+              {step === 1 && (
+                <div>
+                  <p className="text-sm text-[#6b5f58] mb-5">Which service are you booking today?</p>
+                  <div className="space-y-3">
+                    {SERVICES.map((service) => (
+                      <button
+                        key={service.id}
+                        onClick={() => onSelectService(service)}
+                        className="w-full text-left flex items-center justify-between gap-4 p-4 rounded-xl border border-[#e3e2de] hover:border-[#a0948a] hover:bg-[#fdf9f6] transition-all group"
+                      >
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm text-[#3d3530] mb-0.5">{service.name}</p>
+                          <p className="text-xs text-[#a0948a]">{service.tagline}</p>
+                        </div>
+                        <ChevronRight size={15} className="shrink-0 text-[#c0b4ac] group-hover:text-[#827064] transition-colors" />
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
 
-              <button
-                disabled={!canContinue}
-                onClick={onContinue}
-                className="mt-8 w-full py-3.5 bg-[#3d3530] text-white text-xs tracking-[0.15em] uppercase rounded-full disabled:opacity-35 disabled:cursor-not-allowed hover:enabled:bg-[#2a2320] active:enabled:scale-[0.98] transition-all"
-              >
-                Continue
-              </button>
-            </div>
-          )}
-
-          {/* ── Step 3: Confirm ── */}
-          {step === 3 && selectedService && selectedTier && selectedDate && selectedTime && (
-            <div>
-              <button
-                onClick={onBack}
-                className="flex items-center gap-1 text-xs text-[#827064] hover:text-[#3d3530] transition-colors mb-5"
-              >
-                <ChevronLeft size={13} />
-                Back
-              </button>
-
-              <p className="text-sm font-medium text-[#3d3530] mb-5">Review your appointment</p>
-
-              <div className="bg-[#f6f2ec] rounded-2xl p-5 space-y-4 mb-6">
+              {/* ── Step 2: Options + calendar ── */}
+              {step === 2 && selectedService && (
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Service</p>
-                  <p className="text-sm font-medium text-[#3d3530]">{selectedService.name}</p>
+                  <button
+                    onClick={onBack}
+                    className="flex items-center gap-1 text-xs text-[#827064] hover:text-[#3d3530] transition-colors mb-5"
+                  >
+                    <ChevronLeft size={13} />
+                    Back
+                  </button>
+
+                  <div className="mb-5">
+                    <p className="text-[10px] tracking-[0.2em] uppercase text-[#a0948a] mb-0.5">{selectedService.tagline}</p>
+                    <h3 className="text-base font-semibold text-[#3d3530]">{selectedService.name}</h3>
+                  </div>
+
+                  {/* Tier options */}
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a0948a] mb-3">Choose an option</p>
+                  <div className="space-y-2 mb-6">
+                    {selectedService.tiers.map((tier) => {
+                      const isSelected = selectedTier?.label === tier.label
+                      return (
+                        <button
+                          key={tier.label}
+                          onClick={() => onSelectTier(tier)}
+                          className={`w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
+                            isSelected
+                              ? 'border-[#3d3530] bg-[#f6f2ec]'
+                              : 'border-[#e3e2de] hover:border-[#c0b4ac] hover:bg-[#fdf9f6]'
+                          }`}
+                        >
+                          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                            isSelected ? 'border-[#3d3530]' : 'border-[#c0b4ac]'
+                          }`}>
+                            {isSelected && <div className="w-2 h-2 rounded-full bg-[#3d3530]" />}
+                          </div>
+                          <span className="flex-1 text-sm text-[#3d3530] leading-snug">{tier.label}</span>
+                          <div className="text-right shrink-0">
+                            <p className="text-sm font-semibold text-[#3d3530]">{tier.price}</p>
+                            {tier.duration && (
+                              <p className="flex items-center gap-0.5 text-[10px] text-[#a0948a] justify-end">
+                                <Clock size={9} />
+                                {tier.duration}
+                              </p>
+                            )}
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  <div className="border-t border-[#e3e2de] mb-6" />
+
+                  {/* Calendar */}
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a0948a] mb-4">Pick a date</p>
+                  <MiniCalendar
+                    selected={selectedDate}
+                    availableDates={availableDates}
+                    datesLoading={datesLoading}
+                    onSelect={onSelectDate}
+                    onMonthChange={onMonthChange}
+                  />
+
+                  {/* Time slots */}
+                  {selectedDate && selectedTier && (
+                    <div className="mt-6">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a0948a] mb-3">
+                        Available times — {formatDate(selectedDate)}
+                      </p>
+                      {slotsLoading ? (
+                        <p className="text-sm text-[#a0948a] text-center py-4">Checking availability…</p>
+                      ) : slotsError ? (
+                        <p className="text-sm text-red-400 text-center py-4">Could not load times. Please try again.</p>
+                      ) : !slots || slots.length === 0 ? (
+                        <p className="text-sm text-[#a0948a] text-center py-4">No availability on this date.</p>
+                      ) : (
+                        <div className="grid grid-cols-3 gap-2">
+                          {slots.map((slot) => {
+                            const isSelected = selectedTime === slot.time
+                            return (
+                              <button
+                                key={slot.startAt}
+                                onClick={() => onSelectSlot(slot)}
+                                className={`py-2.5 rounded-lg text-xs font-medium border transition-all ${
+                                  isSelected
+                                    ? 'bg-[#3d3530] text-white border-[#3d3530]'
+                                    : 'text-[#3d3530] border-[#e3e2de] hover:border-[#827064] hover:bg-[#fdf9f6]'
+                                }`}
+                              >
+                                {slot.time}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <button
+                    disabled={!canContinueStep2}
+                    onClick={onContinue}
+                    className="mt-8 w-full py-3.5 bg-[#3d3530] text-white text-xs tracking-[0.15em] uppercase rounded-full disabled:opacity-35 disabled:cursor-not-allowed hover:enabled:bg-[#2a2320] active:enabled:scale-[0.98] transition-all"
+                  >
+                    Continue
+                  </button>
                 </div>
-                <div className="border-t border-[#e3e2de]" />
+              )}
+
+              {/* ── Step 3: Customer details + card on file ── */}
+              {step === 3 && (
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Option</p>
-                  <p className="text-sm text-[#3d3530] leading-snug">{selectedTier.label}</p>
-                </div>
-                <div className="border-t border-[#e3e2de]" />
-                <div className="flex gap-8">
-                  <div>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Date</p>
-                    <p className="text-sm text-[#3d3530]">{formatDate(selectedDate)}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Time</p>
-                    <p className="text-sm text-[#3d3530]">{selectedTime}</p>
-                  </div>
-                </div>
-                <div className="border-t border-[#e3e2de]" />
-                <div className="flex items-center justify-between">
-                  <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a]">Total</p>
-                  <p className="text-base font-semibold text-[#3d3530]">{selectedTier.price}</p>
-                </div>
-              </div>
+                  <button
+                    onClick={onBack}
+                    className="flex items-center gap-1 text-xs text-[#827064] hover:text-[#3d3530] transition-colors mb-5"
+                  >
+                    <ChevronLeft size={13} />
+                    Back
+                  </button>
 
-              <button
-                onClick={onConfirm}
-                disabled={confirmLoading}
-                className="w-full py-3.5 bg-[#3d3530] text-white text-xs tracking-[0.15em] uppercase rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:bg-[#2a2320] active:enabled:scale-[0.98] transition-all"
-              >
-                {confirmLoading ? 'Processing…' : 'Confirm & Pay'}
-              </button>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a0948a] mb-4">Contact Information</p>
 
-              <p className="text-center text-[11px] text-[#a0948a] mt-4 leading-relaxed">
-                You'll be redirected to complete payment securely through Square.
-              </p>
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div>
+                      <label className={labelCls}>First Name</label>
+                      <input
+                        type="text"
+                        value={firstName}
+                        onChange={e => onFirstNameChange(e.target.value)}
+                        placeholder="Jane"
+                        className={inputCls}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Last Name</label>
+                      <input
+                        type="text"
+                        value={lastName}
+                        onChange={e => onLastNameChange(e.target.value)}
+                        placeholder="Doe"
+                        className={inputCls}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <label className={labelCls}>Email</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={e => onEmailChange(e.target.value)}
+                      placeholder="jane@example.com"
+                      className={inputCls}
+                    />
+                  </div>
+
+                  <div className="mb-6">
+                    <label className={labelCls}>Phone Number</label>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={e => onPhoneChange(e.target.value)}
+                      placeholder="+1 (204) 555-0000"
+                      className={inputCls}
+                    />
+                    <p className="text-[10px] text-[#a0948a] mt-2 leading-relaxed">
+                      By providing your phone number you acknowledge you will receive occasional informational messages, including automated messages, on your mobile device from this merchant. Text STOP to opt out at any time, and text HELP to get help. Message and data rates may apply.
+                    </p>
+                  </div>
+
+                  <div className="border-t border-[#e3e2de] mb-5" />
+
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a0948a] mb-3">Card on File</p>
+
+                  {locationId ? (
+                    <div id="card-container" className="mb-3" />
+                  ) : (
+                    <div className="h-14 bg-[#f6f2ec] rounded-lg animate-pulse mb-3" />
+                  )}
+
+                  {cardError && (
+                    <p className="text-xs text-red-500 mb-3">{cardError}</p>
+                  )}
+
+                  <p className="text-[11px] text-[#a0948a] leading-relaxed mb-5">
+                    A credit or debit card is required to book and may be charged in the case of a late cancellation. Protected and encrypted by Square.
+                  </p>
+
+                  <div className="space-y-3 mb-7">
+                    <label className="flex items-start gap-3 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={cardConsent}
+                        onChange={e => onCardConsentChange(e.target.checked)}
+                        className="mt-0.5 shrink-0 accent-[#3d3530]"
+                      />
+                      <span className="text-xs text-[#6b5f58] leading-snug group-hover:text-[#3d3530] transition-colors">
+                        I authorize MJP Beauty to save this card on file for future purchases.
+                      </span>
+                    </label>
+                    <label className="flex items-start gap-3 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={policyConsent}
+                        onChange={e => onPolicyConsentChange(e.target.checked)}
+                        className="mt-0.5 shrink-0 accent-[#3d3530]"
+                      />
+                      <span className="text-xs text-[#6b5f58] leading-snug group-hover:text-[#3d3530] transition-colors">
+                        I have read and agreed to the cancellation policy of MJP Beauty.
+                      </span>
+                    </label>
+                  </div>
+
+                  <button
+                    disabled={!canContinueStep3 || step3Loading}
+                    onClick={handleCardContinue}
+                    className="w-full py-3.5 bg-[#3d3530] text-white text-xs tracking-[0.15em] uppercase rounded-full disabled:opacity-35 disabled:cursor-not-allowed hover:enabled:bg-[#2a2320] active:enabled:scale-[0.98] transition-all"
+                  >
+                    {step3Loading ? 'Verifying card…' : 'Continue'}
+                  </button>
+                </div>
+              )}
+
+              {/* ── Step 4: Confirm ── */}
+              {step === 4 && selectedService && selectedTier && selectedDate && selectedTime && (
+                <div>
+                  <button
+                    onClick={onBack}
+                    className="flex items-center gap-1 text-xs text-[#827064] hover:text-[#3d3530] transition-colors mb-5"
+                  >
+                    <ChevronLeft size={13} />
+                    Back
+                  </button>
+
+                  <p className="text-sm font-medium text-[#3d3530] mb-5">Review your appointment</p>
+
+                  <div className="bg-[#f6f2ec] rounded-2xl p-5 space-y-4 mb-5">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Service</p>
+                      <p className="text-sm font-medium text-[#3d3530]">{selectedService.name}</p>
+                    </div>
+                    <div className="border-t border-[#e3e2de]" />
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Option</p>
+                      <p className="text-sm text-[#3d3530] leading-snug">{selectedTier.label}</p>
+                    </div>
+                    <div className="border-t border-[#e3e2de]" />
+                    <div className="flex gap-8">
+                      <div>
+                        <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Date</p>
+                        <p className="text-sm text-[#3d3530]">{formatDate(selectedDate)}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Time</p>
+                        <p className="text-sm text-[#3d3530]">{selectedTime}</p>
+                      </div>
+                    </div>
+                    <div className="border-t border-[#e3e2de]" />
+                    <div className="flex items-center justify-between">
+                      <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a]">Price</p>
+                      <p className="text-base font-semibold text-[#3d3530]">{selectedTier.price}</p>
+                    </div>
+                  </div>
+
+                  <p className="text-[11px] text-[#a0948a] leading-relaxed mb-6">
+                    Payment is collected at your appointment. Your card on file may be charged in the event of a late cancellation or no-show.
+                  </p>
+
+                  <button
+                    onClick={onConfirm}
+                    disabled={confirmLoading}
+                    className="w-full py-3.5 bg-[#3d3530] text-white text-xs tracking-[0.15em] uppercase rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:bg-[#2a2320] active:enabled:scale-[0.98] transition-all"
+                  >
+                    {confirmLoading ? 'Booking…' : 'Book Appointment'}
+                  </button>
+                </div>
+              )}
+
             </div>
-          )}
-
-        </div>
+          </>
+        )}
       </div>
     </>
   )
@@ -1096,7 +1369,7 @@ export default function BookAppointmentPage() {
   useScrollAnimation()
   const [videoSrc, setVideoSrc] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [step, setStep] = useState<1 | 2 | 3>(1)
+  const [step, setStep] = useState<DrawerStep>(1)
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [selectedTier, setSelectedTier] = useState<PriceTier | null>(null)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
@@ -1109,6 +1382,25 @@ export default function BookAppointmentPage() {
   const [availableDates, setAvailableDates] = useState<Set<string>>(new Set())
   const [datesLoading, setDatesLoading] = useState(false)
   const [confirmLoading, setConfirmLoading] = useState(false)
+  // Square SDK location ID (fetched once on mount)
+  const [locationId, setLocationId] = useState<string | null>(null)
+  // Customer form
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [cardConsent, setCardConsent] = useState(false)
+  const [policyConsent, setPolicyConsent] = useState(false)
+  const [cardSourceId, setCardSourceId] = useState<string | null>(null)
+  const [bookingSuccess, setBookingSuccess] = useState(false)
+
+  // Fetch Square location ID for the Web Payments SDK
+  useEffect(() => {
+    fetch('/api/locations/id')
+      .then(r => r.json())
+      .then(d => setLocationId(d.locationId ?? null))
+      .catch(() => {})
+  }, [])
 
   function fetchAvailableDates(tier: PriceTier, year: number, month: number) {
     const label = encodeURIComponent(tier.squareVariationName ?? tier.label)
@@ -1142,30 +1434,53 @@ export default function BookAppointmentPage() {
       .finally(() => setSlotsLoading(false))
   }, [selectedTier?.label, selectedDate])
 
+  function handleStep3Continue(sourceId: string) {
+    setCardSourceId(sourceId)
+    setStep(4)
+  }
+
   async function handleConfirm() {
-    if (!selectedService || !selectedTier || !selectedStartAt) return
+    if (!selectedService || !selectedTier || !selectedStartAt || !cardSourceId) return
     setConfirmLoading(true)
     try {
+      // 1. Create or find Square customer
+      const customerRes = await fetch('/api/customers/upsert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName, lastName, email, phone }),
+      })
+      const customerData = await customerRes.json()
+      if (!customerRes.ok) throw new Error(customerData.error ?? 'Failed to create customer')
+      const customerId: string = customerData.customerId
+
+      // 2. Save card on file
+      const cardRes = await fetch('/api/customers/save-card', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerId, sourceId: cardSourceId }),
+      })
+      const cardData = await cardRes.json()
+      if (!cardRes.ok) throw new Error(cardData.error ?? 'Failed to save card')
+
+      // 3. Create booking with customer attached (triggers Square's SMS/email notifications)
       const squareTierLabel = selectedTier.squareVariationName ?? selectedTier.label
-      const createRes = await fetch('/api/bookings/create', {
+      const bookingRes = await fetch('/api/bookings/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tierLabel: squareTierLabel, startAt: selectedStartAt, teamMemberId: selectedTeamMemberId }),
+        body: JSON.stringify({
+          tierLabel: squareTierLabel,
+          startAt: selectedStartAt,
+          teamMemberId: selectedTeamMemberId,
+          customerId,
+        }),
       })
-      const createData = await createRes.json()
-      if (!createRes.ok) throw new Error(createData.error ?? 'Booking failed')
+      const bookingData = await bookingRes.json()
+      if (!bookingRes.ok) throw new Error(bookingData.error ?? 'Booking failed')
 
-      const checkoutRes = await fetch('/api/bookings/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bookingId: createData.bookingId, serviceName: selectedService.name, tierLabel: selectedTier.label, price: selectedTier.price }),
-      })
-      const checkoutData = await checkoutRes.json()
-      if (!checkoutRes.ok) throw new Error(checkoutData.error ?? 'Checkout failed')
-
-      window.location.href = checkoutData.checkoutUrl
+      setBookingSuccess(true)
     } catch (err) {
       alert(String(err))
+    } finally {
       setConfirmLoading(false)
     }
   }
@@ -1180,6 +1495,14 @@ export default function BookAppointmentPage() {
     setSelectedTeamMemberId(null)
     setSlots(null)
     setSlotsError(null)
+    setFirstName('')
+    setLastName('')
+    setEmail('')
+    setPhone('')
+    setCardConsent(false)
+    setPolicyConsent(false)
+    setCardSourceId(null)
+    setBookingSuccess(false)
     setDrawerOpen(true)
   }
 
@@ -1235,6 +1558,14 @@ export default function BookAppointmentPage() {
         availableDates={availableDates}
         datesLoading={datesLoading}
         confirmLoading={confirmLoading}
+        bookingSuccess={bookingSuccess}
+        firstName={firstName}
+        lastName={lastName}
+        email={email}
+        phone={phone}
+        cardConsent={cardConsent}
+        policyConsent={policyConsent}
+        locationId={locationId}
         onSelectService={(s) => {
           setSelectedService(s)
           setSelectedTier(null)
@@ -1265,9 +1596,22 @@ export default function BookAppointmentPage() {
         onMonthChange={(year, month) => {
           if (selectedTier) fetchAvailableDates(selectedTier, year, month)
         }}
-        onBack={() => setStep((s) => Math.max(1, s - 1) as 1 | 2 | 3)}
-        onContinue={() => setStep((s) => Math.min(3, s + 1) as 1 | 2 | 3)}
+        onBack={() => {
+          setStep((s) => {
+            const prev = Math.max(1, s - 1) as DrawerStep
+            if (s === 4) setCardSourceId(null)
+            return prev
+          })
+        }}
+        onContinue={() => setStep((s) => Math.min(4, s + 1) as DrawerStep)}
         onConfirm={handleConfirm}
+        onStep3Continue={handleStep3Continue}
+        onFirstNameChange={setFirstName}
+        onLastNameChange={setLastName}
+        onEmailChange={setEmail}
+        onPhoneChange={setPhone}
+        onCardConsentChange={setCardConsent}
+        onPolicyConsentChange={setPolicyConsent}
       />
     </>
   )

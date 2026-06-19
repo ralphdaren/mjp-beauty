@@ -12,7 +12,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const { tierLabel, startAt, teamMemberId } = req.body ?? {}
+  const { tierLabel, startAt, teamMemberId, customerId } = req.body ?? {}
 
   if (!tierLabel || !startAt) {
     return res.status(400).json({ error: 'tierLabel and startAt are required' })
@@ -48,6 +48,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         booking: {
           location_id: locationId,
           start_at: String(startAt),
+          ...(customerId ? { customer_id: String(customerId) } : {}),
           appointment_segments: [appointmentSegment],
         },
       }),
