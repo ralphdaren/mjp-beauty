@@ -216,6 +216,7 @@ export function useBookingState() {
     selectedTier,
     selectedDate,
     selectedTime,
+    selectedStartAt,
     // Availability
     slots,
     slotsLoading,

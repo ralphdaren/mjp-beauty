@@ -52,6 +52,7 @@ export default function BookAppointmentPage() {
         selectedTier={b.selectedTier}
         selectedDate={b.selectedDate}
         selectedTime={b.selectedTime}
+        selectedStartAt={b.selectedStartAt}
         slots={b.slots}
         slotsLoading={b.slotsLoading}
         slotsError={b.slotsError}

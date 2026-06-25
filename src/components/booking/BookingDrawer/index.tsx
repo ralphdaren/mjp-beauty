@@ -17,6 +17,7 @@ export interface BookingDrawerProps {
   selectedTier: PriceTier | null
   selectedDate: string | null
   selectedTime: string | null
+  selectedStartAt: string | null
   // Step 2
   slots: Slot[] | null
   slotsLoading: boolean
@@ -59,6 +60,7 @@ export default function BookingDrawer({
   selectedTier,
   selectedDate,
   selectedTime,
+  selectedStartAt,
   slots,
   slotsLoading,
   slotsError,
@@ -111,6 +113,7 @@ export default function BookingDrawer({
       >
         {bookingSuccess ? (
           <DrawerSuccess
+            firstName={firstName}
             selectedService={selectedService}
             selectedTier={selectedTier}
             selectedDate={selectedDate}
@@ -167,6 +170,8 @@ export default function BookingDrawer({
                   step={step}
                   open={open}
                   locationId={locationId}
+                  selectedStartAt={selectedStartAt}
+                  selectedTier={selectedTier}
                   firstName={firstName}
                   lastName={lastName}
                   email={email}

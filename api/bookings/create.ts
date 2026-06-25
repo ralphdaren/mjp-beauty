@@ -46,6 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       body: JSON.stringify({
         idempotency_key: randomUUID(),
         booking: {
+          status: 'PENDING',
           location_id: locationId,
           start_at: String(startAt),
           ...(customerId ? { customer_id: String(customerId) } : {}),
