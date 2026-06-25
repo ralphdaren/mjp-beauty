@@ -50,14 +50,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           start_at: String(startAt),
           ...(customerId ? { customer_id: String(customerId) } : {}),
           appointment_segments: [appointmentSegment],
-          booking_creator_details: {
-            creator_type: 'CUSTOMER',
-          },
         },
       }),
     })
 
-    res.status(200).json({ bookingId: bookingData.booking?.id as string })
+    res.status(200).json({
+      bookingId: bookingData.booking?.id as string,
+      bookingStatus: bookingData.booking?.status as string,
+    })
   } catch (err) {
     res.status(500).json({ error: String(err) })
   }
