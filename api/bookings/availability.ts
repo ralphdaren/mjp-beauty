@@ -5,7 +5,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { squareFetch, getCatalogItems, getLocationId, findVariationByLabel } from '../_square.js'
 
-const CLIENT_TIMEZONE = 'America/Edmonton'
+const CLIENT_TIMEZONE = 'America/Winnipeg'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')

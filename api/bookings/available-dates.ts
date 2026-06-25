@@ -54,11 +54,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     })
 
     // Extract unique YYYY-MM-DD dates from the returned slots
-    // Slots are in UTC; convert to Edmonton local date so the day matches what the user picks
+    // Slots are in UTC; convert to Winnipeg local date so the day matches what the user picks
     const dateSet = new Set<string>()
     for (const a of (availData.availabilities as any[] ?? [])) {
       const local = new Date(a.start_at).toLocaleDateString('en-CA', {
-        timeZone: 'America/Edmonton',
+        timeZone: 'America/Winnipeg',
       })
       dateSet.add(local)
     }

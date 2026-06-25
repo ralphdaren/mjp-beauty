@@ -22,9 +22,9 @@ export default function DrawerSuccess({
       <div className="w-16 h-16 bg-[#f0f7f2] rounded-full flex items-center justify-center mb-5">
         <CheckCircle2 size={32} className="text-[#4a9d6f]" />
       </div>
-      <h2 className="text-xl font-semibold text-[#3d3530] mb-2">You're all booked!</h2>
+      <h2 className="text-xl font-semibold text-[#3d3530] mb-2">Request Submitted!</h2>
       <p className="text-sm text-[#6b5f58] leading-relaxed mb-8">
-        Your appointment request has been received. Check your email and phone — you'll receive a confirmation with all your appointment details shortly.
+        Your appointment request is awaiting review by the salon. You'll receive an email and SMS shortly — use them to reschedule or cancel if needed. Once the salon confirms, you'll get a final notification.
       </p>
 
       <div className="bg-[#f6f2ec] rounded-2xl p-5 w-full text-left space-y-4 mb-8">

@@ -77,7 +77,7 @@ export default function DrawerStep3({
             type="text"
             value={firstName}
             onChange={(e) => onFirstNameChange(e.target.value)}
-            placeholder="Jane"
+            placeholder="First Name"
             className={inputCls}
           />
         </div>
@@ -87,7 +87,7 @@ export default function DrawerStep3({
             type="text"
             value={lastName}
             onChange={(e) => onLastNameChange(e.target.value)}
-            placeholder="Doe"
+            placeholder="Last Name"
             className={inputCls}
           />
         </div>
@@ -99,7 +99,7 @@ export default function DrawerStep3({
           type="email"
           value={email}
           onChange={(e) => onEmailChange(e.target.value)}
-          placeholder="jane@example.com"
+          placeholder="example@gmail.com"
           className={inputCls}
         />
       </div>
