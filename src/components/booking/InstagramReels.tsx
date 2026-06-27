@@ -13,22 +13,34 @@ const REELS = [
 ]
 
 const N = REELS.length
-const CARD_W = 235
-const CARD_H = 440
+
+// Center card: tall portrait rectangle
+// Side ±1: square, same width as center
+// Side ±2: smaller square
+const CW = 235   // center width
+const CH = 430   // center height (portrait)
+const S1 = 215   // ±1 square side
+const S2 = 172   // ±2 square side
+
+// x = translateX from the container's horizontal center (card-center to card-center)
+// Gap between cards is 12px of actual visible space
+const X1 = CW / 2 + 12 + S1 / 2   // ≈ 237
+const X2 = X1 + S1 / 2 + 12 + S2 / 2  // ≈ 449
 
 function getDiff(i: number, active: number): number {
   const raw = ((i - active) % N + N) % N
   return raw > N / 2 ? raw - N : raw
 }
 
-function getSlotConfig(diff: number) {
+function getSlot(diff: number) {
   switch (diff) {
-    case -2: return { x: -496, scale: 0.65, opacity: 0.45, z: 1 }
-    case -1: return { x: -263, scale: 0.82, opacity: 0.8,  z: 2 }
-    case  0: return { x:    0, scale: 1.00, opacity: 1.00, z: 3 }
-    case  1: return { x:  263, scale: 0.82, opacity: 0.8,  z: 2 }
-    case  2: return { x:  496, scale: 0.65, opacity: 0.45, z: 1 }
-    default: return { x: diff < 0 ? -720 : 720, scale: 0.55, opacity: 0, z: -1 }
+    case -2: return { x: -X2, w: S2, h: S2, opacity: 0.5,  z: 1 }
+    case -1: return { x: -X1, w: S1, h: S1, opacity: 0.82, z: 2 }
+    case  0: return { x:   0, w: CW, h: CH, opacity: 1,    z: 3 }
+    case  1: return { x:  X1, w: S1, h: S1, opacity: 0.82, z: 2 }
+    case  2: return { x:  X2, w: S2, h: S2, opacity: 0.5,  z: 1 }
+    // park off-screen at the same square size so they slide in naturally
+    default: return { x: diff < 0 ? -700 : 700, w: S2, h: S2, opacity: 0, z: -1 }
   }
 }
 
@@ -49,38 +61,34 @@ export default function InstagramReels() {
 
   return (
     <section className="bg-[#fefefe] py-20 border-t border-[#e3e2de] overflow-hidden">
-      {/* Header */}
-      <div className="anim-fade-up text-center mb-14 px-6">
-        <p className="text-[10px] tracking-[0.35em] uppercase text-[#a0948a] mb-2">MJP Beauty</p>
-        <h2 className="text-3xl font-semibold text-[#3d3530] mb-3">As seen on Instagram</h2>
-        <p className="text-sm text-[#6b5f58] max-w-md mx-auto leading-relaxed">
-          Real transformations from the studio chair — pulled straight from our feed.
-        </p>
-      </div>
-
       {/* Carousel */}
-      <div className="relative" style={{ height: CARD_H + 60 }}>
+      <div className="relative" style={{ height: CH + 60 }}>
         <div className="absolute inset-0 flex items-center justify-center">
           {REELS.map((url, i) => {
             const diff = getDiff(i, active)
-            const abs = Math.abs(diff)
+            const abs  = Math.abs(diff)
             const visible = abs <= 2
-            const cfg = getSlotConfig(diff)
+            const s = getSlot(diff)
 
             return (
               <div
                 key={i}
                 className="absolute rounded-2xl overflow-hidden"
                 style={{
-                  width: CARD_W,
-                  height: CARD_H,
-                  transform: `translateX(${cfg.x}px) scale(${cfg.scale})`,
-                  opacity: cfg.opacity,
-                  zIndex: cfg.z,
-                  cursor: abs > 0 && visible ? 'pointer' : 'default',
+                  width:    s.w,
+                  height:   s.h,
+                  transform: `translateX(${s.x}px)`,
+                  opacity:  s.opacity,
+                  zIndex:   s.z,
+                  cursor:   abs > 0 && visible ? 'pointer' : 'default',
                   pointerEvents: visible ? 'auto' : 'none',
-                  transition: 'transform 520ms cubic-bezier(0.4,0,0.2,1), opacity 520ms cubic-bezier(0.4,0,0.2,1)',
-                  willChange: 'transform, opacity',
+                  transition: [
+                    'width 520ms cubic-bezier(0.4,0,0.2,1)',
+                    'height 520ms cubic-bezier(0.4,0,0.2,1)',
+                    'transform 520ms cubic-bezier(0.4,0,0.2,1)',
+                    'opacity 520ms cubic-bezier(0.4,0,0.2,1)',
+                  ].join(', '),
+                  willChange: 'width, height, transform, opacity',
                 }}
                 onClick={() => abs > 0 && visible && setActive(i)}
               >
@@ -93,12 +101,8 @@ export default function InstagramReels() {
                   preload="metadata"
                   className="w-full h-full object-cover"
                 />
-                {/* Overlay dims and blocks interaction on non-active cards */}
                 {abs > 0 && visible && (
-                  <div
-                    className="absolute inset-0 bg-[#1a1410]/40"
-                    style={{ transition: 'opacity 520ms cubic-bezier(0.4,0,0.2,1)' }}
-                  />
+                  <div className="absolute inset-0 bg-[#1a1410]/35" />
                 )}
               </div>
             )
@@ -113,9 +117,9 @@ export default function InstagramReels() {
             key={i}
             onClick={() => setActive(i)}
             aria-label={`Go to reel ${i + 1}`}
-            className="transition-all duration-300 rounded-full"
+            className="rounded-full transition-all duration-300"
             style={{
-              width: i === active ? 20 : 6,
+              width:  i === active ? 20 : 6,
               height: 6,
               background: i === active ? '#827064' : '#d9d4cf',
             }}
