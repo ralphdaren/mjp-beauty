@@ -5,6 +5,7 @@ import ServiceRow from '../components/booking/ServiceRow'
 import VideoModal from '../components/booking/VideoModal'
 import InfoTabs from '../components/booking/InfoTabs'
 import InstagramReels from '../components/booking/InstagramReels'
+import StudioLocation from '../components/booking/StudioLocation'
 import BookingDrawer from '../components/booking/BookingDrawer'
 
 export default function BookAppointmentPage() {
@@ -39,6 +40,8 @@ export default function BookAppointmentPage() {
       </main>
 
       <InstagramReels />
+
+      <StudioLocation />
 
       <InfoTabs />
 
