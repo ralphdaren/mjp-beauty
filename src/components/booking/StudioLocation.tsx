@@ -17,19 +17,16 @@ export default function StudioLocation() {
 
         {/* Section header card - top right */}
         <div className="absolute top-8 right-8 bg-white rounded-2xl shadow-2xl px-8 py-6 text-center">
-          <p className="text-[10px] tracking-[0.35em] uppercase text-[#a0948a] mb-2">The Studio</p>
+          <p className="text-[10px] tracking-[0.35em] uppercase text-[#a0948a] mb-2">Studio Location</p>
           <h2 className="text-3xl font-semibold text-[#3d3530]">
-            Find the{' '}
-            <em className="font-normal italic text-[#a0948a]" style={{ fontFamily: 'Georgia, serif' }}>
-              studio
-            </em>
+            Find the Studio
           </h2>
         </div>
 
         {/* Info card - top left */}
-        <div className="absolute top-8 left-8 bg-white rounded-2xl shadow-2xl p-8 w-[320px]">
+        <div className="absolute top-1/2 -translate-y-1/2 left-8 bg-white rounded-2xl shadow-2xl p-8 w-[320px]">
           <p className="text-[10px] tracking-[0.25em] uppercase text-[#a0948a] mb-1">
-            Find the studio
+            Find MJP Beauty
           </p>
           <p className="text-xs text-[#6b5f58] mb-3">in the heart of St. Boniface, Winnipeg</p>
           <h3 className="text-xl font-bold text-[#3d3530] mb-7">
