@@ -15,17 +15,17 @@ const REELS = [
 const N = REELS.length
 
 // Center card: tall portrait rectangle
-// Side ±1: square, same width as center
-// Side ±2: smaller square
-const CW = 235   // center width
-const CH = 430   // center height (portrait)
-const S1 = 215   // ±1 square side
-const S2 = 172   // ±2 square side
+// Side ±1: square matching center width
+// Side ±2: smaller square (partially clipped at viewport edge)
+const CW = 300   // center width
+const CH = 545   // center height
+const S1 = 275   // ±1 square side
+const S2 = 220   // ±2 square side
 
 // x = translateX from the container's horizontal center (card-center to card-center)
-// Gap between cards is 12px of actual visible space
-const X1 = CW / 2 + 12 + S1 / 2   // ≈ 237
-const X2 = X1 + S1 / 2 + 12 + S2 / 2  // ≈ 449
+// Gap between adjacent cards is 12px of visible space
+const X1 = CW / 2 + 12 + S1 / 2   // ≈ 300
+const X2 = X1 + S1 / 2 + 12 + S2 / 2  // ≈ 560
 
 function getDiff(i: number, active: number): number {
   const raw = ((i - active) % N + N) % N
@@ -40,7 +40,7 @@ function getSlot(diff: number) {
     case  1: return { x:  X1, w: S1, h: S1, opacity: 0.82, z: 2 }
     case  2: return { x:  X2, w: S2, h: S2, opacity: 0.5,  z: 1 }
     // park off-screen at the same square size so they slide in naturally
-    default: return { x: diff < 0 ? -700 : 700, w: S2, h: S2, opacity: 0, z: -1 }
+    default: return { x: diff < 0 ? -860 : 860, w: S2, h: S2, opacity: 0, z: -1 }
   }
 }
 
