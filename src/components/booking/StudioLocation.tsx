@@ -6,22 +6,7 @@ const DIRECTIONS_URL = `https://www.google.com/maps/dir/?api=1&destination=${PLA
 export default function StudioLocation() {
   return (
     <section>
-      {/* Section header */}
-      <div className="bg-[#f6f2ec] py-14 text-center px-6">
-        <p className="text-[10px] tracking-[0.35em] uppercase text-[#a0948a] mb-3">The Studio</p>
-        <h2 className="text-4xl font-semibold text-[#3d3530] mb-3">
-          Find the{' '}
-          <em className="font-normal italic text-[#a0948a]" style={{ fontFamily: 'Georgia, serif' }}>
-            studio
-          </em>
-        </h2>
-        <p className="text-sm text-[#6b5f58]">
-          186 Provencher Blvd — in the heart of St. Boniface, Winnipeg.
-        </p>
-      </div>
-
-      {/* Full-bleed map with floating info card */}
-      <div className="relative h-[600px]">
+      <div className="relative h-[780px]">
         <iframe
           src={EMBED_URL}
           className="w-full h-full border-0"
@@ -30,15 +15,24 @@ export default function StudioLocation() {
           title="MJP Beauty Studio Location"
         />
 
-        {/* Floating info card */}
+        {/* Section header card - top right */}
+        <div className="absolute top-8 right-8 bg-white rounded-2xl shadow-2xl px-8 py-6 text-center">
+          <p className="text-[10px] tracking-[0.35em] uppercase text-[#a0948a] mb-2">The Studio</p>
+          <h2 className="text-3xl font-semibold text-[#3d3530]">
+            Find the{' '}
+            <em className="font-normal italic text-[#a0948a]" style={{ fontFamily: 'Georgia, serif' }}>
+              studio
+            </em>
+          </h2>
+        </div>
+
+        {/* Info card - top left */}
         <div className="absolute top-8 left-8 bg-white rounded-2xl shadow-2xl p-8 w-[320px]">
-          <p className="text-[10px] tracking-[0.25em] uppercase text-[#a0948a] mb-2">
-            MJP Beauty · Brow Studio
+          <p className="text-[10px] tracking-[0.25em] uppercase text-[#a0948a] mb-1">
+            Find the studio
           </p>
-          <h3
-            className="text-2xl italic font-normal text-[#3d3530] mb-7"
-            style={{ fontFamily: 'Georgia, serif' }}
-          >
+          <p className="text-xs text-[#6b5f58] mb-3">in the heart of St. Boniface, Winnipeg</p>
+          <h3 className="text-xl font-bold text-[#3d3530] mb-7">
             186 Provencher Blvd
           </h3>
 
