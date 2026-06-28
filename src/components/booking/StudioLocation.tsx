@@ -24,7 +24,7 @@ export default function StudioLocation() {
         </div>
 
         {/* Info card - top left */}
-        <div className="absolute top-1/2 -translate-y-1/2 left-8 bg-white rounded-2xl shadow-2xl p-8 w-[320px]">
+        <div className="absolute top-8 left-8 bg-white rounded-2xl shadow-2xl p-8 w-[320px]">
           <p className="text-[10px] tracking-[0.25em] uppercase text-[#a0948a] mb-1">
             Find MJP Beauty
           </p>
