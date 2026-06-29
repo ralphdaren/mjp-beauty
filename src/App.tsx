@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import Home from '@/pages/HomePage'
 import BookAppointmentPage from '@/pages/BookAppointmentPage'
 import InPersonTrainingPage from '@/pages/InPersonTrainingPage'
@@ -9,15 +9,19 @@ import FreebiesPage from '@/pages/FreebiesPage'
 import BizMentorshipPage from '@/pages/BizMentorshipPage'
 import PrivacyPolicyPage from '@/pages/PrivacyPolicyPage'
 import TermsOfUsePage from '@/pages/TermsOfUsePage'
+import AdminPage from '@/pages/AdminPage'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import ScrollToTop from '@/components/ScrollToTop'
 
-function App() {
+function AppContent() {
+  const { pathname } = useLocation()
+  const isAdmin = pathname === '/admin'
+
   return (
-    <BrowserRouter>
+    <>
       <ScrollToTop />
-      <Navbar />
+      {!isAdmin && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/book-appointment" element={<BookAppointmentPage />} />
@@ -29,8 +33,17 @@ function App() {
         <Route path="/biz-mentorship" element={<BizMentorshipPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsOfUsePage />} />
+        <Route path="/admin" element={<AdminPage />} />
       </Routes>
-      <Footer />
+      {!isAdmin && <Footer />}
+    </>
+  )
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
     </BrowserRouter>
   )
 }

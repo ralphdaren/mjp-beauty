@@ -1,63 +1,93 @@
 // POST /api/bookings/create
-// Body: { tierLabel, startAt, teamMemberId? }
-// Creates a booking in Square and returns the booking ID.
+// Body: { tierLabel, startAt, teamMemberId, customerId, serviceName, firstName, lastName, email, phone }
+// Stores a pending booking request in Supabase. Square booking is NOT created until admin accepts.
+// Sends two emails: "request received" to customer, "new request" notification to admin.
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { randomUUID } from 'crypto'
-import { squareFetch, getLocationId, getCatalogItems, findVariationByLabel } from '../_square.js'
+import { Resend } from 'resend'
+import { supabase } from '../_supabase.js'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
+const FROM = process.env.RESEND_FROM_EMAIL ?? 'MJP Beauty <onboarding@resend.dev>'
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? ''
+const CLIENT_TIMEZONE = 'America/Winnipeg'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')
-
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const { tierLabel, startAt, teamMemberId, customerId } = req.body ?? {}
+  const {
+    tierLabel, startAt, teamMemberId, customerId,
+    serviceName, firstName, lastName, email, phone,
+  } = req.body ?? {}
 
-  if (!tierLabel || !startAt) {
-    return res.status(400).json({ error: 'tierLabel and startAt are required' })
+  if (!tierLabel || !startAt || !serviceName || !firstName || !email) {
+    return res.status(400).json({ error: 'tierLabel, startAt, serviceName, firstName, and email are required' })
   }
 
   try {
-    const [locationId, catalogItems] = await Promise.all([
-      getLocationId(),
-      getCatalogItems(),
+    const { data, error } = await supabase
+      .from('booking_requests')
+      .insert({
+        tier_label: String(tierLabel),
+        start_at: String(startAt),
+        team_member_id: teamMemberId ? String(teamMemberId) : null,
+        square_customer_id: customerId ? String(customerId) : null,
+        service_name: String(serviceName),
+        first_name: String(firstName),
+        last_name: lastName ? String(lastName) : '',
+        email: String(email),
+        phone: phone ? String(phone) : null,
+      })
+      .select('id')
+      .single()
+
+    if (error) throw new Error(error.message)
+
+    const appointmentDate = new Date(String(startAt)).toLocaleString('en-CA', {
+      timeZone: CLIENT_TIMEZONE,
+      dateStyle: 'full',
+      timeStyle: 'short',
+    })
+
+    // Fire both emails in parallel — don't block the response if they fail
+    await Promise.allSettled([
+      // Customer: "we received your request"
+      resend.emails.send({
+        from: FROM,
+        to: String(email),
+        subject: 'We received your booking request — MJP Beauty',
+        html: `
+          <p>Hi ${String(firstName)},</p>
+          <p>Thanks for reaching out! We've received your booking request for <strong>${String(serviceName)} — ${String(tierLabel)}</strong> on <strong>${appointmentDate}</strong>.</p>
+          <p>Your request is currently <strong>pending review</strong>. We'll send you a follow-up email once it's been confirmed or if we need to make other arrangements.</p>
+          <p>— Micah at MJP Beauty</p>
+        `,
+      }),
+
+      // Admin: new booking request notification
+      ADMIN_EMAIL
+        ? resend.emails.send({
+            from: FROM,
+            to: ADMIN_EMAIL,
+            subject: `New booking request — ${String(firstName)} ${lastName ? String(lastName) : ''}`,
+            html: `
+              <p>You have a new booking request:</p>
+              <ul>
+                <li><strong>Name:</strong> ${String(firstName)} ${lastName ? String(lastName) : ''}</li>
+                <li><strong>Email:</strong> ${String(email)}</li>
+                ${phone ? `<li><strong>Phone:</strong> ${String(phone)}</li>` : ''}
+                <li><strong>Service:</strong> ${String(serviceName)} — ${String(tierLabel)}</li>
+                <li><strong>Appointment:</strong> ${appointmentDate}</li>
+              </ul>
+              <p>Log in to your admin dashboard to accept or decline.</p>
+            `,
+          })
+        : Promise.resolve(),
     ])
 
-    const match = findVariationByLabel(catalogItems, String(tierLabel))
-    if (!match.id) {
-      return res.status(404).json({
-        error: `No Square variation found matching: "${tierLabel}"`,
-        availableVariations: (match as any).availableNames,
-      })
-    }
-
-    const { id: variationId, version: variationVersion } = match as { id: string; version: number }
-    const appointmentSegment: Record<string, unknown> = {
-      service_variation_id: variationId,
-      service_variation_version: variationVersion,
-    }
-    if (teamMemberId) {
-      appointmentSegment.team_member_id = String(teamMemberId)
-    }
-
-    const bookingData = await squareFetch('/v2/bookings', {
-      method: 'POST',
-      body: JSON.stringify({
-        idempotency_key: randomUUID(),
-        booking: {
-          location_id: locationId,
-          start_at: String(startAt),
-          ...(customerId ? { customer_id: String(customerId) } : {}),
-          appointment_segments: [appointmentSegment],
-        },
-      }),
-    })
-
-    res.status(200).json({
-      bookingId: bookingData.booking?.id as string,
-      bookingStatus: bookingData.booking?.status as string,
-    })
+    res.status(200).json({ requestId: data.id })
   } catch (err) {
     res.status(500).json({ error: String(err) })
   }

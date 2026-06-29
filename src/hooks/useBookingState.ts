@@ -72,7 +72,7 @@ export function useBookingState() {
     const label    = encodeURIComponent(tier.squareVariationName ?? tier.label)
     const monthStr = `${year}-${String(month + 1).padStart(2, '0')}`
     setDatesLoading(true)
-    fetch(`/api/bookings/available-dates?tierLabel=${label}&month=${monthStr}`)
+    fetch(`/api/bookings/availability?tierLabel=${label}&month=${monthStr}`)
       .then((r) => r.json())
       .then((data) => setAvailableDates(new Set<string>(data.dates ?? [])))
       .catch(() => setAvailableDates(new Set()))
@@ -137,19 +137,19 @@ export function useBookingState() {
     if (!selectedService || !selectedTier || !selectedStartAt || !cardSourceId) return
     setConfirmLoading(true)
     try {
-      const customerRes = await fetch('/api/customers/upsert', {
+      const customerRes = await fetch('/api/customers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstName, lastName, email, phone }),
+        body: JSON.stringify({ action: 'upsert', firstName, lastName, email, phone }),
       })
       const customerData = await customerRes.json()
       if (!customerRes.ok) throw new Error(customerData.error ?? 'Failed to create customer')
       const customerId: string = customerData.customerId
 
-      const cardRes = await fetch('/api/customers/save-card', {
+      const cardRes = await fetch('/api/customers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerId, sourceId: cardSourceId }),
+        body: JSON.stringify({ action: 'save-card', customerId, sourceId: cardSourceId }),
       })
       const cardData = await cardRes.json()
       if (!cardRes.ok) throw new Error(cardData.error ?? 'Failed to save card')
@@ -163,6 +163,11 @@ export function useBookingState() {
           startAt: selectedStartAt,
           teamMemberId: selectedTeamMemberId,
           customerId,
+          serviceName: selectedService.name,
+          firstName,
+          lastName,
+          email,
+          phone,
         }),
       })
       const bookingData = await bookingRes.json()

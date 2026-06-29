@@ -22,7 +22,7 @@ export type ReviewSubmission = {
 
 export async function getAllPublishedReviews(): Promise<JudgeMeReview[]> {
   try {
-    const res = await fetch('/api/judgeme-reviews')
+    const res = await fetch('/api/judgeme')
     if (!res.ok) return []
     const data = await res.json()
     return (data.reviews ?? []).filter(
@@ -35,7 +35,7 @@ export async function getAllPublishedReviews(): Promise<JudgeMeReview[]> {
 
 export async function getProductReviews(productHandle: string): Promise<JudgeMeReview[]> {
   try {
-    const res = await fetch('/api/judgeme-reviews')
+    const res = await fetch('/api/judgeme')
     if (!res.ok) return []
     const data = await res.json()
     return (data.reviews ?? []).filter(
@@ -55,7 +55,7 @@ export async function submitReview(
 ): Promise<{ ok: boolean; message: string }> {
   try {
     const numericId = parseInt(submission.productId.split('/').pop() ?? '0', 10)
-    const res = await fetch('/api/judgeme-submit', {
+    const res = await fetch('/api/judgeme', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
