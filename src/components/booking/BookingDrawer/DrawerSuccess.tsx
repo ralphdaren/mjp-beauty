@@ -1,4 +1,4 @@
-import { CheckCircle2 } from 'lucide-react'
+import { Clock } from 'lucide-react'
 import type { Service, PriceTier } from '../../../types/booking'
 import { formatDate } from '../../../lib/utils'
 
@@ -21,12 +21,16 @@ export default function DrawerSuccess({
 }: DrawerSuccessProps) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-8 py-12 text-center overflow-y-auto">
-      <div className="w-16 h-16 bg-[#f0f7f2] rounded-full flex items-center justify-center mb-5">
-        <CheckCircle2 size={32} className="text-[#4a9d6f]" />
+      <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mb-5">
+        <Clock size={32} className="text-amber-500" />
+      </div>
+      <div className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-600 text-[10px] uppercase tracking-[0.15em] font-medium px-3 py-1 rounded-full mb-3">
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+        Pending Review
       </div>
       <h2 className="text-xl font-semibold text-[#3d3530] mb-2">Request Submitted!</h2>
       <p className="text-sm text-[#6b5f58] leading-relaxed mb-8">
-        Hey {firstName}, your appointment request is awaiting review by the salon. You'll receive an email and SMS shortly — use them to reschedule or cancel if needed. Once the salon confirms, you'll get a final notification.
+        Hey {firstName}, your booking request has been received and is pending review by Micah. You'll get a confirmation email once it's approved.
       </p>
 
       <div className="bg-[#f6f2ec] rounded-2xl p-5 w-full text-left space-y-4 mb-8">
