@@ -15,8 +15,8 @@ export default function StudioLocation() {
           title="MJP Beauty Studio Location"
         />
 
-        {/* Info card - top right */}
-        <div className="absolute top-8 right-8 bg-white rounded-2xl shadow-2xl p-8 w-[320px]">
+        {/* Info card - center right */}
+        <div className="absolute top-1/2 right-8 -translate-y-1/2 bg-white rounded-2xl shadow-2xl p-8 w-[320px]">
           <p className="text-[10px] tracking-[0.25em] uppercase text-[#a0948a] mb-1">
             Find MJP Beauty
           </p>
