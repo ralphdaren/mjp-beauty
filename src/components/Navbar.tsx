@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { NavLink, Link, useLocation } from 'react-router-dom'
-import { Menu, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react'
+import { Menu, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight, User, CalendarCheck, ShoppingCart } from 'lucide-react'
 import logoBrown from '@/assets/brand-kit/logo-brown.png'
 import optImg01 from '@/assets/online/opt-img-01.jpg'
 import { getCollectionProducts } from '@/lib/shopify'
@@ -36,7 +36,7 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     'text-base tracking-wide pb-0.5 transition-colors duration-200 whitespace-nowrap',
     'border-b-[1.5px]',
     isActive
-      ? 'text-brand border-brand font-medium'
+      ? 'text-brand border-brand'
       : 'text-[#5a5047] border-transparent hover:text-brand hover:border-brand',
   ].join(' ')
 
@@ -151,7 +151,7 @@ export default function Navbar() {
       {/* Thin decorative top accent line */}
       <div className="h-[2px] bg-brand w-full" />
 
-      <nav className="max-w-7xl mx-auto px-8">
+      <nav className="max-w-[1800px] mx-auto px-16">
 
         {/* ── Mobile header bar ─────────────────────────────────────────── */}
         <div className="lg:hidden h-16 flex items-center justify-between">
@@ -169,65 +169,90 @@ export default function Navbar() {
         </div>
 
         {/* ── Desktop layout ────────────────────────────────────────────── */}
-        <div className="hidden lg:flex flex-col items-center py-5 gap-6">
+        <div className="hidden lg:flex items-center justify-between py-5">
 
-          {/* Row 1: Student Login | Logo | Book an Appointment */}
-          <div className="w-full flex items-center justify-between">
-            <a
-              href="https://mjpbeautyacademy.thinkific.com/users/sign_in"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-6 py-2.5 text-base tracking-wide rounded-full text-brand border border-brand hover:bg-brand hover:text-white transition-colors duration-200 whitespace-nowrap"
-            >
-              Student Login
-            </a>
-
+          {/* Left: Logo | divider | Nav links */}
+          <div className="flex items-center gap-8">
             <NavLink to="/" className="shrink-0">
-              <img src={logoBrown} alt="MJP Beauty" className="h-16 w-auto" />
+              <img src={logoBrown} alt="MJP Beauty" className="h-14 w-auto" />
             </NavLink>
+
+            <div className="w-px h-8 bg-brand-border" aria-hidden="true" />
+
+            <div className="flex items-center gap-8">
+              {regularLinks.map(({ label, to, end }) => (
+                <NavLink key={to} to={to} end={end} className={navLinkClass}>
+                  {label}
+                </NavLink>
+              ))}
+
+              {/* Online Brow Academy — dropdown trigger */}
+              <button
+                onClick={() => setIsAcademyOpen((prev) => !prev)}
+                aria-expanded={isAcademyOpen}
+                aria-haspopup="true"
+                className={[
+                  'flex items-center gap-1.5 text-base tracking-wide pb-0.5 transition-colors duration-200 whitespace-nowrap',
+                  'border-b-[1.5px]',
+                  isAcademyOpen || isOnAcademyPage
+                    ? 'text-brand border-brand'
+                    : 'text-[#5a5047] border-transparent hover:text-brand hover:border-brand',
+                ].join(' ')}
+              >
+                Online Brow Academy
+                <ChevronDown
+                  size={14}
+                  className={`mt-px transition-transform duration-300 ${isAcademyOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              <NavLink to="/freebies" className={navLinkClass}>
+                Freebies
+              </NavLink>
+
+              <NavLink to="/biz-mentorship" className={navLinkClass}>
+                BIZ Mentorship
+              </NavLink>
+            </div>
+          </div>
+
+          {/* Right: Student Login | Cart | Book */}
+          <div className="flex items-center gap-8">
+            <div className="relative group">
+              <a
+                href="https://mjpbeautyacademy.thinkific.com/users/sign_in"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Student Login"
+                className="flex items-center justify-center p-2 -m-2 text-brand hover:opacity-70 transition-opacity duration-200"
+              >
+                <User size={22} />
+              </a>
+              <span className="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 rounded-md bg-[#3d3530] text-white text-xs whitespace-nowrap opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200">
+                Student Login
+              </span>
+            </div>
+
+            <div className="relative group">
+              <a
+                href="#"
+                aria-label="Cart"
+                className="flex items-center justify-center p-2 -m-2 text-brand hover:opacity-70 transition-opacity duration-200"
+              >
+                <ShoppingCart size={22} />
+              </a>
+              <span className="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 rounded-md bg-[#3d3530] text-white text-xs whitespace-nowrap opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200">
+                Cart
+              </span>
+            </div>
 
             <NavLink
               to="/book-appointment"
-              className="px-6 py-2.5 text-base tracking-wide rounded-full text-white bg-brand hover:opacity-90 transition-opacity duration-200 whitespace-nowrap"
+              aria-label="Book an Appointment"
+              className="flex items-center gap-1.5 h-11 pl-4 pr-5 rounded-full bg-brand text-white hover:opacity-90 transition-opacity duration-200"
             >
-              Book an Appointment
-            </NavLink>
-          </div>
-
-          {/* Row 2: Nav links centered */}
-          <div className="flex items-center gap-9">
-            {regularLinks.map(({ label, to, end }) => (
-              <NavLink key={to} to={to} end={end} className={navLinkClass}>
-                {label}
-              </NavLink>
-            ))}
-
-            {/* Online Brow Academy — dropdown trigger */}
-            <button
-              onClick={() => setIsAcademyOpen((prev) => !prev)}
-              aria-expanded={isAcademyOpen}
-              aria-haspopup="true"
-              className={[
-                'flex items-center gap-1.5 text-base tracking-wide pb-0.5 transition-colors duration-200 whitespace-nowrap',
-                'border-b-[1.5px]',
-                isAcademyOpen || isOnAcademyPage
-                  ? 'text-brand border-brand font-medium'
-                  : 'text-[#5a5047] border-transparent hover:text-brand hover:border-brand',
-              ].join(' ')}
-            >
-              Online Brow Academy
-              <ChevronDown
-                size={14}
-                className={`mt-px transition-transform duration-300 ${isAcademyOpen ? 'rotate-180' : ''}`}
-              />
-            </button>
-
-            <NavLink to="/freebies" className={navLinkClass}>
-              Freebies
-            </NavLink>
-
-            <NavLink to="/biz-mentorship" className={navLinkClass}>
-              BIZ Mentorship
+              <CalendarCheck size={20} />
+              <span className="text-sm tracking-wide font-medium">Book</span>
             </NavLink>
           </div>
 
@@ -449,6 +474,14 @@ export default function Navbar() {
               className="px-5 py-2.5 text-sm tracking-wide rounded-full text-brand border border-brand text-center hover:bg-brand hover:text-white transition-colors duration-200"
             >
               Student Login
+            </a>
+            <a
+              href="#"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm tracking-wide rounded-full text-brand border border-brand text-center hover:bg-brand hover:text-white transition-colors duration-200"
+            >
+              <ShoppingCart size={16} />
+              Cart
             </a>
           </div>
         </div>
