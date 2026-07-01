@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { ChevronLeft, ChevronDown, X } from 'lucide-react'
 import type { DrawerStep, PriceTier } from '../../../types/booking'
 import { useSquareCard } from '../../../hooks/useSquareCard'
+import { TAX_RATE, parsePrice } from '../../../lib/pricing'
 
 // ─── Countries ────────────────────────────────────────────────────────────────
 
@@ -169,9 +170,10 @@ function formatCancellationDeadline(startAt: string): string {
 }
 
 function formatCancellationFee(price: string): string {
-  const num = parseFloat(price.replace(/[^0-9.]/g, ''))
-  if (isNaN(num)) return ''
-  return `CA$${(num * 0.5).toFixed(2)}`
+  const { amount } = parsePrice(price)
+  if (isNaN(amount)) return ''
+  const feeWithTax = amount * 0.5 * (1 + TAX_RATE)
+  return `CA$${feeWithTax.toFixed(2)}`
 }
 
 // North American Numbering Plan (+1: Canada, US, etc.) — (XXX) XXX-XXXX

@@ -1,6 +1,7 @@
 import { ChevronLeft } from 'lucide-react'
 import type { Service, PriceTier } from '../../../types/booking'
 import { formatDate } from '../../../lib/utils'
+import { TAX_RATE, parsePrice, formatMoney } from '../../../lib/pricing'
 
 interface DrawerStep4Props {
   selectedService: Service
@@ -10,20 +11,6 @@ interface DrawerStep4Props {
   confirmLoading: boolean
   onBack: () => void
   onConfirm: () => void
-}
-
-// Manitoba exempts esthetic/personal-care services from RST — only GST applies.
-const TAX_RATE = 0.05
-
-function parsePrice(price: string): { prefix: string; amount: number } {
-  const match = price.match(/^([^\d]*)([\d,.]+)/)
-  const prefix = match?.[1]?.trim() || '$'
-  const amount = match ? parseFloat(match[2].replace(/,/g, '')) : 0
-  return { prefix, amount }
-}
-
-function formatMoney(prefix: string, amount: number): string {
-  return `${prefix}${amount.toFixed(2)}`
 }
 
 export default function DrawerStep4({
