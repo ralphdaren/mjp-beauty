@@ -174,6 +174,15 @@ function formatCancellationFee(price: string): string {
   return `CA$${(num * 0.5).toFixed(2)}`
 }
 
+// North American Numbering Plan (+1: Canada, US, etc.) — (XXX) XXX-XXXX
+function formatNANP(digits: string): string {
+  const d = digits.slice(0, 10)
+  if (d.length === 0) return ''
+  if (d.length < 4) return `(${d}`
+  if (d.length < 7) return `(${d.slice(0, 3)}) ${d.slice(3)}`
+  return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`
+}
+
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const inputCls = 'w-full px-3 py-2.5 rounded-lg border border-[#e3e2de] text-sm text-[#3d3530] placeholder:text-[#c0b4ac] focus:outline-none focus:border-[#827064] bg-white transition-colors'
@@ -239,8 +248,9 @@ export default function DrawerStep3({
   })
   const [localPhone, setLocalPhone] = useState<string>(() => {
     if (!phone) return ''
-    const match = COUNTRIES.find(c => phone.startsWith(c.dialCode))
-    return match ? phone.slice(match.dialCode.length) : phone
+    const match = COUNTRIES.find(c => phone.startsWith(c.dialCode)) ?? CANADA
+    const digits = phone.slice(match.dialCode.length)
+    return match.dialCode === '+1' ? formatNANP(digits) : digits
   })
   const [countryOpen, setCountryOpen] = useState(false)
   const [countrySearch, setCountrySearch] = useState('')
@@ -255,15 +265,18 @@ export default function DrawerStep3({
 
   // ── Handlers ──
   function handleCountrySelect(c: Country) {
+    const digits = localPhone.replace(/\D/g, '')
     setSelectedCountry(c)
+    setLocalPhone(c.dialCode === '+1' ? formatNANP(digits) : digits)
     setCountryOpen(false)
     setCountrySearch('')
-    onPhoneChange(c.dialCode + localPhone.replace(/\D/g, ''))
+    onPhoneChange(c.dialCode + digits)
   }
 
   function handleLocalPhoneChange(v: string) {
-    setLocalPhone(v)
-    onPhoneChange(selectedCountry.dialCode + v.replace(/\D/g, ''))
+    const digits = v.replace(/\D/g, '')
+    setLocalPhone(selectedCountry.dialCode === '+1' ? formatNANP(digits) : v)
+    onPhoneChange(selectedCountry.dialCode + digits)
   }
 
   const filteredCountries = countrySearch.trim()
@@ -385,13 +398,13 @@ export default function DrawerStep3({
       {/* Phone with country dropdown */}
       <div className="mb-6">
         <label className={labelCls}>Phone Number</label>
-        <div className="flex relative z-[6]">
+        <div className="flex items-stretch relative z-[6] rounded-lg border border-[#e3e2de] bg-white focus-within:border-[#827064] transition-colors">
           {/* Country selector */}
-          <div className="relative">
+          <div className="relative shrink-0">
             <button
               type="button"
               onClick={() => setCountryOpen(!countryOpen)}
-              className="flex items-center gap-1.5 px-3 py-2.5 border border-r-0 border-[#e3e2de] rounded-l-lg bg-white text-sm hover:bg-[#f6f2ec] transition-colors shrink-0"
+              className="flex items-center gap-1.5 h-full px-3 border-r border-[#e3e2de] rounded-l-lg bg-white text-sm hover:bg-[#f6f2ec] transition-colors"
             >
               <span className="text-base leading-none">{selectedCountry.flag}</span>
               <span className="text-[#3d3530] text-xs font-medium">{selectedCountry.dialCode}</span>
@@ -440,7 +453,8 @@ export default function DrawerStep3({
             value={localPhone}
             onChange={(e) => handleLocalPhoneChange(e.target.value)}
             placeholder="Phone Number"
-            className="flex-1 px-3 py-2.5 border border-[#e3e2de] rounded-r-lg text-sm text-[#3d3530] placeholder:text-[#c0b4ac] focus:outline-none focus:border-[#827064] bg-white transition-colors"
+            maxLength={selectedCountry.dialCode === '+1' ? 14 : undefined}
+            className="flex-1 min-w-0 px-3 py-2.5 rounded-r-lg text-sm text-[#3d3530] placeholder:text-[#c0b4ac] focus:outline-none bg-white transition-colors"
           />
         </div>
         <p className="text-[10px] text-[#a0948a] mt-2 leading-relaxed">

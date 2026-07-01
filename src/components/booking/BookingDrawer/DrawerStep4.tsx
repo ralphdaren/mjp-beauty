@@ -12,6 +12,20 @@ interface DrawerStep4Props {
   onConfirm: () => void
 }
 
+// Manitoba exempts esthetic/personal-care services from RST — only GST applies.
+const TAX_RATE = 0.05
+
+function parsePrice(price: string): { prefix: string; amount: number } {
+  const match = price.match(/^([^\d]*)([\d,.]+)/)
+  const prefix = match?.[1]?.trim() || '$'
+  const amount = match ? parseFloat(match[2].replace(/,/g, '')) : 0
+  return { prefix, amount }
+}
+
+function formatMoney(prefix: string, amount: number): string {
+  return `${prefix}${amount.toFixed(2)}`
+}
+
 export default function DrawerStep4({
   selectedService,
   selectedTier,
@@ -21,6 +35,10 @@ export default function DrawerStep4({
   onBack,
   onConfirm,
 }: DrawerStep4Props) {
+  const { prefix, amount: subtotal } = parsePrice(selectedTier.price)
+  const tax = subtotal * TAX_RATE
+  const total = subtotal + tax
+
   return (
     <div>
       <button
@@ -54,15 +72,41 @@ export default function DrawerStep4({
             <p className="text-sm text-[#3d3530]">{selectedTime}</p>
           </div>
         </div>
-        <div className="border-t border-[#e3e2de]" />
+      </div>
+
+      <div className="bg-[#f6f2ec] rounded-2xl p-5 mb-5">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#a0948a] mb-3">Price Summary</p>
+
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-sm text-[#3d3530]">Subtotal</p>
+          <p className="text-sm text-[#3d3530]">{formatMoney(prefix, subtotal)}</p>
+        </div>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm text-[#3d3530]">Taxes</p>
+          <p className="text-sm text-[#3d3530]">{formatMoney(prefix, tax)}</p>
+        </div>
+
+        <div className="border-t border-[#e3e2de] mb-3" />
+
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-sm font-semibold text-[#3d3530]">Total</p>
+          <p className="text-sm font-semibold text-[#3d3530]">{formatMoney(prefix, total)}</p>
+        </div>
+
+        <div className="border-t border-[#e3e2de] mb-3" />
+
         <div className="flex items-center justify-between">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a]">Price</p>
-          <p className="text-base font-semibold text-[#3d3530]">{selectedTier.price}</p>
+          <p className="text-sm font-semibold text-[#3d3530]">Due today</p>
+          <p className="text-sm font-semibold text-[#3d3530]">{formatMoney(prefix, 0)}</p>
+        </div>
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-[#a0948a]">Due at appointment</p>
+          <p className="text-xs text-[#a0948a]">{formatMoney(prefix, total)}</p>
         </div>
       </div>
 
       <p className="text-[11px] text-[#a0948a] leading-relaxed mb-6">
-        Payment is collected at your appointment. Your card on file may be charged in the event of a late cancellation or no-show.
+        Payment is collected at your appointment. Your card on file may be charged in the event of a late cancellation or no-show. Taxes shown are an estimate.
       </p>
 
       <button
