@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import { Download, X } from 'lucide-react'
-import freebie01 from '../assets/freebies/freebie-01.png'
-import freebie02 from '../assets/freebies/freebie-02.png'
-import freebie03 from '../assets/freebies/freebie-03.png'
-import freebie04 from '../assets/freebies/freebie-04.png'
-import freebie05 from '../assets/freebies/freebie-05.png'
-import freebieCard from '../assets/freebies/freebie-card.jpg'
+const freebie01 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_500/v1783028294/freebie-01_kevhzi.png'
+const freebie02 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_500/v1783028295/freebie-02_ehtixa.png'
+const freebie03 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_500/v1783028295/freebie-03_kgj6h2.png'
+const freebie04 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_500/v1783028295/freebie-04_zowfvz.png'
+const freebie05 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_500/v1783028296/freebie-05_xqncqj.png'
+const freebieCard = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_500/v1783028296/freebie-card_cmpmgd.jpg'
 import { useScrollAnimation } from '../hooks/useScrollAnimation'
 
 const NEWSLETTER_URL = 'https://mjpbeauty.myflodesk.com/insider-subscribers'
@@ -123,6 +123,8 @@ function NewsletterPopup({ onClose }: { onClose: () => void }) {
             src={freebieCard}
             alt="Freebies"
             className="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
           />
         </div>
 
@@ -161,7 +163,7 @@ function FreebieCard({ freebie, index }: { freebie: Freebie; index: number }) {
       style={{ transitionDelay: `${index * 0.1}s` }}
     >
       <div className="w-full aspect-[940/788] overflow-hidden">
-        <img src={image} alt={title} className="w-full h-full object-cover" />
+        <img src={image} alt={title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
       </div>
 
       <div className="p-5 flex flex-col flex-1">

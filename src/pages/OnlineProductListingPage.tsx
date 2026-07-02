@@ -87,6 +87,8 @@ export default function OnlineModulesPage() {
                           src={product.featuredImage.url}
                           alt={product.featuredImage.altText || product.title}
                           className="w-full h-full object-contain transition-opacity duration-200 group-hover:opacity-90"
+                          loading="lazy"
+                          decoding="async"
                         />
                       </div>
                     ) : (

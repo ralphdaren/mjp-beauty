@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 const headVid = 'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1781343345/home-head-vid_jlpxxp.mp4'
-import aboutImg from '@/assets/home/about-me.jpg'
-import inPersonCourseImg from '@/assets/home/in-person.jpg'
-import onlineCourseImg from '@/assets/home/online.jpg'
+const aboutImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_900/v1783028047/about-me_vztzrm.jpg'
+const inPersonCourseImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028044/in-person_jkrk1f.jpg'
+const onlineCourseImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028040/online_os6yyd.jpg'
 import { Link, useLocation } from 'react-router-dom'
 import { CircleCheck } from 'lucide-react'
 import { useScrollAnimation } from '@/hooks/useScrollAnimation'
@@ -65,6 +65,8 @@ export default function Home() {
                 className="w-full h-full object-cover object-center"
                 src={aboutImg}
                 alt="Micah portrait"
+                loading="lazy"
+                decoding="async"
               />
             </div>
           </div>
@@ -141,6 +143,8 @@ export default function Home() {
                   className="h-72 w-full object-cover transition duration-300 group-hover:scale-105"
                   src={inPersonCourseImg}
                   alt="In person brow training"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute bottom-4 left-4 rounded-full bg-white/95 px-4 py-2 text-[0.65rem] uppercase tracking-[0.22em] text-[color:var(--muted-foreground)] shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
                   Now Enrolling · January - March 2026
@@ -188,6 +192,8 @@ export default function Home() {
                   className="h-72 w-full object-cover transition duration-300 group-hover:scale-105"
                   src={onlineCourseImg}
                   alt="Online brow training"
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
               <p className="mb-5 text-sm leading-7 text-[color:var(--foreground)]">

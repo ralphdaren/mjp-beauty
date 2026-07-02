@@ -4,14 +4,14 @@ import { CircleAlert, HelpCircle, BookOpen, ArrowRight } from 'lucide-react'
 import { useScrollAnimation } from '@/hooks/useScrollAnimation'
 import BackToTop from '@/components/BackToTop'
 import Accordion from '@/components/Accordion'
-import ipHeadImg from '@/assets/in-person/ip-head.jpg'
-import formatImg01 from '@/assets/in-person/format-img-01.jpg'
-import formatImg02 from '@/assets/in-person/format-img-02.jpg'
-import formatImg03 from '@/assets/in-person/format-img-03.jpg'
-import optImg01 from '@/assets/in-person/opt-img-01.jpg'
-import optImg02 from '@/assets/in-person/opt-img-02.jpg'
-import perk01Img from '@/assets/in-person/perk-01.jpg'
-import perk02Img from '@/assets/in-person/perk-02.jpg'
+const ipHeadImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_1600/v1783028022/ip-head_djhc92.jpg'
+const formatImg01 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_800/v1783028008/format-img-01_oxprvi.jpg'
+const formatImg02 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_800/v1783028001/format-img-02_rb0b1z.jpg'
+const formatImg03 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_800/v1783028011/format-img-03_wixz0f.jpg'
+const optImg01 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_600/v1783028004/opt-img-01_yy8i3c.jpg'
+const optImg02 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_600/v1783028014/opt-img-02_pyljws.jpg'
+const perk01Img = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_600/v1783027997/perk-01_g3rwy8.jpg'
+const perk02Img = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028018/perk-02_qmp0qf.jpg'
 
 const idealForItems = [
   'Beginners who are passionate about launching a successful brow career and want a comprehensive, step-by-step education that covers all the essentials from the ground up.',
@@ -479,6 +479,8 @@ export default function InPersonTrainingPage() {
                   src={item.img}
                   alt={item.alt}
                   className="absolute inset-0 w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
                 />
 
                 <div
@@ -584,7 +586,7 @@ export default function InPersonTrainingPage() {
                 style={undefined}
               >
                 <div className="relative h-64 flex-shrink-0 overflow-hidden">
-                  <img src={card.img} alt={card.alt} className="absolute inset-0 w-full h-full object-cover" />
+                  <img src={card.img} alt={card.alt} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
                 </div>
                 <div className="p-8 flex flex-col">
                   <p className="text-[0.7rem] uppercase tracking-[0.28em] text-[#a0948a] mb-4">{card.label}</p>
@@ -654,7 +656,7 @@ export default function InPersonTrainingPage() {
                       aria-hidden={!isActive}
                     >
                       <div className="relative w-[38%] flex-shrink-0 overflow-hidden">
-                        <img src={card.img} alt={card.alt} className="absolute inset-0 w-full h-full object-cover" />
+                        <img src={card.img} alt={card.alt} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
                       </div>
                       <div className="flex-1 p-10 flex flex-col">
                         <p className="text-[0.7rem] uppercase tracking-[0.28em] text-[#a0948a] mb-4">{card.label}</p>
@@ -697,7 +699,7 @@ export default function InPersonTrainingPage() {
                       aria-label={`Switch to ${card.title}`}
                       tabIndex={isActive ? -1 : 0}
                     >
-                      <img src={card.img} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                      <img src={card.img} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
                       <div className="absolute inset-0 bg-[#2a1a0e]/55 group-hover:bg-[#2a1a0e]/40 transition-colors duration-300" />
                       <div className="absolute inset-x-0 bottom-0 p-5">
                         <p className="text-[0.6rem] uppercase tracking-[0.22em] text-white/50 mb-1.5">{card.label}</p>
@@ -806,6 +808,8 @@ export default function InPersonTrainingPage() {
                     src={perk01Img}
                     alt="Premium Student Kit"
                     className="absolute inset-0 w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
                 <div className="p-5 flex flex-col gap-1.5 flex-shrink-0">
@@ -915,6 +919,8 @@ export default function InPersonTrainingPage() {
               src={perk02Img}
               alt="MJP Beauty in-person students"
               className="absolute inset-0 w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
             />
           </div>
         </div>
@@ -963,6 +969,8 @@ export default function InPersonTrainingPage() {
                     src={perk01Img}
                     alt="Premium Student Kit"
                     className="absolute inset-0 w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
                 <div className="p-5 flex flex-col gap-1.5 flex-shrink-0">
@@ -1072,6 +1080,8 @@ export default function InPersonTrainingPage() {
               src={perk02Img}
               alt="MJP Beauty in-person students"
               className="absolute inset-0 w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
             />
           </div>
         </div>

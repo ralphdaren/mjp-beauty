@@ -247,7 +247,7 @@ export default function ProductDetailPage() {
                           onClick={() => setCurrentImageIndex(i)}
                           className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${i === currentImageIndex ? 'border-[#3d3028]' : 'border-[#e3e2de]'}`}
                         >
-                          <img src={img.url} alt={img.altText || product.title} className="w-full h-full object-cover" />
+                          <img src={img.url} alt={img.altText || product.title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                         </button>
                       ))}
                     </div>

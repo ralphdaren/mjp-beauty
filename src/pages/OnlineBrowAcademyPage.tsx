@@ -7,10 +7,10 @@ import BackToTop from '@/components/BackToTop'
 import Accordion from '@/components/Accordion'
 import { getProductByHandle, createCheckoutUrl, formatPrice } from '@/lib/shopify'
 import type { ShopifyProduct } from '@/lib/shopify'
-import olHeadImg from '@/assets/online/ol-head.jpg'
-import optImg01 from '@/assets/online/opt-img-01.jpg'
-import optImg02 from '@/assets/online/opt-img-02.jpg'
-import curriculumImg from '@/assets/online/curriculum-img.jpg'
+const olHeadImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_1600/v1783027948/ol-head_xivqpl.jpg'
+const optImg01 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_600/v1783027940/opt-img-01_ufhoau.jpg'
+const optImg02 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_600/v1783027944/opt-img-02_l9ncxq.jpg'
+const curriculumImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_900/v1783027938/curriculum-img_frtvcf.jpg'
 
 const youWillItems = [
   'Master the technique of knowing exactly when to remove the perm solution — no more relying on your timers. No more under- or over-processing of the brows. Just beautifully lifted, natural-looking lamination results every time.',
@@ -512,7 +512,7 @@ export default function OnlineBrowAcademyPage() {
                 className={`rounded-2xl border border-[#e3e2de] bg-white ${card.shadowClass} overflow-hidden flex flex-col`}
               >
                 <div className="relative h-64 flex-shrink-0 overflow-hidden">
-                  <img src={card.img} alt={card.alt} className="absolute inset-0 w-full h-full object-cover" />
+                  <img src={card.img} alt={card.alt} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
                 </div>
                 <div className="p-8 flex flex-col">
                   <p className="text-[0.7rem] uppercase tracking-[0.28em] text-[#a0948a] mb-4">{card.label}</p>
@@ -639,7 +639,7 @@ export default function OnlineBrowAcademyPage() {
                         aria-hidden={!isActive}
                       >
                         <div className="relative w-[38%] flex-shrink-0 overflow-hidden">
-                          <img src={card.img} alt={card.alt} className="absolute inset-0 w-full h-full object-cover" />
+                          <img src={card.img} alt={card.alt} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
                         </div>
                         <div className="flex-1 p-10 flex flex-col">
                           <p className="text-[0.7rem] uppercase tracking-[0.28em] text-[#a0948a] mb-4">{card.label}</p>
@@ -686,7 +686,7 @@ export default function OnlineBrowAcademyPage() {
                         aria-label={`Switch to ${card.title}`}
                         tabIndex={isActive ? -1 : 0}
                       >
-                        <img src={card.img} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                        <img src={card.img} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
                         <div className="absolute inset-0 bg-[#2a1a0e]/55 group-hover:bg-[#2a1a0e]/40 transition-colors duration-300" />
                         <div className="absolute inset-x-0 bottom-0 p-5">
                           <p className="text-[0.6rem] uppercase tracking-[0.22em] text-white/50 mb-1.5">{card.label}</p>
@@ -759,6 +759,8 @@ export default function OnlineBrowAcademyPage() {
             src={curriculumImg}
             alt="MJP Beauty Curriculum"
             className="absolute inset-0 w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
           />
           <div className="absolute inset-0 bg-[#1a0e08]/20" />
           <div className="absolute bottom-10 left-6 z-10 backdrop-blur-md bg-white/15 border border-white/25 px-6 py-5">

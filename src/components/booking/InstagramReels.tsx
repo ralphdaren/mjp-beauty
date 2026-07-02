@@ -2,14 +2,14 @@ import { useState, useRef, useEffect } from 'react'
 import { SiInstagram } from '@icons-pack/react-simple-icons'
 
 const REELS = [
-  'https://res.cloudinary.com/dr9nm40gf/video/upload/v1782541924/reel-01_hkcyzp.mp4',
-  'https://res.cloudinary.com/dr9nm40gf/video/upload/v1782542116/reel-08_ww5dyh.mp4',
-  'https://res.cloudinary.com/dr9nm40gf/video/upload/v1782542089/reel-05_eefxyq.mp4',
-  'https://res.cloudinary.com/dr9nm40gf/video/upload/v1782542140/reel-06_jh8q0f.mp4',
-  'https://res.cloudinary.com/dr9nm40gf/video/upload/v1782542105/reel-07_p7kqwg.mp4',
-  'https://res.cloudinary.com/dr9nm40gf/video/upload/v1782542048/reel-03_qm8qzc.mp4',
-  'https://res.cloudinary.com/dr9nm40gf/video/upload/v1782542075/reel-04_f692i6.mp4',
-  'https://res.cloudinary.com/dr9nm40gf/video/upload/v1782541936/reel-02_z3kxis.mp4',
+  'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1782541924/reel-01_hkcyzp.mp4',
+  'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1782542116/reel-08_ww5dyh.mp4',
+  'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1782542089/reel-05_eefxyq.mp4',
+  'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1782542140/reel-06_jh8q0f.mp4',
+  'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1782542105/reel-07_p7kqwg.mp4',
+  'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1782542048/reel-03_qm8qzc.mp4',
+  'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1782542075/reel-04_f692i6.mp4',
+  'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1782541936/reel-02_z3kxis.mp4',
 ]
 
 const N = REELS.length

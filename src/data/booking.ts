@@ -1,16 +1,17 @@
 import type { Service } from '../types/booking'
 
-import browLamImg1 from '@/assets/booking/brow-lam/brow-lm-img-01.jpg'
-import browLamImg2 from '@/assets/booking/brow-lam/brow-lm-img-02.jpg'
-import browStImg1 from '@/assets/booking/brow-st/brow-st-img-01.jpg'
-import browStImg2 from '@/assets/booking/brow-st/brow-st-img-02.jpg'
-import browWtImg1 from '@/assets/booking/brow-wt/brow-wt-img-01.jpg'
-import browWtImg2 from '@/assets/booking/brow-wt/brow-wt-img-02.jpg'
-import keratinImg1 from '@/assets/booking/keratin-lt/keratin-lt-img-01.jpg'
-import keratinImg2 from '@/assets/booking/keratin-lt/keratin-lt-img-02.jpg'
+const browLamImg1 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028342/brow-lm-img-01_pnidos.jpg'
+const browLamImg2 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028342/brow-lm-img-02_rmqbae.jpg'
+const browStImg1  = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028351/brow-st-img-01_v5ms1d.jpg'
+const browStImg2  = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028351/brow-st-img-02_knrsde.jpg'
+const browWtImg1  = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028361/brow-wt-img-01_pijrj8.jpg'
+const browWtImg2  = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028360/brow-wt-img-02_i0fu0d.jpg'
+const keratinImg1 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028371/keratin-lt-img-01_bwcm5l.jpg'
+const keratinImg2 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028372/keratin-lt-img-02_hoxajf.jpg'
 
 const browLamVid = 'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1781343234/brow-lm-vid-01_isylz1.mp4'
 const browWtVid  = 'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1781343535/brow-wt-vid-01_jladew.mp4'
+const keratinVid = 'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1781343313/keratin-lt-vid-01_cuveqw.mp4'
 
 export const SERVICES: Service[] = [
   {
@@ -70,7 +71,7 @@ export const SERVICES: Service[] = [
       { label: 'No Tint', price: '$95.24', duration: '45 min' },
     ],
     images: [keratinImg1, keratinImg2],
-    video: null,
+    video: keratinVid,
   },
 ]
 

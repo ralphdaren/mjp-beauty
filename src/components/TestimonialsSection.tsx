@@ -1,56 +1,59 @@
 import { useState, useEffect, useRef } from 'react'
-import r0219  from '@/assets/home/reviews/IMG_0219.jpg'
-import r0284  from '@/assets/home/reviews/IMG_0284.jpg'
-import r0285  from '@/assets/home/reviews/IMG_0285.jpg'
-import r0287  from '@/assets/home/reviews/IMG_0287.jpg'
-import r0868  from '@/assets/home/reviews/IMG_0868.jpg'
-import r1062  from '@/assets/home/reviews/IMG_1062.jpg'
-import r1063  from '@/assets/home/reviews/IMG_1063.jpg'
-import r1069  from '@/assets/home/reviews/IMG_1069.jpg'
-import r1277  from '@/assets/home/reviews/IMG_1277.jpg'
-import r1650  from '@/assets/home/reviews/IMG_1650.jpg'
-import r1946  from '@/assets/home/reviews/IMG_1946.jpg'
-import r2138  from '@/assets/home/reviews/IMG_2138.jpg'
-import r2149  from '@/assets/home/reviews/IMG_2149.jpg'
-import r2155  from '@/assets/home/reviews/IMG_2155.jpg'
-import r2840  from '@/assets/home/reviews/IMG_2840.jpg'
-import r3283  from '@/assets/home/reviews/IMG_3283.jpg'
-import r3328  from '@/assets/home/reviews/IMG_3328.jpg'
-import r3433  from '@/assets/home/reviews/IMG_3433.jpg'
-import r3435  from '@/assets/home/reviews/IMG_3435.jpg'
-import r3493  from '@/assets/home/reviews/IMG_3493.jpg'
-import r3495  from '@/assets/home/reviews/IMG_3495.jpg'
-import r3547  from '@/assets/home/reviews/IMG_3547.jpg'
-import r3684  from '@/assets/home/reviews/IMG_3684.jpg'
-import r4393  from '@/assets/home/reviews/IMG_4393.jpg'
-import r4395  from '@/assets/home/reviews/IMG_4395.jpg'
-import r4399  from '@/assets/home/reviews/IMG_4399.jpg'
-import r4467  from '@/assets/home/reviews/IMG_4467.jpg'
-import r4468  from '@/assets/home/reviews/IMG_4468.jpg'
-import r4830  from '@/assets/home/reviews/IMG_4830 2.jpg'
-import r4983  from '@/assets/home/reviews/IMG_4983.jpg'
-import r5509  from '@/assets/home/reviews/IMG_5509.jpg'
-import r5898  from '@/assets/home/reviews/IMG_5898.jpg'
-import r6018  from '@/assets/home/reviews/IMG_6018.jpg'
-import r6911  from '@/assets/home/reviews/IMG_6911.jpg'
-import r6978  from '@/assets/home/reviews/IMG_6978.jpg'
-import r7025  from '@/assets/home/reviews/IMG_7025.jpg'
-import r7057  from '@/assets/home/reviews/IMG_7057.jpg'
-import r7586  from '@/assets/home/reviews/IMG_7586.jpg'
-import r7587  from '@/assets/home/reviews/IMG_7587.jpg'
-import r7887  from '@/assets/home/reviews/IMG_7887.jpg'
-import r7910  from '@/assets/home/reviews/IMG_7910.jpg'
-import r8410  from '@/assets/home/reviews/IMG_8410.jpg'
-import r8457  from '@/assets/home/reviews/IMG_8457.jpg'
-import r8459  from '@/assets/home/reviews/IMG_8459.jpg'
-import r8463  from '@/assets/home/reviews/IMG_8463.jpg'
-import r8676  from '@/assets/home/reviews/IMG_8676.jpg'
-import r8677  from '@/assets/home/reviews/IMG_8677.jpg'
-import r8801  from '@/assets/home/reviews/IMG_8801.jpg'
-import r9366a from '@/assets/home/reviews/IMG_9366(1).jpg'
-import r9366  from '@/assets/home/reviews/IMG_9366.jpg'
-import r9598  from '@/assets/home/reviews/IMG_9598.jpg'
-import r9757  from '@/assets/home/reviews/IMG_9757.jpg'
+
+const CLOUD = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_500'
+
+const r0219  = `${CLOUD}/v1783028081/IMG_0219_obw3tj.jpg`
+const r0284  = `${CLOUD}/v1783028107/IMG_0284_b8orbn.jpg`
+const r0285  = `${CLOUD}/v1783028078/IMG_0285_twxtcw.jpg`
+const r0287  = `${CLOUD}/v1783028095/IMG_0287_apjy8k.jpg`
+const r0868  = `${CLOUD}/v1783028074/IMG_0868_k0tnna.jpg`
+const r1062  = `${CLOUD}/v1783028085/IMG_1062_zltgls.jpg`
+const r1063  = `${CLOUD}/v1783028088/IMG_1063_nl4ko7.jpg`
+const r1069  = `${CLOUD}/v1783028114/IMG_1069_qmmw5o.jpg`
+const r1277  = `${CLOUD}/v1783028099/IMG_1277_ijl11a.jpg`
+const r1650  = `${CLOUD}/v1783028111/IMG_1650_nrpwxz.jpg`
+const r1946  = `${CLOUD}/v1783028103/IMG_1946_l7qiio.jpg`
+const r2138  = `${CLOUD}/v1783028118/IMG_2138_mib1wi.jpg`
+const r2149  = `${CLOUD}/v1783028092/IMG_2149_l8p7rm.jpg`
+const r2155  = `${CLOUD}/v1783028121/IMG_2155_gxex2s.jpg`
+const r2840  = `${CLOUD}/v1783028125/IMG_2840_tbtxo5.jpg`
+const r3283  = `${CLOUD}/v1783028129/IMG_3283_z767b2.jpg`
+const r3328  = `${CLOUD}/v1783028132/IMG_3328_jayffp.jpg`
+const r3433  = `${CLOUD}/v1783028136/IMG_3433_niob9y.jpg`
+const r3435  = `${CLOUD}/v1783028140/IMG_3435_usmpnz.jpg`
+const r3493  = `${CLOUD}/v1783028143/IMG_3493_nq0sfa.jpg`
+const r3495  = `${CLOUD}/v1783028147/IMG_3495_xfs5oa.jpg`
+const r3547  = `${CLOUD}/v1783028150/IMG_3547_tew9xj.jpg`
+const r3684  = `${CLOUD}/v1783028154/IMG_3684_opvfub.jpg`
+const r4393  = `${CLOUD}/v1783028158/IMG_4393_oialhb.jpg`
+const r4395  = `${CLOUD}/v1783028162/IMG_4395_z0apel.jpg`
+const r4399  = `${CLOUD}/v1783028166/IMG_4399_gjfcyw.jpg`
+const r4467  = `${CLOUD}/v1783028169/IMG_4467_usyykg.jpg`
+const r4468  = `${CLOUD}/v1783028172/IMG_4468_svpo6y.jpg`
+const r4830  = `${CLOUD}/v1783028175/IMG_4830_2_py6fqm.jpg`
+const r4983  = `${CLOUD}/v1783028180/IMG_4983_cbauud.jpg`
+const r5509  = `${CLOUD}/v1783028183/IMG_5509_xbfj6u.jpg`
+const r5898  = `${CLOUD}/v1783028186/IMG_5898_nbyl2c.jpg`
+const r6018  = `${CLOUD}/v1783028190/IMG_6018_lcasfi.jpg`
+const r6911  = `${CLOUD}/v1783028194/IMG_6911_rhi8o5.jpg`
+const r6978  = `${CLOUD}/v1783028197/IMG_6978_tsunmg.jpg`
+const r7025  = `${CLOUD}/v1783028202/IMG_7025_kga608.jpg`
+const r7057  = `${CLOUD}/v1783028204/IMG_7057_r9k9ui.jpg`
+const r7586  = `${CLOUD}/v1783028214/IMG_7586_cfrzru.jpg`
+const r7587  = `${CLOUD}/v1783028207/IMG_7587_pdyfok.jpg`
+const r7887  = `${CLOUD}/v1783028211/IMG_7887_qlgnjq.jpg`
+const r7910  = `${CLOUD}/v1783028217/IMG_7910_eiadof.jpg`
+const r8410  = `${CLOUD}/v1783028224/IMG_8410_tvudqf.jpg`
+const r8457  = `${CLOUD}/v1783028221/IMG_8457_gr8nzq.jpg`
+const r8459  = `${CLOUD}/v1783028232/IMG_8459_yrrkja.jpg`
+const r8463  = `${CLOUD}/v1783028228/IMG_8463_ehfgt9.jpg`
+const r8676  = `${CLOUD}/v1783028235/IMG_8676_fhxlox.jpg`
+const r8677  = `${CLOUD}/v1783028239/IMG_8677_jxive8.jpg`
+const r8801  = `${CLOUD}/v1783028246/IMG_8801_brjxtg.jpg`
+const r9366a = `${CLOUD}/v1783028250/IMG_9366_1_lqkkiz.jpg`
+const r9366  = `${CLOUD}/v1783028243/IMG_9366_sjwcjn.jpg`
+const r9598  = `${CLOUD}/v1783028253/IMG_9598_geqblb.jpg`
+const r9757  = `${CLOUD}/v1783028257/IMG_9757_n2aurr.jpg`
 
 const allImages: string[] = [
   r0219, r0284, r0285, r0287, r0868,
@@ -133,6 +136,8 @@ function ScrollColumn({ images, duration }: { images: string[]; duration: number
             alt="Student review"
             className="reviews-img"
             draggable={false}
+            loading="lazy"
+            decoding="async"
           />
         ))}
       </div>

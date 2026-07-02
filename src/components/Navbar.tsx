@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { NavLink, Link, useLocation } from 'react-router-dom'
 import { Menu, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight, User, CalendarCheck, ShoppingCart } from 'lucide-react'
 import logoBrown from '@/assets/brand-kit/logo-brown.png'
-import optImg01 from '@/assets/online/opt-img-01.jpg'
+
+const optImg01 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_500/v1783027940/opt-img-01_ufhoau.jpg'
 import { getCollectionProducts } from '@/lib/shopify'
 import type { ShopifyProduct } from '@/lib/shopify'
 
@@ -295,6 +296,8 @@ export default function Navbar() {
                       src={featuredCourse.img}
                       alt={featuredCourse.title}
                       className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
+                      loading="lazy"
+                      decoding="async"
                     />
                     <p className="absolute top-3 left-4 text-[0.6rem] tracking-[0.22em] uppercase text-white/80 font-light">
                       {featuredCourse.imgLabel}
@@ -351,6 +354,8 @@ export default function Navbar() {
                                 src={mod.image.url}
                                 alt={mod.image.altText || mod.name}
                                 className="w-full h-full object-contain group-hover:scale-[1.04] transition-transform duration-500"
+                                loading="lazy"
+                                decoding="async"
                               />
                             ) : (
                               <div className="w-full h-full" />
