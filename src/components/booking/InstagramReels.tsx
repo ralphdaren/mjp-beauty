@@ -46,7 +46,25 @@ function getSlot(diff: number) {
 
 export default function InstagramReels() {
   const [active, setActive] = useState(0)
+  const [inView, setInView] = useState(false)
+  const sectionRef = useRef<HTMLElement | null>(null)
   const videoRefs = useRef<(HTMLVideoElement | null)[]>(new Array(N).fill(null))
+
+  useEffect(() => {
+    const el = sectionRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '200px' }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     videoRefs.current.forEach((v, i) => {
@@ -57,10 +75,10 @@ export default function InstagramReels() {
         v.pause()
       }
     })
-  }, [active])
+  }, [active, inView])
 
   return (
-    <section className="bg-[#fefefe] py-20 border-t border-[#e3e2de] overflow-hidden">
+    <section ref={sectionRef} className="bg-[#fefefe] py-20 border-t border-[#e3e2de] overflow-hidden">
       {/* Carousel */}
       <div className="relative" style={{ height: CH + 60 }}>
         <div className="absolute inset-0 flex items-center justify-center">
@@ -92,15 +110,19 @@ export default function InstagramReels() {
                 }}
                 onClick={() => abs > 0 && visible && setActive(i)}
               >
-                <video
-                  ref={el => { videoRefs.current[i] = el }}
-                  src={url}
-                  loop
-                  muted
-                  playsInline
-                  preload="metadata"
-                  className="w-full h-full object-cover"
-                />
+                {inView ? (
+                  <video
+                    ref={el => { videoRefs.current[i] = el }}
+                    src={url}
+                    loop
+                    muted
+                    playsInline
+                    preload="metadata"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-[#ece7e0]" />
+                )}
                 {abs > 0 && visible && (
                   <div className="absolute inset-0 bg-[#1a1410]/35" />
                 )}
