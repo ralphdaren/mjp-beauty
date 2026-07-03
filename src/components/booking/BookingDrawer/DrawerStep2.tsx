@@ -111,7 +111,11 @@ export default function DrawerStep2({
             Available times — {formatDate(selectedDate)}
           </p>
           {slotsLoading ? (
-            <p className="text-sm text-[#a0948a] text-center py-4">Checking availability…</p>
+            <div className="grid grid-cols-3 gap-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-9 rounded-lg bg-[#f6f2ec] animate-pulse" />
+              ))}
+            </div>
           ) : slotsError ? (
             <p className="text-sm text-red-400 text-center py-4">Could not load times. Please try again.</p>
           ) : !slots || slots.length === 0 ? (

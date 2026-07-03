@@ -18,6 +18,32 @@ interface BookingRequest {
 
 type Tab = 'pending' | 'accepted' | 'declined'
 
+function RequestCardSkeleton() {
+  return (
+    <div className="bg-white rounded-2xl p-5 shadow-sm">
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div className="space-y-2">
+          <div className="h-3.5 w-32 bg-[#ece7e0] rounded-full animate-pulse" />
+          <div className="h-3 w-40 bg-[#ece7e0] rounded-full animate-pulse" />
+        </div>
+        <div className="h-3 w-14 bg-[#ece7e0] rounded-full animate-pulse shrink-0" />
+      </div>
+      <div className="bg-[#f6f2ec] rounded-xl p-4 space-y-3 mb-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex justify-between">
+            <div className="h-2.5 w-16 bg-[#e3ded5] rounded-full animate-pulse" />
+            <div className="h-2.5 w-24 bg-[#e3ded5] rounded-full animate-pulse" />
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <div className="flex-1 h-9 bg-[#f6f2ec] rounded-full animate-pulse" />
+        <div className="flex-1 h-9 bg-[#f6f2ec] rounded-full animate-pulse" />
+      </div>
+    </div>
+  )
+}
+
 const TIMEZONE = 'America/Winnipeg'
 const TOKEN_KEY = 'mjp_admin_token'
 
@@ -228,6 +254,14 @@ export default function AdminPage() {
         {!fetchLoading && filtered.length === 0 && (
           <div className="text-center py-16 text-[#a0948a] text-sm">
             No {tab} requests.
+          </div>
+        )}
+
+        {fetchLoading && filtered.length === 0 && (
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <RequestCardSkeleton key={i} />
+            ))}
           </div>
         )}
 
