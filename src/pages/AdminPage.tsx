@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
-import { LogOut, CheckCircle2, XCircle, Clock, RefreshCw } from 'lucide-react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { LogOut, RefreshCw, Search, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface BookingRequest {
   id: string
@@ -17,6 +17,8 @@ interface BookingRequest {
 }
 
 type Tab = 'pending' | 'accepted' | 'declined'
+
+const PAGE_SIZE = 10
 
 function RequestCardSkeleton() {
   return (
@@ -41,6 +43,22 @@ function RequestCardSkeleton() {
         <div className="flex-1 h-9 bg-[#f6f2ec] rounded-full animate-pulse" />
       </div>
     </div>
+  )
+}
+
+const STATUS_STYLES: Record<BookingRequest['status'], { bg: string; text: string; dot: string }> = {
+  pending:  { bg: 'bg-amber-50',  text: 'text-amber-600', dot: 'bg-amber-500' },
+  accepted: { bg: 'bg-[#eaf5ee]', text: 'text-[#4a9d6f]', dot: 'bg-[#4a9d6f]' },
+  declined: { bg: 'bg-red-50',    text: 'text-red-500',   dot: 'bg-red-400' },
+}
+
+function StatusBadge({ status }: { status: BookingRequest['status'] }) {
+  const s = STATUS_STYLES[status]
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-[0.08em] shrink-0 ${s.bg} ${s.text}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+      {status}
+    </span>
   )
 }
 
@@ -79,6 +97,15 @@ export default function AdminPage() {
   const [tab, setTab] = useState<Tab>('pending')
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
+  const [search, setSearch] = useState('')
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [serviceFilter, setServiceFilter] = useState('')
+  const [optionFilter, setOptionFilter] = useState('')
+  const [page, setPage] = useState(1)
+  const filterPanelRef = useRef<HTMLDivElement>(null)
+
   const authHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
 
   const fetchRequests = useCallback(async (t: string) => {
@@ -107,6 +134,23 @@ export default function AdminPage() {
       fetchRequests(token).then(() => setAuthenticated(true))
     }
   }, [])
+
+  // Close the filter panel on outside click
+  useEffect(() => {
+    if (!filterOpen) return
+    function handleClick(e: MouseEvent) {
+      if (filterPanelRef.current && !filterPanelRef.current.contains(e.target as Node)) {
+        setFilterOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [filterOpen])
+
+  // Reset to page 1 whenever the visible result set could change shape
+  useEffect(() => {
+    setPage(1)
+  }, [tab, search, dateFrom, dateTo, serviceFilter, optionFilter])
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -158,7 +202,36 @@ export default function AdminPage() {
     }
   }
 
-  const filtered = requests.filter((r) => r.status === tab)
+  function clearFilters() {
+    setDateFrom('')
+    setDateTo('')
+    setServiceFilter('')
+    setOptionFilter('')
+  }
+
+  const tabFiltered = requests.filter((r) => r.status === tab)
+
+  const searched = search.trim()
+    ? tabFiltered.filter((r) => {
+        const q = search.trim().toLowerCase()
+        return `${r.first_name} ${r.last_name}`.toLowerCase().includes(q) || r.email.toLowerCase().includes(q)
+      })
+    : tabFiltered
+
+  const filtered = searched.filter((r) => {
+    if (serviceFilter && r.service_name !== serviceFilter) return false
+    if (optionFilter && r.tier_label !== optionFilter) return false
+    if (dateFrom && r.start_at < dateFrom) return false
+    if (dateTo && r.start_at.slice(0, 10) > dateTo) return false
+    return true
+  })
+
+  const serviceOptions = [...new Set(requests.map((r) => r.service_name))].sort()
+  const optionOptions = [...new Set(requests.map((r) => r.tier_label))].sort()
+  const hasActiveFilters = !!(dateFrom || dateTo || serviceFilter || optionFilter)
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   // ── Login screen ────────────────────────────────────────────────────────────
   if (!authenticated) {
@@ -200,6 +273,7 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f2ec]">
+      <div className="sticky top-0 z-30 bg-[#f6f2ec]">
       {/* Header */}
       <div className="bg-white border-b border-[#e3e2de] px-6 py-4 flex items-center justify-between">
         <div>
@@ -207,17 +281,22 @@ export default function AdminPage() {
           <h1 className="text-base font-semibold text-[#3d3530]">Booking Requests</h1>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => fetchRequests(token)}
-            disabled={fetchLoading}
-            className="p-2 text-[#a0948a] hover:text-[#3d3530] transition-colors disabled:opacity-50"
-            title="Refresh"
-          >
-            <RefreshCw size={16} className={fetchLoading ? 'animate-spin' : ''} />
-          </button>
+          <div className="group relative">
+            <button
+              onClick={() => fetchRequests(token)}
+              disabled={fetchLoading}
+              className="p-2.5 border border-[#e3e2de] rounded-full text-[#6b5f58] hover:border-[#3d3530] hover:text-[#3d3530] transition-colors disabled:opacity-50"
+              title="Refresh"
+            >
+              <RefreshCw size={16} className={fetchLoading ? 'animate-spin' : ''} />
+            </button>
+            <span className="pointer-events-none absolute -bottom-9 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#3d3530] text-white text-[10px] px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-10">
+              Refresh
+            </span>
+          </div>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-1.5 text-xs text-[#a0948a] hover:text-[#3d3530] transition-colors"
+            className="flex items-center gap-1.5 border border-[#e3e2de] rounded-full px-4 py-2 text-xs font-medium text-[#6b5f58] hover:border-[#3d3530] hover:text-[#3d3530] transition-colors"
           >
             <LogOut size={14} />
             Sign out
@@ -225,8 +304,93 @@ export default function AdminPage() {
         </div>
       </div>
 
+      {/* Search + Filter */}
+      <div className="px-6 pt-5 flex items-center gap-3 max-w-5xl mx-auto">
+        <div className="relative flex-1">
+          <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#a0948a]" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name or email..."
+            className="w-full bg-white border border-[#e3e2de] rounded-xl pl-10 pr-4 py-2.5 text-sm text-[#3d3530] focus:outline-none focus:border-[#3d3530] transition-colors"
+          />
+        </div>
+        <div className="relative" ref={filterPanelRef}>
+          <button
+            onClick={() => setFilterOpen((o) => !o)}
+            className={`flex items-center gap-2 border rounded-xl px-4 py-2.5 text-xs font-medium transition-colors ${
+              filterOpen || hasActiveFilters
+                ? 'border-[#3d3530] text-[#3d3530]'
+                : 'border-[#e3e2de] text-[#6b5f58] hover:border-[#3d3530] hover:text-[#3d3530]'
+            }`}
+          >
+            <SlidersHorizontal size={14} />
+            Filter
+          </button>
+          {filterOpen && (
+            <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl shadow-lg border border-[#e3e2de] p-5 z-20 space-y-4">
+              <div>
+                <label className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] block mb-1.5">From</label>
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className="w-full border border-[#e3e2de] rounded-xl px-3 py-2.5 text-sm text-[#3d3530] focus:outline-none focus:border-[#3d3530]"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] block mb-1.5">To</label>
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className="w-full border border-[#e3e2de] rounded-xl px-3 py-2.5 text-sm text-[#3d3530] focus:outline-none focus:border-[#3d3530]"
+                />
+              </div>
+
+              <div className="border-t border-[#e3e2de]" />
+
+              <div>
+                <label className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] block mb-1.5">Service</label>
+                <select
+                  value={serviceFilter}
+                  onChange={(e) => setServiceFilter(e.target.value)}
+                  className="w-full border border-[#e3e2de] rounded-xl px-3 py-2.5 text-sm text-[#3d3530] focus:outline-none focus:border-[#3d3530] bg-white"
+                >
+                  <option value="">All services</option>
+                  {serviceOptions.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] block mb-1.5">Option</label>
+                <select
+                  value={optionFilter}
+                  onChange={(e) => setOptionFilter(e.target.value)}
+                  className="w-full border border-[#e3e2de] rounded-xl px-3 py-2.5 text-sm text-[#3d3530] focus:outline-none focus:border-[#3d3530] bg-white"
+                >
+                  <option value="">All options</option>
+                  {optionOptions.map((o) => (
+                    <option key={o} value={o}>{o}</option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                onClick={clearFilters}
+                className="w-full py-2.5 border border-[#e3e2de] rounded-full text-xs font-medium text-[#6b5f58] hover:border-[#3d3530] hover:text-[#3d3530] transition-colors"
+              >
+                Clear filters
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Tabs */}
-      <div className="px-6 pt-5 pb-0 flex gap-1">
+      <div className="px-6 pt-5 pb-3 flex gap-1 max-w-5xl mx-auto">
         {(['pending', 'accepted', 'declined'] as Tab[]).map((t) => (
           <button
             key={t}
@@ -244,50 +408,41 @@ export default function AdminPage() {
           </button>
         ))}
       </div>
+      </div>
 
       {/* Content */}
-      <div className="px-6 py-5 max-w-3xl">
+      <div className="px-6 py-5 max-w-5xl mx-auto">
         {fetchError && (
           <p className="text-sm text-red-500 mb-4">{fetchError}</p>
         )}
 
         {!fetchLoading && filtered.length === 0 && (
           <div className="text-center py-16 text-[#a0948a] text-sm">
-            No {tab} requests.
+            No {tab} requests{search.trim() || hasActiveFilters ? ' match your search.' : '.'}
           </div>
         )}
 
         {fetchLoading && filtered.length === 0 && (
-          <div className="space-y-3">
-            {Array.from({ length: 3 }).map((_, i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
               <RequestCardSkeleton key={i} />
             ))}
           </div>
         )}
 
-        <div className="space-y-3">
-          {filtered.map((r) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {pageItems.map((r) => (
             <div key={r.id} className="bg-white rounded-2xl p-5 shadow-sm">
               {/* Customer */}
               <div className="flex items-start justify-between gap-4 mb-4">
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm font-semibold text-[#3d3530]">
                     {r.first_name} {r.last_name}
                   </p>
                   <p className="text-xs text-[#6b5f58]">{r.email}</p>
                   {r.phone && <p className="text-xs text-[#a0948a]">{r.phone}</p>}
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  {r.status === 'pending' && <Clock size={13} className="text-amber-500" />}
-                  {r.status === 'accepted' && <CheckCircle2 size={13} className="text-[#4a9d6f]" />}
-                  {r.status === 'declined' && <XCircle size={13} className="text-red-400" />}
-                  <span className={`text-[10px] uppercase tracking-[0.1em] font-medium ${
-                    r.status === 'pending' ? 'text-amber-500' :
-                    r.status === 'accepted' ? 'text-[#4a9d6f]' : 'text-red-400'
-                  }`}>
-                    {r.status}
-                  </span>
-                </div>
+                <StatusBadge status={r.status} />
               </div>
 
               {/* Booking details */}
@@ -320,24 +475,44 @@ export default function AdminPage() {
               {r.status === 'pending' && (
                 <div className="flex gap-2">
                   <button
+                    onClick={() => handleAction(r.id, 'decline')}
+                    disabled={actionLoading === r.id}
+                    className="flex-1 py-2.5 bg-white border border-red-300 text-red-500 text-xs tracking-[0.1em] uppercase rounded-full disabled:opacity-50 hover:enabled:bg-red-500 hover:enabled:border-red-500 hover:enabled:text-white transition-colors"
+                  >
+                    {actionLoading === r.id ? '…' : 'Decline'}
+                  </button>
+                  <button
                     onClick={() => handleAction(r.id, 'accept')}
                     disabled={actionLoading === r.id}
                     className="flex-1 py-2.5 bg-[#3d3530] text-white text-xs tracking-[0.1em] uppercase rounded-full disabled:opacity-50 hover:enabled:bg-[#2a2320] transition-colors"
                   >
                     {actionLoading === r.id ? '…' : 'Accept'}
                   </button>
-                  <button
-                    onClick={() => handleAction(r.id, 'decline')}
-                    disabled={actionLoading === r.id}
-                    className="flex-1 py-2.5 border border-[#e3e2de] text-[#6b5f58] text-xs tracking-[0.1em] uppercase rounded-full disabled:opacity-50 hover:enabled:bg-[#f6f2ec] transition-colors"
-                  >
-                    {actionLoading === r.id ? '…' : 'Decline'}
-                  </button>
                 </div>
               )}
             </div>
           ))}
         </div>
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-4 mt-6">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="p-2 rounded-full border border-[#e3e2de] text-[#6b5f58] hover:border-[#3d3530] hover:text-[#3d3530] disabled:opacity-35 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft size={15} />
+            </button>
+            <span className="text-xs text-[#6b5f58]">Page {page} of {totalPages}</span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="p-2 rounded-full border border-[#e3e2de] text-[#6b5f58] hover:border-[#3d3530] hover:text-[#3d3530] disabled:opacity-35 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronRight size={15} />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
