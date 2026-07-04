@@ -10,6 +10,10 @@ import { supabase } from './_supabase.js'
 import { squareFetch, getLocationId, getCatalogItems, findVariationByLabel } from './_square.js'
 import { escapeHtml } from './_html.js'
 import { enforceRateLimit, adminLimiter } from './_ratelimit.js'
+import { setCorsHeaders } from './_cors.js'
+import { isNonEmptyString } from './_validate.js'
+
+const VALID_STATUSES = ['pending', 'accepted', 'declined']
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const CLIENT_TIMEZONE = 'America/Winnipeg'
@@ -19,7 +23,7 @@ function isAuthorized(req: VercelRequest): boolean {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  setCorsHeaders(req, res)
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (!(await enforceRateLimit(req, res, adminLimiter))) return
@@ -35,7 +39,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .order('created_at', { ascending: false })
       .limit(100)
 
-    if (status && typeof status === 'string') {
+    if (status && typeof status === 'string' && VALID_STATUSES.includes(status)) {
       query = query.eq('status', status)
     }
 
@@ -47,7 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // ── POST: accept or decline ────────────────────────────────────────────────
   if (req.method === 'POST') {
     const { action, requestId } = req.body ?? {}
-    if (!requestId) return res.status(400).json({ error: 'requestId is required' })
+    if (!isNonEmptyString(requestId, 100)) return res.status(400).json({ error: 'requestId is required' })
 
     const { data: request, error: fetchError } = await supabase
       .from('booking_requests')

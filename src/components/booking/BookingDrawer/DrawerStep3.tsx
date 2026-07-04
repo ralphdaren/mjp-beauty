@@ -204,12 +204,14 @@ interface DrawerStep3Props {
   phone: string
   cardConsent: boolean
   policyConsent: boolean
+  honeypot: string
   onFirstNameChange: (v: string) => void
   onLastNameChange: (v: string) => void
   onEmailChange: (v: string) => void
   onPhoneChange: (v: string) => void
   onCardConsentChange: (v: boolean) => void
   onPolicyConsentChange: (v: boolean) => void
+  onHoneypotChange: (v: string) => void
   onBack: () => void
   onStep3Continue: (sourceId: string) => void
 }
@@ -228,12 +230,14 @@ export default function DrawerStep3({
   phone,
   cardConsent,
   policyConsent,
+  honeypot,
   onFirstNameChange,
   onLastNameChange,
   onEmailChange,
   onPhoneChange,
   onCardConsentChange,
   onPolicyConsentChange,
+  onHoneypotChange,
   onBack,
   onStep3Continue,
 }: DrawerStep3Props) {
@@ -362,6 +366,23 @@ export default function DrawerStep3({
       </button>
 
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a0948a] mb-4">Contact Information</p>
+
+      {/* Honeypot — hidden from real users, bots that auto-fill every input trip it */}
+      <div
+        style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}
+        aria-hidden="true"
+      >
+        <label htmlFor="website">Website</label>
+        <input
+          type="text"
+          id="website"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          value={honeypot}
+          onChange={(e) => onHoneypotChange(e.target.value)}
+        />
+      </div>
 
       <div className="grid grid-cols-2 gap-3 mb-4">
         <div>

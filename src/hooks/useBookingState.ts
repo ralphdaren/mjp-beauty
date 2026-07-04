@@ -37,6 +37,10 @@ export function useBookingState() {
   const [cardConsent, setCardConsent] = useState(false)
   const [policyConsent, setPolicyConsent] = useState(false)
 
+  // Honeypot — hidden field real users never fill in; bots that auto-fill every
+  // input on the page do. Non-empty means the submission is bot traffic.
+  const [honeypot, setHoneypot] = useState('')
+
   // Fetch Square location ID once on mount
   useEffect(() => {
     fetch('/api/locations/id')
@@ -135,6 +139,14 @@ export function useBookingState() {
 
   async function handleConfirm() {
     if (!selectedService || !selectedTier || !selectedStartAt || !cardSourceId) return
+
+    // Bot filled the hidden honeypot field — pretend success without touching
+    // Square/Supabase/Resend at all.
+    if (honeypot.trim() !== '') {
+      setBookingSuccess(true)
+      return
+    }
+
     setConfirmLoading(true)
     try {
       const cardRes = await fetch('/api/customers', {
@@ -160,6 +172,7 @@ export function useBookingState() {
           lastName,
           email,
           phone,
+          honeypot,
         }),
       })
       const bookingData = await bookingRes.json()
@@ -231,6 +244,7 @@ export function useBookingState() {
     phone,
     cardConsent,
     policyConsent,
+    honeypot,
     // Handlers
     handleSelectService,
     handleSelectTier,
@@ -247,5 +261,6 @@ export function useBookingState() {
     setPhone,
     setCardConsent,
     setPolicyConsent,
+    setHoneypot,
   }
 }

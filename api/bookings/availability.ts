@@ -4,20 +4,25 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { squareFetch, getCatalogItems, getLocationId, findVariationByLabel } from '../_square.js'
 import { enforceRateLimit, availabilityLimiter } from '../_ratelimit.js'
+import { setCorsHeaders } from '../_cors.js'
+import { isNonEmptyString, isValidDateOnly } from '../_validate.js'
 
 const CLIENT_TIMEZONE = 'America/Winnipeg'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  setCorsHeaders(req, res)
   if (!(await enforceRateLimit(req, res, availabilityLimiter))) return
 
   const { tierLabel, date, month } = req.query
 
-  if (!tierLabel || typeof tierLabel !== 'string') {
+  if (!isNonEmptyString(tierLabel, 100)) {
     return res.status(400).json({ error: 'tierLabel is required' })
   }
   if (!date && !month) {
     return res.status(400).json({ error: 'either date (YYYY-MM-DD) or month (YYYY-MM) is required' })
+  }
+  if (date !== undefined && !isValidDateOnly(date)) {
+    return res.status(400).json({ error: 'date must be in YYYY-MM-DD format' })
   }
 
   try {

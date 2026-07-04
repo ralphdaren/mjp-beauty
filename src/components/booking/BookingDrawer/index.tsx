@@ -38,6 +38,7 @@ export interface BookingDrawerProps {
   phone: string
   cardConsent: boolean
   policyConsent: boolean
+  honeypot: string
   locationId: string | null
   onFirstNameChange: (v: string) => void
   onLastNameChange: (v: string) => void
@@ -45,6 +46,7 @@ export interface BookingDrawerProps {
   onPhoneChange: (v: string) => void
   onCardConsentChange: (v: boolean) => void
   onPolicyConsentChange: (v: boolean) => void
+  onHoneypotChange: (v: string) => void
   onStep3Continue: (sourceId: string) => void
   // Step 4
   confirmLoading: boolean
@@ -79,6 +81,7 @@ export default function BookingDrawer({
   phone,
   cardConsent,
   policyConsent,
+  honeypot,
   locationId,
   onFirstNameChange,
   onLastNameChange,
@@ -86,6 +89,7 @@ export default function BookingDrawer({
   onPhoneChange,
   onCardConsentChange,
   onPolicyConsentChange,
+  onHoneypotChange,
   onStep3Continue,
   confirmLoading,
   onConfirm,
@@ -178,12 +182,14 @@ export default function BookingDrawer({
                   phone={phone}
                   cardConsent={cardConsent}
                   policyConsent={policyConsent}
+                  honeypot={honeypot}
                   onFirstNameChange={onFirstNameChange}
                   onLastNameChange={onLastNameChange}
                   onEmailChange={onEmailChange}
                   onPhoneChange={onPhoneChange}
                   onCardConsentChange={onCardConsentChange}
                   onPolicyConsentChange={onPolicyConsentChange}
+                  onHoneypotChange={onHoneypotChange}
                   onBack={onBack}
                   onStep3Continue={onStep3Continue}
                 />

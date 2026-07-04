@@ -8,6 +8,8 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { squareFetch } from './_square.js'
 import { randomUUID } from 'crypto'
 import { enforceRateLimit, attachCardLimiter } from './_ratelimit.js'
+import { setCorsHeaders } from './_cors.js'
+import { isValidEmail, isNonEmptyString, isOptionalString } from './_validate.js'
 
 async function upsertCustomer(firstName: unknown, lastName: unknown, email: unknown, phone: unknown): Promise<string> {
   const searchData = await squareFetch('/v2/customers/search', {
@@ -30,7 +32,7 @@ async function upsertCustomer(firstName: unknown, lastName: unknown, email: unkn
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  setCorsHeaders(req, res)
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
   if (!(await enforceRateLimit(req, res, attachCardLimiter))) return
@@ -39,7 +41,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (action === 'attach-card') {
     const { firstName, lastName, email, phone, sourceId } = body
-    if (!email || !sourceId) return res.status(400).json({ error: 'email and sourceId are required' })
+    if (!isValidEmail(email)) return res.status(400).json({ error: 'email must be a valid email address' })
+    if (!isNonEmptyString(sourceId, 255)) return res.status(400).json({ error: 'sourceId is required' })
+    if (!isOptionalString(firstName, 100) || !isOptionalString(lastName, 100) || !isOptionalString(phone, 30)) {
+      return res.status(400).json({ error: 'One or more fields exceed the allowed length' })
+    }
     try {
       const customerId = await upsertCustomer(firstName, lastName, email, phone)
       const data = await squareFetch('/v2/cards', {

@@ -72,6 +72,7 @@ export default function BookAppointmentPage() {
         phone={b.phone}
         cardConsent={b.cardConsent}
         policyConsent={b.policyConsent}
+        honeypot={b.honeypot}
         onSelectService={b.handleSelectService}
         onSelectTier={b.handleSelectTier}
         onSelectDate={b.handleSelectDate}
@@ -87,6 +88,7 @@ export default function BookAppointmentPage() {
         onPhoneChange={b.setPhone}
         onCardConsentChange={b.setCardConsent}
         onPolicyConsentChange={b.setPolicyConsent}
+        onHoneypotChange={b.setHoneypot}
       />
     </>
   )

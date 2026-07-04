@@ -4,10 +4,13 @@
 // Sends two emails: "request received" to customer, "new request" notification to admin.
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { randomUUID } from 'crypto'
 import { Resend } from 'resend'
 import { supabase } from '../_supabase.js'
 import { escapeHtml } from '../_html.js'
 import { enforceRateLimit, bookingCreateLimiter } from '../_ratelimit.js'
+import { setCorsHeaders } from '../_cors.js'
+import { isValidEmail, isValidIsoDateTime, isNonEmptyString, isOptionalString } from '../_validate.js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM = process.env.RESEND_FROM_EMAIL ?? 'MJP Beauty <onboarding@resend.dev>'
@@ -15,18 +18,38 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? ''
 const CLIENT_TIMEZONE = 'America/Winnipeg'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  setCorsHeaders(req, res)
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
   if (!(await enforceRateLimit(req, res, bookingCreateLimiter))) return
 
   const {
     tierLabel, startAt, teamMemberId, customerId,
-    serviceName, firstName, lastName, email, phone,
+    serviceName, firstName, lastName, email, phone, honeypot,
   } = req.body ?? {}
 
-  if (!tierLabel || !startAt || !serviceName || !firstName || !email) {
-    return res.status(400).json({ error: 'tierLabel, startAt, serviceName, firstName, and email are required' })
+  // Hidden field real users never fill in — bots that auto-fill every input do.
+  // Pretend success without touching Supabase/Resend.
+  if (honeypot) {
+    return res.status(200).json({ requestId: randomUUID() })
+  }
+
+  if (!isNonEmptyString(tierLabel, 100) || !isNonEmptyString(serviceName, 200) || !isNonEmptyString(firstName, 100)) {
+    return res.status(400).json({ error: 'tierLabel, serviceName, and firstName must be non-empty strings' })
+  }
+  if (!isValidIsoDateTime(startAt)) {
+    return res.status(400).json({ error: 'startAt must be a valid date/time' })
+  }
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: 'email must be a valid email address' })
+  }
+  if (
+    !isOptionalString(lastName, 100) ||
+    !isOptionalString(phone, 30) ||
+    !isOptionalString(teamMemberId, 100) ||
+    !isOptionalString(customerId, 100)
+  ) {
+    return res.status(400).json({ error: 'One or more fields exceed the allowed length' })
   }
 
   try {
