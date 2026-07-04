@@ -8,6 +8,8 @@ import { randomUUID } from 'crypto'
 import { Resend } from 'resend'
 import { supabase } from './_supabase.js'
 import { squareFetch, getLocationId, getCatalogItems, findVariationByLabel } from './_square.js'
+import { escapeHtml } from './_html.js'
+import { enforceRateLimit, adminLimiter } from './_ratelimit.js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const CLIENT_TIMEZONE = 'America/Winnipeg'
@@ -20,6 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   if (req.method === 'OPTIONS') return res.status(200).end()
+  if (!(await enforceRateLimit(req, res, adminLimiter))) return
 
   if (!isAuthorized(req)) return res.status(401).json({ error: 'Unauthorized' })
 
@@ -118,8 +121,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           to: request.email,
           subject: 'Your booking request — MJP Beauty',
           html: `
-            <p>Hi ${request.first_name},</p>
-            <p>Thank you for reaching out to MJP Beauty. Unfortunately, we're unable to accommodate your request for <strong>${request.service_name} — ${request.tier_label}</strong> on <strong>${appointmentDate}</strong>.</p>
+            <p>Hi ${escapeHtml(request.first_name)},</p>
+            <p>Thank you for reaching out to MJP Beauty. Unfortunately, we're unable to accommodate your request for <strong>${escapeHtml(request.service_name)} — ${escapeHtml(request.tier_label)}</strong> on <strong>${appointmentDate}</strong>.</p>
             <p>We'd love to find another time that works for you. Feel free to submit a new booking request anytime.</p>
             <p>— Micah at MJP Beauty</p>
           `,

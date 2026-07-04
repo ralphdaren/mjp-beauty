@@ -2,6 +2,7 @@
 // POST /api/judgeme          — submit a review
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { enforceRateLimit, judgemeReadLimiter, judgemeWriteLimiter } from './_ratelimit.js'
 
 const SHOP_DOMAIN = process.env.VITE_JUDGEME_SHOP_DOMAIN as string
 const API_TOKEN = process.env.JUDGEME_PRIVATE_TOKEN as string
@@ -14,6 +15,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') return res.status(204).end()
 
   if (req.method === 'GET') {
+    if (!(await enforceRateLimit(req, res, judgemeReadLimiter))) return
     const { per_page = '200' } = req.query
     try {
       const upstream = await fetch(
@@ -28,6 +30,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'POST') {
+    if (!(await enforceRateLimit(req, res, judgemeWriteLimiter))) return
     const { id, email, name, rating, title, body } = (req.body ?? {}) as Record<string, unknown>
     if (!id || !email || !name || !rating || !body) {
       return res.status(400).json({ message: 'Missing required fields: id, email, name, rating, body' })

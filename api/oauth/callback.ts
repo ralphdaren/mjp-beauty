@@ -6,10 +6,18 @@ const ENVIRONMENT = process.env.SQUARE_ENVIRONMENT as string
 const REDIRECT_URL = process.env.SQUARE_REDIRECT_URL as string
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const { code, error } = req.query
+  const { code, error, state } = req.query
+
+  // Clear the nonce cookie regardless of outcome — it's single-use.
+  res.setHeader('Set-Cookie', 'sq_oauth_state=; HttpOnly; Secure; SameSite=Lax; Max-Age=0; Path=/api/oauth')
 
   if (error || !code) {
     res.status(400).send(`OAuth error: ${error ?? 'no code received'}`)
+    return
+  }
+
+  if (!state || !req.cookies.sq_oauth_state || state !== req.cookies.sq_oauth_state) {
+    res.status(400).send('Invalid or missing OAuth state — possible CSRF attempt. Restart the flow from /api/oauth/authorize.')
     return
   }
 

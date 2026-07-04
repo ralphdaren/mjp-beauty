@@ -6,6 +6,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { Resend } from 'resend'
 import { supabase } from '../_supabase.js'
+import { escapeHtml } from '../_html.js'
+import { enforceRateLimit, bookingCreateLimiter } from '../_ratelimit.js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM = process.env.RESEND_FROM_EMAIL ?? 'MJP Beauty <onboarding@resend.dev>'
@@ -16,6 +18,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+  if (!(await enforceRateLimit(req, res, bookingCreateLimiter))) return
 
   const {
     tierLabel, startAt, teamMemberId, customerId,
@@ -51,6 +54,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       timeStyle: 'short',
     })
 
+    const safeFirstName = escapeHtml(String(firstName))
+    const safeLastName = escapeHtml(lastName ? String(lastName) : '')
+    const safeServiceName = escapeHtml(String(serviceName))
+    const safeTierLabel = escapeHtml(String(tierLabel))
+    const safeEmail = escapeHtml(String(email))
+    const safePhone = phone ? escapeHtml(String(phone)) : ''
+
     // Fire both emails in parallel — don't block the response if they fail
     await Promise.allSettled([
       // Customer: "we received your request"
@@ -59,8 +69,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         to: String(email),
         subject: 'We received your booking request — MJP Beauty',
         html: `
-          <p>Hi ${String(firstName)},</p>
-          <p>Thanks for reaching out! We've received your booking request for <strong>${String(serviceName)} — ${String(tierLabel)}</strong> on <strong>${appointmentDate}</strong>.</p>
+          <p>Hi ${safeFirstName},</p>
+          <p>Thanks for reaching out! We've received your booking request for <strong>${safeServiceName} — ${safeTierLabel}</strong> on <strong>${appointmentDate}</strong>.</p>
           <p>Your request is currently <strong>pending review</strong>. We'll send you a follow-up email once it's been confirmed or if we need to make other arrangements.</p>
           <p>— Micah at MJP Beauty</p>
         `,
@@ -75,10 +85,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             html: `
               <p>You have a new booking request:</p>
               <ul>
-                <li><strong>Name:</strong> ${String(firstName)} ${lastName ? String(lastName) : ''}</li>
-                <li><strong>Email:</strong> ${String(email)}</li>
-                ${phone ? `<li><strong>Phone:</strong> ${String(phone)}</li>` : ''}
-                <li><strong>Service:</strong> ${String(serviceName)} — ${String(tierLabel)}</li>
+                <li><strong>Name:</strong> ${safeFirstName} ${safeLastName}</li>
+                <li><strong>Email:</strong> ${safeEmail}</li>
+                ${safePhone ? `<li><strong>Phone:</strong> ${safePhone}</li>` : ''}
+                <li><strong>Service:</strong> ${safeServiceName} — ${safeTierLabel}</li>
                 <li><strong>Appointment:</strong> ${appointmentDate}</li>
               </ul>
               <p>Log in to your admin dashboard to accept or decline.</p>

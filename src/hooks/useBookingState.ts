@@ -137,22 +137,14 @@ export function useBookingState() {
     if (!selectedService || !selectedTier || !selectedStartAt || !cardSourceId) return
     setConfirmLoading(true)
     try {
-      const customerRes = await fetch('/api/customers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'upsert', firstName, lastName, email, phone }),
-      })
-      const customerData = await customerRes.json()
-      if (!customerRes.ok) throw new Error(customerData.error ?? 'Failed to create customer')
-      const customerId: string = customerData.customerId
-
       const cardRes = await fetch('/api/customers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'save-card', customerId, sourceId: cardSourceId }),
+        body: JSON.stringify({ action: 'attach-card', firstName, lastName, email, phone, sourceId: cardSourceId }),
       })
       const cardData = await cardRes.json()
       if (!cardRes.ok) throw new Error(cardData.error ?? 'Failed to save card')
+      const customerId: string = cardData.customerId
 
       const squareTierLabel = selectedTier.squareVariationName ?? selectedTier.label
       const bookingRes = await fetch('/api/bookings/create', {
