@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { LogOut, RefreshCw, Search, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
+import { LogOut, RefreshCw, Search, SlidersHorizontal, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
 
 interface BookingRequest {
   id: string
@@ -353,29 +353,35 @@ export default function AdminPage() {
 
               <div>
                 <label className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] block mb-1.5">Service</label>
-                <select
-                  value={serviceFilter}
-                  onChange={(e) => setServiceFilter(e.target.value)}
-                  className="w-full border border-[#e3e2de] rounded-xl px-3 py-2.5 text-sm text-[#3d3530] focus:outline-none focus:border-[#3d3530] bg-white"
-                >
-                  <option value="">All services</option>
-                  {serviceOptions.map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    value={serviceFilter}
+                    onChange={(e) => setServiceFilter(e.target.value)}
+                    className="w-full appearance-none border border-[#e3e2de] rounded-xl pl-3 pr-9 py-2.5 text-sm text-[#3d3530] focus:outline-none focus:border-[#3d3530] bg-white"
+                  >
+                    <option value="">All services</option>
+                    {serviceOptions.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#a0948a]" />
+                </div>
               </div>
               <div>
                 <label className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] block mb-1.5">Option</label>
-                <select
-                  value={optionFilter}
-                  onChange={(e) => setOptionFilter(e.target.value)}
-                  className="w-full border border-[#e3e2de] rounded-xl px-3 py-2.5 text-sm text-[#3d3530] focus:outline-none focus:border-[#3d3530] bg-white"
-                >
-                  <option value="">All options</option>
-                  {optionOptions.map((o) => (
-                    <option key={o} value={o}>{o}</option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    value={optionFilter}
+                    onChange={(e) => setOptionFilter(e.target.value)}
+                    className="w-full appearance-none border border-[#e3e2de] rounded-xl pl-3 pr-9 py-2.5 text-sm text-[#3d3530] focus:outline-none focus:border-[#3d3530] bg-white"
+                  >
+                    <option value="">All options</option>
+                    {optionOptions.map((o) => (
+                      <option key={o} value={o}>{o}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#a0948a]" />
+                </div>
               </div>
 
               <button
