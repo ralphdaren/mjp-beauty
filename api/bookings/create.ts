@@ -29,8 +29,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     serviceName, firstName, lastName, email, phone, honeypot,
   } = req.body ?? {}
 
-  // Hidden field real users never fill in — bots that auto-fill every input do.
-  // Pretend success without touching Supabase/Resend.
   if (honeypot) {
     return res.status(200).json({ requestId: randomUUID() })
   }
@@ -54,9 +52,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // Belt-and-suspenders against two customers submitting for the same slot
-    // at nearly the same time — the availability endpoint already hides slots
-    // held by a pending request, but that's a check the client can race.
     const { data: conflict } = await supabase
       .from('booking_requests')
       .select('id')
@@ -88,7 +83,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .select('id')
       .single()
 
-    if (error) throw new Error(error.message)
+    if (error) {
+      if (error.code === '23505') {
+        return res.status(409).json({ error: 'This time slot was just booked by someone else. Please choose another.' })
+      }
+      throw new Error(error.message)
+    }
 
     const appointmentDate = new Date(String(startAt)).toLocaleString('en-CA', {
       timeZone: CLIENT_TIMEZONE,
@@ -104,9 +104,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const safePhone = phone ? escapeHtml(String(phone)) : ''
     const manageUrl = `${SITE_URL}/manage-booking?token=${manageToken}`
 
-    // Fire both emails in parallel — don't block the response if they fail
     await Promise.allSettled([
-      // Customer: "we received your request"
       resend.emails.send({
         from: FROM,
         to: String(email),
@@ -121,7 +119,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         `,
       }),
 
-      // Admin: new booking request notification
       ADMIN_EMAIL
         ? resend.emails.send({
             from: FROM,
