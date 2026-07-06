@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useScrollAnimation } from '../hooks/useScrollAnimation'
 import { useBookingState } from '../hooks/useBookingState'
 import { SERVICES } from '../data/booking'
@@ -11,6 +13,24 @@ import BookingDrawer from '../components/booking/BookingDrawer'
 export default function BookAppointmentPage() {
   useScrollAnimation()
   const b = useBookingState()
+  const [searchParams] = useSearchParams()
+  const appliedReschedule = useRef(false)
+
+  // Coming from a "Reschedule" link on the manage-booking page: pre-select
+  // the same service/tier and jump straight to date & time selection.
+  useEffect(() => {
+    if (appliedReschedule.current) return
+    const serviceId = searchParams.get('reschedule')
+    const tierLabel = searchParams.get('tier')
+    if (!serviceId || !tierLabel) return
+
+    const service = SERVICES.find((s) => s.id === serviceId)
+    const tier = service?.tiers.find((t) => (t.squareVariationName ?? t.label) === tierLabel)
+    if (!service || !tier) return
+
+    appliedReschedule.current = true
+    b.openDrawerWithSelection(service, tier)
+  }, [searchParams, b])
 
   return (
     <>

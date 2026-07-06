@@ -13,7 +13,7 @@ import { enforceRateLimit, adminLimiter } from './_ratelimit.js'
 import { setCorsHeaders } from './_cors.js'
 import { isNonEmptyString } from './_validate.js'
 
-const VALID_STATUSES = ['pending', 'accepted', 'declined']
+const VALID_STATUSES = ['pending', 'accepted', 'declined', 'cancelled']
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const CLIENT_TIMEZONE = 'America/Winnipeg'

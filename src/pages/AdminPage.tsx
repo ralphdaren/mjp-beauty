@@ -4,7 +4,7 @@ import { LogOut, RefreshCw, Search, SlidersHorizontal, ChevronLeft, ChevronRight
 interface BookingRequest {
   id: string
   created_at: string
-  status: 'pending' | 'accepted' | 'declined'
+  status: 'pending' | 'accepted' | 'declined' | 'cancelled'
   first_name: string
   last_name: string
   email: string
@@ -16,7 +16,7 @@ interface BookingRequest {
   reviewed_at: string | null
 }
 
-type Tab = 'pending' | 'accepted' | 'declined'
+type Tab = 'pending' | 'accepted' | 'declined' | 'cancelled'
 
 const PAGE_SIZE = 10
 
@@ -50,6 +50,7 @@ const STATUS_STYLES: Record<BookingRequest['status'], { bg: string; text: string
   pending:  { bg: 'bg-amber-50',  text: 'text-amber-600', dot: 'bg-amber-500' },
   accepted: { bg: 'bg-[#eaf5ee]', text: 'text-[#4a9d6f]', dot: 'bg-[#4a9d6f]' },
   declined: { bg: 'bg-red-50',    text: 'text-red-500',   dot: 'bg-red-400' },
+  cancelled: { bg: 'bg-[#f3f0ec]', text: 'text-[#8a8078]', dot: 'bg-[#a0948a]' },
 }
 
 function StatusBadge({ status }: { status: BookingRequest['status'] }) {
@@ -397,7 +398,7 @@ export default function AdminPage() {
 
       {/* Tabs */}
       <div className="px-6 pt-5 pb-3 flex gap-1 max-w-5xl mx-auto">
-        {(['pending', 'accepted', 'declined'] as Tab[]).map((t) => (
+        {(['pending', 'accepted', 'declined', 'cancelled'] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}

@@ -10,6 +10,7 @@ import BizMentorshipPage from '@/pages/BizMentorshipPage'
 import PrivacyPolicyPage from '@/pages/PrivacyPolicyPage'
 import TermsOfUsePage from '@/pages/TermsOfUsePage'
 import AdminPage from '@/pages/AdminPage'
+import ManageBookingPage from '@/pages/ManageBookingPage'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import ScrollToTop from '@/components/ScrollToTop'
@@ -34,6 +35,7 @@ function AppContent() {
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsOfUsePage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/manage-booking" element={<ManageBookingPage />} />
       </Routes>
       {!isAdmin && <Footer />}
     </>

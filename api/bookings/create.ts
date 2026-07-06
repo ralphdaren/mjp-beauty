@@ -16,6 +16,7 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM = process.env.RESEND_FROM_EMAIL ?? 'MJP Beauty <onboarding@resend.dev>'
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? ''
 const CLIENT_TIMEZONE = 'America/Winnipeg'
+const SITE_URL = process.env.SITE_URL ?? 'https://mjp-beauty-ralph-daren-s-projects.vercel.app'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCorsHeaders(req, res)
@@ -53,6 +54,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
+    const manageToken = randomUUID()
+
     const { data, error } = await supabase
       .from('booking_requests')
       .insert({
@@ -65,6 +68,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         last_name: lastName ? String(lastName) : '',
         email: String(email),
         phone: phone ? String(phone) : null,
+        manage_token: manageToken,
       })
       .select('id')
       .single()
@@ -83,6 +87,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const safeTierLabel = escapeHtml(String(tierLabel))
     const safeEmail = escapeHtml(String(email))
     const safePhone = phone ? escapeHtml(String(phone)) : ''
+    const manageUrl = `${SITE_URL}/manage-booking?token=${manageToken}`
 
     // Fire both emails in parallel — don't block the response if they fail
     await Promise.allSettled([
@@ -95,6 +100,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           <p>Hi ${safeFirstName},</p>
           <p>Thanks for reaching out! We've received your booking request for <strong>${safeServiceName} — ${safeTierLabel}</strong> on <strong>${appointmentDate}</strong>.</p>
           <p>Your request is currently <strong>pending review</strong>. We'll send you a follow-up email once it's been confirmed or if we need to make other arrangements.</p>
+          <p>Need to change something? You can reschedule or cancel your request here:</p>
+          <p><a href="${manageUrl}" style="display:inline-block;padding:10px 20px;background:#3d3530;color:#ffffff;text-decoration:none;border-radius:999px;font-size:13px;">Manage my booking</a></p>
           <p>— Micah at MJP Beauty</p>
         `,
       }),

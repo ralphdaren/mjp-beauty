@@ -207,6 +207,27 @@ export function useBookingState() {
     setDrawerOpen(true)
   }
 
+  function openDrawerWithSelection(service: Service, tier: PriceTier) {
+    setStep(2)
+    setSelectedService(service)
+    setSelectedTier(tier)
+    setSelectedDate(null)
+    setSelectedTime(null)
+    setSelectedStartAt(null)
+    setSelectedTeamMemberId(null)
+    setSlots(null)
+    setSlotsError(null)
+    setFirstName('')
+    setLastName('')
+    setEmail('')
+    setPhone('')
+    setCardConsent(false)
+    setPolicyConsent(false)
+    setCardSourceId(null)
+    setBookingSuccess(false)
+    setDrawerOpen(true)
+  }
+
   function closeDrawer() {
     setDrawerOpen(false)
   }
@@ -218,6 +239,7 @@ export function useBookingState() {
     // Drawer
     drawerOpen,
     openDrawer,
+    openDrawerWithSelection,
     closeDrawer,
     step,
     bookingSuccess,
