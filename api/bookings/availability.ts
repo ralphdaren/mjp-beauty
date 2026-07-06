@@ -3,11 +3,26 @@
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { squareFetch, getCatalogItems, getLocationId, findVariationByLabel } from '../_square.js'
+import { supabase } from '../_supabase.js'
 import { enforceRateLimit, availabilityLimiter } from '../_ratelimit.js'
 import { setCorsHeaders } from '../_cors.js'
 import { isNonEmptyString, isValidDateOnly } from '../_validate.js'
 
 const CLIENT_TIMEZONE = 'America/Winnipeg'
+
+// Requests still awaiting admin review hold their slot too, even though
+// Square doesn't know about them yet — otherwise a second customer could
+// book the same time while the first is still pending review.
+async function getPendingStartTimes(fromIso: string, toIso: string): Promise<Set<number>> {
+  const { data } = await supabase
+    .from('booking_requests')
+    .select('start_at')
+    .eq('status', 'pending')
+    .gte('start_at', fromIso)
+    .lte('start_at', toIso)
+
+  return new Set((data ?? []).map((r) => new Date(r.start_at as string).getTime()))
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCorsHeaders(req, res)
@@ -45,28 +60,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const startAt = dayStart > now ? dayStart.toISOString() : now.toISOString()
       const endAt = `${date}T23:59:59.999Z`
 
-      const availData = await squareFetch('/v2/bookings/availability/search', {
-        method: 'POST',
-        body: JSON.stringify({
-          query: {
-            filter: {
-              location_id: locationId,
-              start_at_range: { start_at: startAt, end_at: endAt },
-              segment_filters: [{ service_variation_id: variationId }],
+      const [availData, pendingTimes] = await Promise.all([
+        squareFetch('/v2/bookings/availability/search', {
+          method: 'POST',
+          body: JSON.stringify({
+            query: {
+              filter: {
+                location_id: locationId,
+                start_at_range: { start_at: startAt, end_at: endAt },
+                segment_filters: [{ service_variation_id: variationId }],
+              },
             },
-          },
+          }),
         }),
-      })
+        getPendingStartTimes(dayStart.toISOString(), endAt),
+      ])
 
-      const slots = (availData.availabilities as any[] ?? []).map((a: any) => ({
-        time: new Date(a.start_at).toLocaleTimeString('en-US', {
-          hour: 'numeric', minute: '2-digit', hour12: true, timeZone: CLIENT_TIMEZONE,
-        }),
-        startAt: a.start_at as string,
-        teamMemberId: (a.appointment_segments as any[])?.[0]?.team_member_id ?? null,
-        serviceVariationId: variationId,
-        serviceVariationVersion: variationVersion,
-      }))
+      const slots = (availData.availabilities as any[] ?? [])
+        .filter((a: any) => !pendingTimes.has(new Date(a.start_at).getTime()))
+        .map((a: any) => ({
+          time: new Date(a.start_at).toLocaleTimeString('en-US', {
+            hour: 'numeric', minute: '2-digit', hour12: true, timeZone: CLIENT_TIMEZONE,
+          }),
+          startAt: a.start_at as string,
+          teamMemberId: (a.appointment_segments as any[])?.[0]?.team_member_id ?? null,
+          serviceVariationId: variationId,
+          serviceVariationVersion: variationVersion,
+        }))
 
       return res.status(200).json({ slots })
     }
@@ -80,21 +100,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const lastDay = new Date(year, mon, 0).getDate()
       const endAt = `${month}-${String(lastDay).padStart(2, '0')}T23:59:59.999Z`
 
-      const availData = await squareFetch('/v2/bookings/availability/search', {
-        method: 'POST',
-        body: JSON.stringify({
-          query: {
-            filter: {
-              location_id: locationId,
-              start_at_range: { start_at: startAt, end_at: endAt },
-              segment_filters: [{ service_variation_id: variationId }],
+      const [availData, pendingTimes] = await Promise.all([
+        squareFetch('/v2/bookings/availability/search', {
+          method: 'POST',
+          body: JSON.stringify({
+            query: {
+              filter: {
+                location_id: locationId,
+                start_at_range: { start_at: startAt, end_at: endAt },
+                segment_filters: [{ service_variation_id: variationId }],
+              },
             },
-          },
+          }),
         }),
-      })
+        getPendingStartTimes(monthStart.toISOString(), endAt),
+      ])
 
       const dateSet = new Set<string>()
       for (const a of (availData.availabilities as any[] ?? [])) {
+        if (pendingTimes.has(new Date(a.start_at).getTime())) continue
         const local = new Date(a.start_at).toLocaleDateString('en-CA', { timeZone: CLIENT_TIMEZONE })
         dateSet.add(local)
       }

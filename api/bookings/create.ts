@@ -54,6 +54,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
+    // Belt-and-suspenders against two customers submitting for the same slot
+    // at nearly the same time — the availability endpoint already hides slots
+    // held by a pending request, but that's a check the client can race.
+    const { data: conflict } = await supabase
+      .from('booking_requests')
+      .select('id')
+      .eq('start_at', String(startAt))
+      .in('status', ['pending', 'accepted'])
+      .limit(1)
+      .maybeSingle()
+
+    if (conflict) {
+      return res.status(409).json({ error: 'This time slot was just booked by someone else. Please choose another.' })
+    }
+
     const manageToken = randomUUID()
 
     const { data, error } = await supabase
