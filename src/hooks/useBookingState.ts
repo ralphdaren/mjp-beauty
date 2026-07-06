@@ -13,6 +13,7 @@ export function useBookingState() {
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [selectedStartAt, setSelectedStartAt] = useState<string | null>(null)
   const [selectedTeamMemberId, setSelectedTeamMemberId] = useState<string | null>(null)
+  const [rescheduleToken, setRescheduleToken] = useState<string | null>(null)
 
   // Availability
   const [slots, setSlots] = useState<Slot[] | null>(null)
@@ -178,6 +179,17 @@ export function useBookingState() {
       const bookingData = await bookingRes.json()
       if (!bookingRes.ok) throw new Error(bookingData.error ?? 'Booking failed')
 
+      // This is a reschedule — the old request is only cancelled now that the
+      // replacement booking has actually gone through. Fire-and-forget: the
+      // new booking already succeeded, so don't block success on this.
+      if (rescheduleToken) {
+        fetch('/api/bookings/manage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: rescheduleToken, action: 'cancel' }),
+        }).catch(() => {})
+      }
+
       setBookingSuccess(true)
     } catch (err) {
       alert(String(err))
@@ -204,10 +216,11 @@ export function useBookingState() {
     setPolicyConsent(false)
     setCardSourceId(null)
     setBookingSuccess(false)
+    setRescheduleToken(null)
     setDrawerOpen(true)
   }
 
-  function openDrawerWithSelection(service: Service, tier: PriceTier) {
+  function openDrawerWithSelection(service: Service, tier: PriceTier, forRescheduleToken: string | null = null) {
     setStep(2)
     setSelectedService(service)
     setSelectedTier(tier)
@@ -225,6 +238,7 @@ export function useBookingState() {
     setPolicyConsent(false)
     setCardSourceId(null)
     setBookingSuccess(false)
+    setRescheduleToken(forRescheduleToken)
     setDrawerOpen(true)
   }
 

@@ -70,29 +70,20 @@ export default function ManageBookingPage() {
     }
   }
 
-  async function handleReschedule() {
+  function handleReschedule() {
     if (!token || !data) return
-    setActionLoading(true)
-    try {
-      const res = await fetch('/api/bookings/manage', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, action: 'cancel' }),
-      })
-      const body = await res.json()
-      if (!res.ok) throw new Error(body.error ?? 'Failed to reschedule request')
 
-      const service = SERVICES.find((s) => s.name === data.serviceName)
-      const params = new URLSearchParams()
-      if (service) {
-        params.set('reschedule', service.id)
-        params.set('tier', data.tierLabel)
-      }
-      navigate(`/book-appointment${params.toString() ? `?${params.toString()}` : ''}`)
-    } catch (err) {
-      alert(String(err))
-      setActionLoading(false)
+    // Don't cancel the old request yet — only navigate into the booking
+    // widget with the old token in tow, so it's cancelled once the customer
+    // actually completes a new booking (see handleConfirm in useBookingState).
+    const service = SERVICES.find((s) => s.name === data.serviceName)
+    const params = new URLSearchParams()
+    if (service) {
+      params.set('reschedule', service.id)
+      params.set('tier', data.tierLabel)
+      params.set('rescheduleToken', token)
     }
+    navigate(`/book-appointment${params.toString() ? `?${params.toString()}` : ''}`)
   }
 
   if (loading) {

@@ -22,6 +22,7 @@ export default function BookAppointmentPage() {
     if (appliedReschedule.current) return
     const serviceId = searchParams.get('reschedule')
     const tierLabel = searchParams.get('tier')
+    const rescheduleToken = searchParams.get('rescheduleToken')
     if (!serviceId || !tierLabel) return
 
     const service = SERVICES.find((s) => s.id === serviceId)
@@ -29,7 +30,7 @@ export default function BookAppointmentPage() {
     if (!service || !tier) return
 
     appliedReschedule.current = true
-    b.openDrawerWithSelection(service, tier)
+    b.openDrawerWithSelection(service, tier, rescheduleToken)
   }, [searchParams, b])
 
   return (
