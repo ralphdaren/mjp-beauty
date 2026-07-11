@@ -172,3 +172,58 @@ export function formatPrice(amount: string): string {
   const num = parseFloat(amount)
   return `$${num % 1 === 0 ? Math.floor(num) : num.toFixed(2)}`
 }
+
+export type TrainingDate = {
+  id: string
+  date: string
+  location: string
+  spotsTotal: number
+  spotsRemaining: number
+}
+
+const TRAINING_DATES_QUERY = `
+  query GetTrainingDates($handle: String!) {
+    productByHandle(handle: $handle) {
+      metafield(namespace: "custom", key: "training_dates") {
+        references(first: 50) {
+          nodes {
+            ... on Metaobject {
+              id
+              fields {
+                key
+                value
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`
+
+export async function getTrainingDates(handle: string): Promise<TrainingDate[]> {
+  try {
+    const { data, errors } = await shopifyClient.request(TRAINING_DATES_QUERY, {
+      variables: { handle },
+    })
+    if (errors || !data?.productByHandle?.metafield) return []
+
+    const dates: TrainingDate[] = data.productByHandle.metafield.references.nodes.map((node: any) => {
+      const fields: Record<string, string> = {}
+      for (const f of node.fields) fields[f.key] = f.value
+      return {
+        id: node.id,
+        date: fields.date ?? '',
+        location: fields.location ?? '',
+        spotsTotal: parseInt(fields.spots_total ?? '0', 10),
+        spotsRemaining: parseInt(fields.spots_remaining ?? '0', 10),
+      }
+    })
+
+    return dates
+      .filter((d) => d.date)
+      .sort((a, b) => a.date.localeCompare(b.date))
+  } catch {
+    return []
+  }
+}

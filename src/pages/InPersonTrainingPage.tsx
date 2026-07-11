@@ -2,8 +2,11 @@ import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { CircleAlert, HelpCircle, BookOpen, ArrowRight } from 'lucide-react'
 import { useScrollAnimation } from '@/hooks/useScrollAnimation'
+import { useTrainingBookingState } from '@/hooks/useTrainingBookingState'
 import BackToTop from '@/components/BackToTop'
 import Accordion from '@/components/Accordion'
+import TrainingDrawer from '@/components/training/TrainingDrawer'
+import type { TrainingOption } from '@/types/training'
 const ipHeadImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_1600/v1783028022/ip-head_djhc92.jpg'
 const formatImg01 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_800/v1783028008/format-img-01_oxprvi.jpg'
 const formatImg02 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_800/v1783028001/format-img-02_rb0b1z.jpg'
@@ -55,6 +58,8 @@ const formatItems = [
 
 const optionCards = [
   {
+    id: 'group' as const,
+    handle: import.meta.env.VITE_SHOPIFY_HANDLE_TRAINING_GROUP as string,
     img: optImg02,
     alt: 'Small Group Training',
     label: 'Option 01',
@@ -65,6 +70,8 @@ const optionCards = [
       'Train in an intimate group setting with direct support from Micah and her training assistant. Perfect for Artists who want access to premium training, expert guidance while at a more affordable rate.',
   },
   {
+    id: 'private' as const,
+    handle: import.meta.env.VITE_SHOPIFY_HANDLE_TRAINING_PRIVATE as string,
     img: optImg01,
     alt: 'Private 1-on-1 Training',
     label: 'Option 02',
@@ -312,10 +319,21 @@ export default function InPersonTrainingPage() {
   const [tooltipCard, setTooltipCard] = useState<number | null>(null)
   const [kitOpen, setKitOpen] = useState(false)
   useScrollAnimation()
+  const training = useTrainingBookingState()
 
   const handleOptionSwitch = useCallback(() => {
     setActiveOption((prev) => 1 - prev)
   }, [])
+
+  const handleBookNow = useCallback((card: (typeof optionCards)[number]) => {
+    const option: TrainingOption = {
+      id: card.id,
+      title: card.title,
+      price: card.price,
+      handle: card.handle,
+    }
+    training.openDrawer(option)
+  }, [training])
 
   const advance = useCallback(() => {
     setAnimating(true)
@@ -611,7 +629,13 @@ export default function InPersonTrainingPage() {
                     )}
                   </div>
                   <div className="h-px bg-[#e3e2de] mb-8" />
-                  <p className="text-[#5a5047] text-base leading-relaxed">{card.description}</p>
+                  <p className="text-[#5a5047] text-base leading-relaxed mb-8">{card.description}</p>
+                  <button
+                    onClick={() => handleBookNow(card)}
+                    className="w-full py-3.5 bg-[#3d3530] text-white text-xs tracking-[0.15em] uppercase rounded-full hover:bg-[#2a2320] active:scale-[0.98] transition-all"
+                  >
+                    Book Now
+                  </button>
                 </div>
               </div>
             ))}
@@ -633,7 +657,8 @@ export default function InPersonTrainingPage() {
                 </div>
                 <p className="text-[0.75rem] mb-8">(gst included)</p>
                 <div className="h-px mb-8" />
-                <p className="text-base leading-relaxed">{optionCards[1].description}</p>
+                <p className="text-base leading-relaxed mb-8">{optionCards[1].description}</p>
+                <button className="w-full py-3.5 text-xs">Book Now</button>
               </div>
             </div>
 
@@ -683,7 +708,15 @@ export default function InPersonTrainingPage() {
                     )}
                   </div>
                         <div className="h-px bg-[#e3e2de] mb-8" />
-                        <p className="text-[#5a5047] text-base leading-relaxed">{card.description}</p>
+                        <p className="text-[#5a5047] text-base leading-relaxed mb-8">{card.description}</p>
+                        <button
+                          onClick={() => handleBookNow(card)}
+                          disabled={!isActive}
+                          tabIndex={isActive ? 0 : -1}
+                          className="w-full py-3.5 bg-[#3d3530] text-white text-xs tracking-[0.15em] uppercase rounded-full hover:bg-[#2a2320] active:scale-[0.98] transition-all disabled:pointer-events-none"
+                        >
+                          Book Now
+                        </button>
                       </div>
                     </div>
 
@@ -1092,6 +1125,21 @@ export default function InPersonTrainingPage() {
       <TrainingInfoTabs />
 
       <BackToTop />
+
+      <TrainingDrawer
+        open={training.drawerOpen}
+        onClose={training.closeDrawer}
+        step={training.step}
+        selectedOption={training.selectedOption}
+        trainingDates={training.trainingDates}
+        datesLoading={training.datesLoading}
+        selectedDate={training.selectedDate}
+        onSelectDate={training.handleSelectDate}
+        paymentMethod={training.paymentMethod}
+        onSelectPaymentMethod={training.handleSelectPaymentMethod}
+        onBack={training.handleBack}
+        onContinue={training.handleContinue}
+      />
     </main>
   )
 }
