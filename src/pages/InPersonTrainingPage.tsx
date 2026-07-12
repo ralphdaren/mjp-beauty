@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Link } from 'react-router-dom'
-import { CircleAlert, HelpCircle, BookOpen, ArrowRight } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { CircleAlert, HelpCircle, BookOpen, ArrowRight, X } from 'lucide-react'
 import { useScrollAnimation } from '@/hooks/useScrollAnimation'
 import { useTrainingBookingState } from '@/hooks/useTrainingBookingState'
 import BackToTop from '@/components/BackToTop'
@@ -11,6 +11,7 @@ import TrainingDatesModal from '@/components/training/TrainingDatesModal'
 import { getTrainingDates } from '@/lib/shopify'
 import type { TrainingOption, TrainingDateGroup } from '@/types/training'
 const ipHeadImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_1600/v1783028022/ip-head_djhc92.jpg'
+const browGuideImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_500/v1783028296/freebie-05_xqncqj.png'
 const formatImg01 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_800/v1783028008/format-img-01_oxprvi.jpg'
 const formatImg02 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_800/v1783028001/format-img-02_rb0b1z.jpg'
 const formatImg03 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_800/v1783028011/format-img-03_wixz0f.jpg'
@@ -312,7 +313,96 @@ function TrainingInfoTabs() {
   )
 }
 
+// ─── Brow business starter guide popup ────────────────────────────────────────
+
+function BrowGuidePopup({ onClose }: { onClose: () => void }) {
+  const [visible, setVisible] = useState(false)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    // Slight delay so the backdrop mounts before animating in
+    const t = setTimeout(() => setVisible(true), 30)
+    return () => clearTimeout(t)
+  }, [])
+
+  function dismiss() {
+    setVisible(false)
+    setTimeout(onClose, 300)
+  }
+
+  function handleGetGuide() {
+    dismiss()
+    navigate('/freebies')
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      style={{
+        backgroundColor: visible ? 'rgba(0,0,0,0.55)' : 'rgba(0,0,0,0)',
+        backdropFilter: visible ? 'blur(4px)' : 'blur(0px)',
+        transition: 'background-color 0.3s ease, backdrop-filter 0.3s ease',
+      }}
+      onClick={dismiss}
+    >
+      <div
+        className="relative bg-white rounded-[2rem] overflow-hidden w-full max-w-[760px] shadow-2xl flex flex-col sm:flex-row"
+        style={{
+          opacity: visible ? 1 : 0,
+          transform: visible ? 'translateY(0) scale(1)' : 'translateY(24px) scale(0.97)',
+          transition: 'opacity 0.3s ease, transform 0.3s ease',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Close */}
+        <button
+          onClick={dismiss}
+          className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/80 hover:bg-white text-[#5a5047] hover:text-[#827064] transition-all shadow-sm"
+          aria-label="Close"
+        >
+          <X size={16} />
+        </button>
+
+        {/* Left — image */}
+        <div className="sm:w-1/2 shrink-0 aspect-[940/788] overflow-hidden">
+          <img
+            src={browGuideImg}
+            alt="Brow Business Starter Guide"
+            className="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+
+        {/* Right — content */}
+        <div className="flex flex-col justify-center px-8 py-10 flex-1">
+          <p className="text-[10px] tracking-[0.3em] uppercase text-[#a0948a] mb-3">MJP Beauty</p>
+          <h2 className="text-xl font-semibold text-[#3d3530] leading-snug mb-3">
+            Free Guide —<br />Brow Business Starter Guide
+          </h2>
+          <p className="text-xs text-[#6b5f58] leading-relaxed mb-7">
+            Not ready for training just yet? Grab this free guide where Micah breaks down exactly
+            how to start and grow your brow business — without the fears, mistakes, and confusion
+            most beginners face.
+          </p>
+
+          <button
+            onClick={handleGetGuide}
+            className="w-full py-2.5 bg-[#827064] text-white text-xs tracking-widest uppercase rounded-full hover:opacity-90 active:scale-[0.98] transition-all"
+          >
+            Get the Free Guide
+          </button>
+
+          <p className="text-[10px] text-[#b0a49e] mt-4 text-center">Available now on our Freebies page.</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
+
+const GUIDE_POPUP_SESSION_KEY = 'mjp-training-guide-popup-dismissed'
 
 export default function InPersonTrainingPage() {
   const [activeIndex, setActiveIndex] = useState(0)
@@ -326,8 +416,30 @@ export default function InPersonTrainingPage() {
   )
   const [allDatesLoading, setAllDatesLoading] = useState(true)
   const [datesModalOpen, setDatesModalOpen] = useState(false)
+  const [showGuidePopup, setShowGuidePopup] = useState(false)
   useScrollAnimation()
   const training = useTrainingBookingState()
+
+  useEffect(() => {
+    if (sessionStorage.getItem(GUIDE_POPUP_SESSION_KEY)) return
+
+    function handleScroll() {
+      const scrolled = window.scrollY + window.innerHeight
+      const total = document.documentElement.scrollHeight
+      if (scrolled / total >= 0.72) {
+        setShowGuidePopup(true)
+        window.removeEventListener('scroll', handleScroll)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  function handleCloseGuidePopup() {
+    setShowGuidePopup(false)
+    sessionStorage.setItem(GUIDE_POPUP_SESSION_KEY, '1')
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -1190,6 +1302,8 @@ export default function InPersonTrainingPage() {
           onClose={() => setDatesModalOpen(false)}
         />
       )}
+
+      {showGuidePopup && <BrowGuidePopup onClose={handleCloseGuidePopup} />}
     </main>
   )
 }
