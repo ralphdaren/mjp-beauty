@@ -1,8 +1,16 @@
+import type { TrainingDate } from '../lib/shopify'
+
 export interface TrainingOption {
   id: 'group' | 'private'
   title: string
   price: string
   handle: string
+}
+
+export interface TrainingDateGroup {
+  id: 'group' | 'private'
+  title: string
+  dates: TrainingDate[]
 }
 
 export type DepositPaymentMethod = 'e-transfer' | 'credit-card'

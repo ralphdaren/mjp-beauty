@@ -6,7 +6,10 @@ import { useTrainingBookingState } from '@/hooks/useTrainingBookingState'
 import BackToTop from '@/components/BackToTop'
 import Accordion from '@/components/Accordion'
 import TrainingDrawer from '@/components/training/TrainingDrawer'
-import type { TrainingOption } from '@/types/training'
+import TrainingDatesCard from '@/components/training/TrainingDatesCard'
+import TrainingDatesModal from '@/components/training/TrainingDatesModal'
+import { getTrainingDates } from '@/lib/shopify'
+import type { TrainingOption, TrainingDateGroup } from '@/types/training'
 const ipHeadImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_1600/v1783028022/ip-head_djhc92.jpg'
 const formatImg01 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_800/v1783028008/format-img-01_oxprvi.jpg'
 const formatImg02 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_800/v1783028001/format-img-02_rb0b1z.jpg'
@@ -79,7 +82,7 @@ const optionCards = [
     price: '$1,925',
     shadowClass: 'shadow-[0_12px_40px_rgba(130,112,100,0.15)]',
     description:
-      "Get personalized, focused guidance and mentorship to fast-track your skillset & technique with this One Day private training. With Micah's full attention and immediate feedback, you'll correct form and master brow skills efficiently — no wasted time, just results. Perfect for Artists ready to level up with expert guidance every step of the way.",
+      "Get Micah's undivided attention for a full day of personalized, 1-on-1 mentorship. With immediate feedback, you'll fast-track your skillset and correct form efficiently — perfect for Artists ready to level up.",
   },
 ]
 
@@ -318,8 +321,31 @@ export default function InPersonTrainingPage() {
   const [activeOption, setActiveOption] = useState(0)
   const [tooltipCard, setTooltipCard] = useState<number | null>(null)
   const [kitOpen, setKitOpen] = useState(false)
+  const [trainingDateGroups, setTrainingDateGroups] = useState<TrainingDateGroup[]>(
+    optionCards.map((card) => ({ id: card.id, title: card.title, dates: [] }))
+  )
+  const [allDatesLoading, setAllDatesLoading] = useState(true)
+  const [datesModalOpen, setDatesModalOpen] = useState(false)
   useScrollAnimation()
   const training = useTrainingBookingState()
+
+  useEffect(() => {
+    let cancelled = false
+    Promise.all(optionCards.map((card) => getTrainingDates(card.handle))).then((results) => {
+      if (cancelled) return
+      setTrainingDateGroups(
+        optionCards.map((card, i) => ({
+          id: card.id,
+          title: card.title,
+          dates: results[i],
+        }))
+      )
+      setAllDatesLoading(false)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const handleOptionSwitch = useCallback(() => {
     setActiveOption((prev) => 1 - prev)
@@ -595,7 +621,7 @@ export default function InPersonTrainingPage() {
         </div>
 
         {/* Option cards */}
-        <div className="anim-fade-up mx-auto max-w-[1000px]">
+        <div className="anim-fade-up mx-auto max-w-[1300px]">
           <div className="sm:hidden flex flex-col gap-6">
             {optionCards.map((card, i) => (
               <div
@@ -629,22 +655,29 @@ export default function InPersonTrainingPage() {
                     )}
                   </div>
                   <div className="h-px bg-[#e3e2de] mb-8" />
-                  <p className="text-[#5a5047] text-base leading-relaxed mb-8">{card.description}</p>
+                  <p className="text-[#5a5047] text-base leading-relaxed">{card.description}</p>
                   <button
                     onClick={() => handleBookNow(card)}
-                    className="w-full py-3.5 bg-[#3d3530] text-white text-xs tracking-[0.15em] uppercase rounded-full hover:bg-[#2a2320] active:scale-[0.98] transition-all"
+                    className="mt-10 w-full py-3.5 rounded-xl bg-[#3d3028] text-white text-[0.72rem] uppercase tracking-[0.2em] font-medium hover:bg-[#2a1a0e] transition-colors duration-200"
                   >
                     Book Now
                   </button>
                 </div>
               </div>
             ))}
+
+            <TrainingDatesCard
+              groups={trainingDateGroups}
+              loading={allDatesLoading}
+              onViewAll={() => setDatesModalOpen(true)}
+            />
           </div>
 
-          <div className="hidden sm:block relative">
+          <div className="hidden sm:flex gap-8 items-stretch">
+          <div className="flex-[7] min-w-0 relative">
             <div
               className="invisible pointer-events-none flex flex-row"
-              style={{ width: 'calc(80% - 10px)' }}
+              style={{ width: 'calc(80% - 16px)' }}
               aria-hidden="true"
             >
               <div className="w-[38%] flex-shrink-0" />
@@ -657,8 +690,8 @@ export default function InPersonTrainingPage() {
                 </div>
                 <p className="text-[0.75rem] mb-8">(gst included)</p>
                 <div className="h-px mb-8" />
-                <p className="text-base leading-relaxed mb-8">{optionCards[1].description}</p>
-                <button className="w-full py-3.5 text-xs">Book Now</button>
+                <p className="text-base leading-relaxed">{optionCards[1].description}</p>
+                <div className="mt-10 w-full py-3.5" aria-hidden="true" />
               </div>
             </div>
 
@@ -707,13 +740,13 @@ export default function InPersonTrainingPage() {
                       </div>
                     )}
                   </div>
-                        <div className="h-px bg-[#e3e2de] mb-8" />
-                        <p className="text-[#5a5047] text-base leading-relaxed mb-8">{card.description}</p>
+                        <div className="h-px bg-[#e3e2de] mb-8 shrink-0" />
+                        <p className="text-[#5a5047] text-base leading-relaxed">{card.description}</p>
                         <button
                           onClick={() => handleBookNow(card)}
                           disabled={!isActive}
                           tabIndex={isActive ? 0 : -1}
-                          className="w-full py-3.5 bg-[#3d3530] text-white text-xs tracking-[0.15em] uppercase rounded-full hover:bg-[#2a2320] active:scale-[0.98] transition-all disabled:pointer-events-none"
+                          className="mt-10 w-full py-3.5 rounded-xl bg-[#3d3028] text-white text-[0.72rem] uppercase tracking-[0.2em] font-medium hover:bg-[#2a1a0e] transition-colors duration-200 disabled:pointer-events-none"
                         >
                           Book Now
                         </button>
@@ -747,11 +780,20 @@ export default function InPersonTrainingPage() {
               })}
             </div>
           </div>
+
+          <div className="flex-[3] min-w-[300px] flex">
+            <TrainingDatesCard
+              groups={trainingDateGroups}
+              loading={allDatesLoading}
+              onViewAll={() => setDatesModalOpen(true)}
+            />
+          </div>
+          </div>
         </div>
 
         {/* Payment info */}
         <div
-          className="anim-fade-up mx-auto max-w-[1000px] mt-8"
+          className="anim-fade-up mx-auto max-w-[1300px] mt-8"
           style={{ transitionDelay: '0.3s' }}
         >
           {/* Two-column: Deposit | Balance */}
@@ -1140,6 +1182,14 @@ export default function InPersonTrainingPage() {
         onBack={training.handleBack}
         onContinue={training.handleContinue}
       />
+
+      {datesModalOpen && (
+        <TrainingDatesModal
+          groups={trainingDateGroups}
+          loading={allDatesLoading}
+          onClose={() => setDatesModalOpen(false)}
+        />
+      )}
     </main>
   )
 }
