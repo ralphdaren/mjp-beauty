@@ -1,10 +1,14 @@
 import { useEffect } from 'react'
-import { X, ChevronLeft } from 'lucide-react'
-import type { TrainingDate } from '../../../lib/shopify'
+import { X } from 'lucide-react'
+import type { TrainingDate } from '../../../lib/training'
 import type { TrainingOption, TrainingDrawerStep, DepositPaymentMethod } from '../../../types/training'
+import type { TrainingDetails } from '../../../hooks/useTrainingBookingState'
 import StepIndicator from './StepIndicator'
 import DrawerStep1 from './DrawerStep1'
 import DrawerStep2 from './DrawerStep2'
+import DrawerStep3 from './DrawerStep3'
+import DrawerStep4 from './DrawerStep4'
+import DrawerSuccess from './DrawerSuccess'
 
 export interface TrainingDrawerProps {
   open: boolean
@@ -19,6 +23,16 @@ export interface TrainingDrawerProps {
   // Step 2
   paymentMethod: DepositPaymentMethod | null
   onSelectPaymentMethod: (method: DepositPaymentMethod) => void
+  // Step 3
+  details: TrainingDetails
+  onUpdateDetails: (patch: Partial<TrainingDetails>) => void
+  honeypot: string
+  onHoneypotChange: (v: string) => void
+  // Step 4 / submit
+  submitting: boolean
+  submitError: string
+  submitted: boolean
+  onSubmit: () => void
   onBack: () => void
   onContinue: () => void
 }
@@ -34,6 +48,14 @@ export default function TrainingDrawer({
   onSelectDate,
   paymentMethod,
   onSelectPaymentMethod,
+  details,
+  onUpdateDetails,
+  honeypot,
+  onHoneypotChange,
+  submitting,
+  submitError,
+  submitted,
+  onSubmit,
   onBack,
   onContinue,
 }: TrainingDrawerProps) {
@@ -75,45 +97,65 @@ export default function TrainingDrawer({
           </button>
         </div>
 
-        <StepIndicator step={step} />
+        {submitted ? (
+          <DrawerSuccess
+            firstName={details.firstName}
+            selectedOption={selectedOption}
+            selectedDate={selectedDate}
+            onClose={onClose}
+          />
+        ) : (
+          <>
+            <StepIndicator step={step} />
 
-        {/* Scrollable step content */}
-        <div className="flex-1 overflow-y-auto px-6 pb-8">
-          {step === 1 && selectedOption && (
-            <DrawerStep1
-              selectedOption={selectedOption}
-              trainingDates={trainingDates}
-              datesLoading={datesLoading}
-              selectedDate={selectedDate}
-              onSelectDate={onSelectDate}
-              onContinue={onContinue}
-            />
-          )}
+            {/* Scrollable step content */}
+            <div className="flex-1 overflow-y-auto px-6 pb-8">
+              {step === 1 && selectedOption && (
+                <DrawerStep1
+                  selectedOption={selectedOption}
+                  trainingDates={trainingDates}
+                  datesLoading={datesLoading}
+                  selectedDate={selectedDate}
+                  onSelectDate={onSelectDate}
+                  onContinue={onContinue}
+                />
+              )}
 
-          {step === 2 && (
-            <DrawerStep2
-              paymentMethod={paymentMethod}
-              onSelectPaymentMethod={onSelectPaymentMethod}
-              onBack={onBack}
-              onContinue={onContinue}
-            />
-          )}
+              {step === 2 && (
+                <DrawerStep2
+                  paymentMethod={paymentMethod}
+                  onSelectPaymentMethod={onSelectPaymentMethod}
+                  onBack={onBack}
+                  onContinue={onContinue}
+                />
+              )}
 
-          {(step === 3 || step === 4) && (
-            <div className="py-16 text-center">
-              <button
-                onClick={onBack}
-                className="flex items-center gap-1 text-xs text-[#827064] hover:text-[#3d3530] transition-colors mb-8 mx-auto"
-              >
-                <ChevronLeft size={13} />
-                Back
-              </button>
-              <p className="text-sm text-[#a0948a]">
-                {step === 3 ? 'Your Details' : 'Confirm'} — coming soon
-              </p>
+              {step === 3 && (
+                <DrawerStep3
+                  details={details}
+                  onUpdateDetails={onUpdateDetails}
+                  honeypot={honeypot}
+                  onHoneypotChange={onHoneypotChange}
+                  onBack={onBack}
+                  onContinue={onContinue}
+                />
+              )}
+
+              {step === 4 && selectedOption && (
+                <DrawerStep4
+                  selectedOption={selectedOption}
+                  selectedDate={selectedDate}
+                  paymentMethod={paymentMethod}
+                  details={details}
+                  submitting={submitting}
+                  submitError={submitError}
+                  onBack={onBack}
+                  onSubmit={onSubmit}
+                />
+              )}
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
     </>
   )

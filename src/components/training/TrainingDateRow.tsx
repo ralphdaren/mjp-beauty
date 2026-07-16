@@ -1,4 +1,4 @@
-import type { TrainingDate } from '@/lib/shopify'
+import type { TrainingDate } from '@/lib/training'
 import { formatShortDate } from '@/lib/utils'
 
 interface TrainingDateRowProps {

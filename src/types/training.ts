@@ -1,10 +1,9 @@
-import type { TrainingDate } from '../lib/shopify'
+import type { TrainingDate } from '../lib/training'
 
 export interface TrainingOption {
   id: 'group' | 'private'
   title: string
   price: string
-  handle: string
 }
 
 export interface TrainingDateGroup {

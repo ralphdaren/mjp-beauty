@@ -8,7 +8,7 @@ import Accordion from '@/components/Accordion'
 import TrainingDrawer from '@/components/training/TrainingDrawer'
 import TrainingDatesCard from '@/components/training/TrainingDatesCard'
 import TrainingDatesModal from '@/components/training/TrainingDatesModal'
-import { getTrainingDates } from '@/lib/shopify'
+import { getTrainingDates } from '@/lib/training'
 import type { TrainingOption, TrainingDateGroup } from '@/types/training'
 const ipHeadImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_1600/v1783028022/ip-head_djhc92.jpg'
 const browGuideImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_500/v1783028296/freebie-05_xqncqj.png'
@@ -63,7 +63,6 @@ const formatItems = [
 const optionCards = [
   {
     id: 'group' as const,
-    handle: import.meta.env.VITE_SHOPIFY_HANDLE_TRAINING_GROUP as string,
     img: optImg02,
     alt: 'Small Group Training',
     label: 'Option 01',
@@ -75,7 +74,6 @@ const optionCards = [
   },
   {
     id: 'private' as const,
-    handle: import.meta.env.VITE_SHOPIFY_HANDLE_TRAINING_PRIVATE as string,
     img: optImg01,
     alt: 'Private 1-on-1 Training',
     label: 'Option 02',
@@ -443,7 +441,7 @@ export default function InPersonTrainingPage() {
 
   useEffect(() => {
     let cancelled = false
-    Promise.all(optionCards.map((card) => getTrainingDates(card.handle))).then((results) => {
+    Promise.all(optionCards.map((card) => getTrainingDates(card.id))).then((results) => {
       if (cancelled) return
       setTrainingDateGroups(
         optionCards.map((card, i) => ({
@@ -468,7 +466,6 @@ export default function InPersonTrainingPage() {
       id: card.id,
       title: card.title,
       price: card.price,
-      handle: card.handle,
     }
     training.openDrawer(option)
   }, [training])
@@ -1291,6 +1288,14 @@ export default function InPersonTrainingPage() {
         onSelectDate={training.handleSelectDate}
         paymentMethod={training.paymentMethod}
         onSelectPaymentMethod={training.handleSelectPaymentMethod}
+        details={training.details}
+        onUpdateDetails={training.handleUpdateDetails}
+        honeypot={training.honeypot}
+        onHoneypotChange={training.setHoneypot}
+        submitting={training.submitting}
+        submitError={training.submitError}
+        submitted={training.submitted}
+        onSubmit={training.handleSubmit}
         onBack={training.handleBack}
         onContinue={training.handleContinue}
       />

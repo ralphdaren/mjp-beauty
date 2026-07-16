@@ -1,5 +1,5 @@
 import { Loader2 } from 'lucide-react'
-import type { TrainingDate } from '../../../lib/shopify'
+import type { TrainingDate } from '../../../lib/training'
 import type { TrainingOption } from '../../../types/training'
 import { formatDate } from '../../../lib/utils'
 
@@ -56,7 +56,7 @@ export default function DrawerStep1({
                   <p className="text-xs text-[#a0948a]">{date.location}</p>
                 </div>
                 <span className={`text-[10px] uppercase tracking-[0.12em] shrink-0 ${isFull ? 'text-red-400' : 'text-[#827064]'}`}>
-                  {isFull ? 'Full' : `${date.spotsRemaining} spots left`}
+                  {isFull ? 'Full' : `${date.spotsRemaining} spot${date.spotsRemaining === 1 ? '' : 's'} left`}
                 </span>
               </button>
             )

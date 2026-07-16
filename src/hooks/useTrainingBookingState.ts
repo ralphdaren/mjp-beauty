@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react'
-import { getTrainingDates, type TrainingDate } from '../lib/shopify'
+import { getTrainingDates, createTrainingHold, type TrainingDate } from '../lib/training'
 import type { TrainingOption, TrainingDrawerStep, DepositPaymentMethod } from '../types/training'
+
+export interface TrainingDetails {
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+}
+
+const EMPTY_DETAILS: TrainingDetails = { firstName: '', lastName: '', email: '', phone: '' }
 
 export function useTrainingBookingState() {
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -12,20 +21,30 @@ export function useTrainingBookingState() {
   const [selectedDate, setSelectedDate] = useState<TrainingDate | null>(null)
 
   const [paymentMethod, setPaymentMethod] = useState<DepositPaymentMethod | null>(null)
+  const [details, setDetails] = useState<TrainingDetails>(EMPTY_DETAILS)
+  const [honeypot, setHoneypot] = useState('')
 
-  // Fetch available dates from Shopify whenever the selected training option changes
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const [submitted, setSubmitted] = useState(false)
+
+  // Fetch available dates from the API whenever the selected training option changes
   useEffect(() => {
     if (!selectedOption) { setTrainingDates([]); return }
     setDatesLoading(true)
-    getTrainingDates(selectedOption.handle)
+    getTrainingDates(selectedOption.id)
       .then(setTrainingDates)
       .finally(() => setDatesLoading(false))
-  }, [selectedOption?.handle])
+  }, [selectedOption?.id])
 
   function openDrawer(option: TrainingOption) {
     setSelectedOption(option)
     setSelectedDate(null)
     setPaymentMethod(null)
+    setDetails(EMPTY_DETAILS)
+    setHoneypot('')
+    setSubmitError('')
+    setSubmitted(false)
     setStep(1)
     setDrawerOpen(true)
   }
@@ -42,12 +61,38 @@ export function useTrainingBookingState() {
     setPaymentMethod(method)
   }
 
+  function handleUpdateDetails(patch: Partial<TrainingDetails>) {
+    setDetails((d) => ({ ...d, ...patch }))
+  }
+
   function handleBack() {
+    setSubmitError('')
     setStep((s) => Math.max(1, s - 1) as TrainingDrawerStep)
   }
 
   function handleContinue() {
     setStep((s) => Math.min(4, s + 1) as TrainingDrawerStep)
+  }
+
+  async function handleSubmit() {
+    if (!selectedDate || !paymentMethod) return
+    setSubmitting(true)
+    setSubmitError('')
+    const result = await createTrainingHold({
+      dateId: selectedDate.id,
+      paymentMethod,
+      firstName: details.firstName.trim(),
+      lastName: details.lastName.trim(),
+      email: details.email.trim(),
+      phone: details.phone.trim() || undefined,
+      honeypot: honeypot || undefined,
+    })
+    setSubmitting(false)
+    if (result.ok) {
+      setSubmitted(true)
+    } else {
+      setSubmitError(result.error ?? 'Something went wrong. Please try again.')
+    }
   }
 
   return {
@@ -60,9 +105,17 @@ export function useTrainingBookingState() {
     datesLoading,
     selectedDate,
     paymentMethod,
+    details,
+    honeypot,
+    setHoneypot,
+    submitting,
+    submitError,
+    submitted,
     handleSelectDate,
     handleSelectPaymentMethod,
+    handleUpdateDetails,
     handleBack,
     handleContinue,
+    handleSubmit,
   }
 }

@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { LogOut, RefreshCw, Search, SlidersHorizontal, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
+import TrainingBookingsPanel from '../components/admin/TrainingBookingsPanel'
+import TrainingDatesPanel from '../components/admin/TrainingDatesPanel'
 
 interface BookingRequest {
   id: string
@@ -17,6 +19,8 @@ interface BookingRequest {
 }
 
 type Tab = 'pending' | 'accepted' | 'declined' | 'cancelled'
+type Category = 'services' | 'training'
+type TrainingView = 'bookings' | 'dates'
 
 const PAGE_SIZE = 10
 
@@ -91,6 +95,9 @@ export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false)
   const [loginError, setLoginError] = useState('')
   const [loginLoading, setLoginLoading] = useState(false)
+
+  const [category, setCategory] = useState<Category>('services')
+  const [trainingView, setTrainingView] = useState<TrainingView>('bookings')
 
   const [requests, setRequests] = useState<BookingRequest[]>([])
   const [fetchLoading, setFetchLoading] = useState(false)
@@ -279,22 +286,26 @@ export default function AdminPage() {
       <div className="bg-white border-b border-[#e3e2de] px-6 py-4 flex items-center justify-between">
         <div>
           <p className="text-[10px] tracking-[0.2em] uppercase text-[#a0948a]">MJP Beauty</p>
-          <h1 className="text-base font-semibold text-[#3d3530]">Booking Requests</h1>
+          <h1 className="text-base font-semibold text-[#3d3530]">
+            {category === 'services' ? 'Booking Requests' : 'In-Person Training'}
+          </h1>
         </div>
         <div className="flex items-center gap-3">
-          <div className="group relative">
-            <button
-              onClick={() => fetchRequests(token)}
-              disabled={fetchLoading}
-              className="p-2.5 border border-[#e3e2de] rounded-full text-[#6b5f58] hover:border-[#3d3530] hover:text-[#3d3530] transition-colors disabled:opacity-50"
-              title="Refresh"
-            >
-              <RefreshCw size={16} className={fetchLoading ? 'animate-spin' : ''} />
-            </button>
-            <span className="pointer-events-none absolute -bottom-9 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#3d3530] text-white text-[10px] px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-10">
-              Refresh
-            </span>
-          </div>
+          {category === 'services' && (
+            <div className="group relative">
+              <button
+                onClick={() => fetchRequests(token)}
+                disabled={fetchLoading}
+                className="p-2.5 border border-[#e3e2de] rounded-full text-[#6b5f58] hover:border-[#3d3530] hover:text-[#3d3530] transition-colors disabled:opacity-50"
+                title="Refresh"
+              >
+                <RefreshCw size={16} className={fetchLoading ? 'animate-spin' : ''} />
+              </button>
+              <span className="pointer-events-none absolute -bottom-9 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#3d3530] text-white text-[10px] px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                Refresh
+              </span>
+            </div>
+          )}
           <button
             onClick={handleLogout}
             className="flex items-center gap-1.5 border border-[#e3e2de] rounded-full px-4 py-2 text-xs font-medium text-[#6b5f58] hover:border-[#3d3530] hover:text-[#3d3530] transition-colors"
@@ -305,6 +316,24 @@ export default function AdminPage() {
         </div>
       </div>
 
+      {/* Category switch */}
+      <div className="px-6 pt-4 max-w-5xl mx-auto">
+        <div className="inline-flex bg-white rounded-full p-1 border border-[#e3e2de]">
+          {([['services', 'Brow Services'], ['training', 'In-Person Training']] as const).map(([c, label]) => (
+            <button
+              key={c}
+              onClick={() => setCategory(c)}
+              className={`px-4 py-2 rounded-full text-xs font-medium transition-colors ${
+                category === c ? 'bg-[#3d3530] text-white' : 'text-[#6b5f58] hover:text-[#3d3530]'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {category === 'services' && (<>
       {/* Search + Filter */}
       <div className="px-6 pt-5 flex items-center gap-3 max-w-5xl mx-auto">
         <div className="relative flex-1">
@@ -415,9 +444,30 @@ export default function AdminPage() {
           </button>
         ))}
       </div>
+      </>)}
+
+      {category === 'training' && (
+        <div className="px-6 pt-5 pb-3 flex gap-1 max-w-5xl mx-auto">
+          {([['bookings', 'Bookings'], ['dates', 'Manage Dates']] as const).map(([v, label]) => (
+            <button
+              key={v}
+              onClick={() => setTrainingView(v)}
+              className={`px-4 py-2 rounded-full text-xs font-medium transition-colors ${
+                trainingView === v ? 'bg-[#3d3530] text-white' : 'bg-white text-[#6b5f58] hover:bg-[#ede9e3]'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
       </div>
 
+      {category === 'training' && trainingView === 'bookings' && <TrainingBookingsPanel token={token} />}
+      {category === 'training' && trainingView === 'dates' && <TrainingDatesPanel token={token} />}
+
       {/* Content */}
+      {category === 'services' && (
       <div className="px-6 py-5 max-w-5xl mx-auto">
         {fetchError && (
           <p className="text-sm text-red-500 mb-4">{fetchError}</p>
@@ -521,6 +571,7 @@ export default function AdminPage() {
           </div>
         )}
       </div>
+      )}
     </div>
   )
 }
