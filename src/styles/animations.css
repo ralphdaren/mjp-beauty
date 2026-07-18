@@ -21,6 +21,29 @@
   to   { transform: translateY(-25%); }
 }
 
+@keyframes announcement-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ─── Announcement Bar Marquee ──────────────────────────────────── */
+
+.announcement-track {
+  animation: announcement-scroll 34s linear infinite;
+  will-change: transform;
+}
+
+.announcement-bar:hover .announcement-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .announcement-track {
+    animation: none;
+    transform: none;
+  }
+}
+
 /* ─── Hero Entrance Animations ──────────────────────────────────── */
 
 .hero-eyebrow {

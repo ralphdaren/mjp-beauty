@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { NavLink, Link, useLocation } from 'react-router-dom'
 import { Menu, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight, User, CalendarCheck, ShoppingCart } from 'lucide-react'
 import logoBrown from '@/assets/brand-kit/logo-brown.png'
+import AnnouncementBar from '@/components/AnnouncementBar'
 
 const optImg01 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_500/v1783027940/opt-img-01_ufhoau.jpg'
 import { getCollectionProducts } from '@/lib/shopify'
@@ -149,8 +150,8 @@ export default function Navbar() {
         scrolled ? 'shadow-[0_2px_16px_rgba(130,112,100,0.10)]' : '',
       ].join(' ')}
     >
-      {/* Thin decorative top accent line */}
-      <div className="h-[2px] bg-brand w-full" />
+      {/* Promo announcement marquee — doubles as the top accent band */}
+      <AnnouncementBar />
 
       <nav className="max-w-[1800px] mx-auto px-16">
 
