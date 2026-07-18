@@ -18,10 +18,11 @@
 
 .about-arch-photo {
   position: absolute;
-  top: 64px;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
+  height: calc(100% - 64px);
+  max-height: 676px;
   aspect-ratio: 2 / 3;
   max-width: 85%;
   overflow: hidden;

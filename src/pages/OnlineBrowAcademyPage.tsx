@@ -212,10 +212,10 @@ const ONLINE_FAQ: { q: string; a: ReactNode }[] = [
     q: 'Is it beginner-friendly?',
     a: (
       <p>
-        Absolutely! This training is designed and proven for all skill levels — from total beginners
-        to growing artists looking to refine their brow techniques or add new services to their menu.
-        I highly recommend beginner levels to opt for the VIP Mentorship package if you want to
-        achieve real, fast-tracked results.
+        Absolutely! This training is designed and proven for all skill levels — from total beginners to growing artists looking
+        to refine their brow techniques or add new services to their menu. This training was built to act as if Micah is right there right
+        beside you through it all! I highly recommend beginner levels to opt for the VIP Mentorship package if you want to achieve real,
+        fast-tracked results.
       </p>
     ),
   },
@@ -223,9 +223,10 @@ const ONLINE_FAQ: { q: string; a: ReactNode }[] = [
     q: 'What supplies do I need to start?',
     a: (
       <p>
-        You'll get access to a full product list inside the course plus my Brow Artistry Essentials
-        Guide which will give you direct purchase links! I also walk you through how to use each
-        item, so you can feel confident before working on clients.
+        Currently MJP beauty is working on a Kit Collab with Standout Beauty in hopes to have it available for you guys to purchase soon.
+        As of right now, you'll get access to a full product list inside the course plus MJP Beauty's Brow Artistry Essentials Guide which
+        will give you direct purchase links to the products! In addition, Micah has exclusive student discount codes available and will also
+        walk you through how to use each product, so you can feel confident before working on clients.
       </p>
     ),
   },
@@ -244,9 +245,9 @@ const ONLINE_FAQ: { q: string; a: ReactNode }[] = [
     q: 'Will I receive a certificate after completing the course?',
     a: (
       <p>
-        Yes! Once you've completed all of the modules and passed the quizzes, you'll receive a
-        Certificate of Completion directly from Micah which you can proudly display and use to
-        elevate your business.
+        Yes! Once you've completed all of the modules and passed the quizzes, simply e-mail MJP Beauty
+        and you'll receive a Certificate of Completion directly from Micah which you can proudly
+        display and use to elevate your business.
       </p>
     ),
   },
@@ -271,6 +272,28 @@ const ONLINE_FAQ: { q: string; a: ReactNode }[] = [
       </p>
     ),
   },
+  {
+    q: 'Is there a way for me to extend my online course access?',
+    a: (
+      <p>
+        Yes! Once you complete the training, you can leave a review and as a perk, Micah will extend
+        your training access for another 6 months!
+      </p>
+    )
+  },
+  {
+    q: 'Do I have to enroll in the full All-In-One Course, or can I learn specific techniques?',
+    a: (
+      <p>
+        Absolutely! We know every artist is at a different stage in their journey, which is why we've
+        created individual mini online courses like our Brow Mapping Fundamentals and Brow Tinting Fundamentals.
+        These are the same in-depth chapters pulled directly from the All-In-One Brow Course, so you can focus
+        on the specific skills you want to improve. The only difference is that students who opt for these individual
+        courses don't receive access to the full library of demo models included in the complete training
+        unless you sign up for our Brow Demo Vault portal.
+      </p>
+    )
+  }
 ]
 
 
@@ -281,7 +304,7 @@ function OnlineFaqSection() {
 
         {/* Section heading */}
         <div className="text-center mb-10">
-          <p className="text-[10px] tracking-[0.25em] uppercase text-[#a0948a] mb-2">Good to Know</p>
+          <p className="text-[10px] tracking-[0.25em] uppercase text-[#a0948a] mb-2">Your Burning Questions</p>
           <h2 className="text-2xl font-semibold text-[#3d3530]">Frequently Asked Questions</h2>
         </div>
 
@@ -405,8 +428,11 @@ export default function OnlineBrowAcademyPage() {
             MJP Beauty
           </p>
           <h1 className="hero-heading about-heading text-4xl sm:text-5xl md:text-6xl font-semibold text-white leading-tight max-w-3xl text-center">
-            The Ultimate Online Brow Education
+            Raising the Standards of Online Brow Education
           </h1>
+          <p className="hero-tagline mt-5 text-base sm:text-lg text-white/75 max-w-xl tracking-[0.08em] font-light leading-relaxed">
+            An Experience Unlike Anything You've Seen Before — Designed for Artists. Backed by Expertise. Built for Success.
+          </p>
         </div>
       </section>
 
@@ -417,14 +443,8 @@ export default function OnlineBrowAcademyPage() {
           {/* Left — description */}
           <div className="anim-fade-left flex flex-col gap-6" style={{ transitionDelay: '0.1s' }}>
             <p className="text-[0.9rem] uppercase tracking-[0.28em] text-[#a0948a]">About the Training</p>
-            <p className="text-[#3d3028] text-base sm:text-lg leading-relaxed font-semibold">
-              Raising the Standards of Brow Education
-            </p>
             <p className="text-[#3d3028] text-base sm:text-lg leading-relaxed">
-              An Experience Unlike Anything You've Seen Before — ​Designed for Artists. Backed by Expertise. Built for Success.
-            </p>
-            <p className="text-[#3d3028] text-base sm:text-lg leading-relaxed">
-              Unlock the MJP Beauty way of brows and gain insider access to specialized techniques in this all-inclusive online training. Packed with game-changing methods that removes the guesswork out of brow artistry and a training structure trusted by hundreds of Artists. This online course provides the most comprehensive education empowering you to deliver consistent, long-lasting, natural brow services that your clients will rave about.
+              Unlock the MJP Beauty way of brows and gain insider access to specialized techniques in this all-inclusive online training. Packed with game-changing methods that removes the guesswork out of brow artistry and a training structure trusted by hundreds of Artists worldwide. This online course provides the most comprehensive education empowering you to deliver consistent, long-lasting, natural brow services that your clients will rave about.
             </p>
           </div>
 
@@ -709,14 +729,14 @@ export default function OnlineBrowAcademyPage() {
                 <div className="p-10 flex flex-col flex-1">
                   <p className="text-[0.7rem] uppercase tracking-[0.28em] text-[#a0948a] mb-4">Option 03</p>
                   <h3 className="about-heading text-2xl sm:text-3xl font-semibold text-[#3d3028] leading-tight mb-4">
-                    Single Courses
+                    More Online Courses
                   </h3>
                   <div className="mb-1 flex items-baseline gap-1.5">
                     <span className="text-sm text-[#a0948a] font-medium">From</span>
                     <span className="text-[3rem] font-semibold text-[#3d3028] leading-none">$67</span>
                     <span className="text-xl text-[#5a5047] ml-1">CAD</span>
                   </div>
-                  <p className="text-[#5a5047] text-sm leading-relaxed mb-6">Purchase any module individually of your choice.</p>
+                  <p className="text-[#5a5047] text-sm leading-relaxed mb-6">Browse through our wide selection of online courses that best suits your learning</p>
                   <div className="h-px bg-[#e3e2de] mb-4" />
                   <div className="flex flex-col flex-1">
                     {singleModuleData.map((mod, i) => (
@@ -737,7 +757,7 @@ export default function OnlineBrowAcademyPage() {
                     to="/online-modules"
                     className="mt-6 w-full py-3.5 rounded-xl border border-[#3d3028] text-[#3d3028] text-[0.72rem] uppercase tracking-[0.2em] font-medium hover:bg-[#3d3028] hover:text-white transition-colors duration-200 text-center block"
                   >
-                    Browse Courses
+                    Browse Online Courses
                   </Link>
                 </div>
               </div>

@@ -72,37 +72,46 @@ export default function Home() {
           </div>
 
           {/* Right: text content */}
-          <div className="anim-fade-right flex flex-col justify-center gap-5 px-10 py-14 lg:px-16 lg:py-20 bg-white" style={{ transitionDelay: '0.2s' }}>
-            <p className="m-0 text-[0.85rem] uppercase tracking-[0.28em] text-[color:var(--muted-foreground)]">
+          <div className="anim-fade-right flex flex-col justify-center gap-4 px-10 py-12 lg:px-12 lg:py-14 xl:px-16 bg-white" style={{ transitionDelay: '0.2s' }}>
+            <p className="m-0 text-[0.8rem] uppercase tracking-[0.28em] text-[color:var(--muted-foreground)]">
               GET TO KNOW ME
             </p>
-            <h2 className="about-heading m-0 text-3xl font-semibold leading-tight text-[color:var(--foreground)] sm:text-4xl md:text-[2.8rem]">
-              Meet The Face Behind <span className="text-[#827064]">MJP Beauty</span>
+            <h2 className="about-heading m-0 text-2xl font-semibold leading-tight text-[color:var(--foreground)] sm:text-3xl md:text-[2.15rem]">
+              Meet Micah — The Face Behind <span className="whitespace-nowrap text-[#827064]">MJP Beauty</span>
             </h2>
 
-            <p className="m-0 max-w-xl text-sm leading-[1.9] text-[color:var(--foreground)] sm:text-base">
-              Welcome to MJP Beauty — where we don't just shape brows, we shape standards.
+            <p className="m-0 max-w-xl text-[0.8rem] leading-[1.75] text-[color:var(--foreground)] sm:text-[0.92rem]">
+              Hi, I'm <span className="font-semibold">Micah</span>, the founder of MJP Beauty!
             </p>
-            <p className="m-0 max-w-xl text-sm leading-[1.9] text-[color:var(--muted-foreground)] sm:text-base">
-              I'm the founder of MJP Beauty, a dedicated Brow Artist specializing in natural results. After eight years in the beauty industry and training students across North America, my mission is clear: to raise the bar in brow education.
+            <p className="m-0 max-w-xl text-[0.8rem] leading-[1.75] text-[color:var(--muted-foreground)] sm:text-[0.92rem]">
+              Believe it or not, this business started on a whim from my childhood home. I was a full-time university student simply looking for a way to earn a little extra income on the side, with absolutely no idea where it would lead. What started as a small side hustle quickly grew into something so much bigger than I ever imagined.
             </p>
-            <p className="m-0 max-w-xl text-sm leading-[1.9] text-[color:var(--muted-foreground)] sm:text-base">
-              Whether you're here for luxury brow services or ready to grow your skills through pro-level training, MJP Beauty is where confidence begins — with craft, care, and community.
+            <p className="m-0 max-w-xl text-[0.8rem] leading-[1.75] text-[color:var(--muted-foreground)] sm:text-[0.92rem]">
+              Today, after almost nine years in the beauty industry, I specialize in creating natural brow laminations and have had the privilege of training hundreds of students across North America and now worldwide. When starting my journey, one thing became incredibly clear to me: our industry deserved a higher standard of brow education. That mission is what continues to drive MJP Beauty today.
+            </p>
+            <p className="m-0 max-w-xl text-[0.8rem] leading-[1.75] text-[color:var(--muted-foreground)] sm:text-[0.92rem]">
+              Whether you're here to experience luxury brow services or you're a beauty professional ready to master your craft through comprehensive training like no other — MJP Beauty is where confidence begins — with craft, care, and community.
             </p>
 
             <div className="h-px w-full bg-black/10" />
 
-            <div className="flex flex-wrap gap-10">
-              <div className="flex items-center gap-4">
-                <span className="text-3xl font-semibold text-[color:var(--foreground)]">8+</span>
-                <p className="m-0 text-[0.75rem] uppercase tracking-[0.18em] text-[color:var(--muted-foreground)]">
-                  YEARS<br />EXPERIENCED
+            <div className="flex flex-wrap gap-x-6 gap-y-5">
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl font-semibold text-[color:var(--foreground)]">8.5+</span>
+                <p className="m-0 text-[0.68rem] uppercase tracking-[0.16em] text-[color:var(--muted-foreground)]">
+                  YEARS<br />EXPERIENCE
                 </p>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="text-3xl font-semibold text-[color:var(--foreground)]">450+</span>
-                <p className="m-0 text-[0.75rem] uppercase tracking-[0.18em] text-[color:var(--muted-foreground)]">
-                  STUDENTS<br />TRAINED
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl font-semibold text-[color:var(--foreground)]">450+</span>
+                <p className="m-0 text-[0.68rem] uppercase tracking-[0.16em] text-[color:var(--muted-foreground)]">
+                  STUDENTS<br />WORLDWIDE
+                </p>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl font-semibold text-[color:var(--foreground)]">4000+</span>
+                <p className="m-0 text-[0.68rem] uppercase tracking-[0.16em] text-[color:var(--muted-foreground)]">
+                  SERVICES<br />PERFORMED
                 </p>
               </div>
             </div>

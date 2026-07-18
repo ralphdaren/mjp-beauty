@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { CircleAlert, HelpCircle, BookOpen, ArrowRight, X } from 'lucide-react'
 import { useScrollAnimation } from '@/hooks/useScrollAnimation'
@@ -8,6 +8,7 @@ import Accordion from '@/components/Accordion'
 import TrainingDrawer from '@/components/training/TrainingDrawer'
 import TrainingDatesCard from '@/components/training/TrainingDatesCard'
 import TrainingDatesModal from '@/components/training/TrainingDatesModal'
+import PerkFlipCard from '@/components/training/PerkFlipCard'
 import { getTrainingDates } from '@/lib/training'
 import type { TrainingOption, TrainingDateGroup } from '@/types/training'
 const ipHeadImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_1600/v1783028022/ip-head_djhc92.jpg'
@@ -21,21 +22,20 @@ const perk01Img = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_au
 const perk02Img = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028018/perk-02_qmp0qf.jpg'
 
 const idealForItems = [
-  'Beginners who are passionate about launching a successful brow career and want a comprehensive, step-by-step education that covers all the essentials from the ground up.',
-  'Intermediate artists seeking to deepen their knowledge, refine their technique, and elevate the quality of their brow services to deliver truly impressive, professional results.',
-  'Beauty professionals who are ready to confidently expand their service offerings by mastering specialized brow techniques that complement their existing skills & service menu!',
-  'Anyone looking for a flexible, hybrid learning experience that combines self-paced online study with hands-on, personalized mentorship to accelerate skill development and career growth.',
+  'You are ready to turn your passion into a real career. You are a complete beginner who does not want to piece together free tutorials or settle for basic education—you want to build your brow business on the right foundation and feel confident working on paying clients from the start.',
+  'You are tired of feeling like your brow work isn\'t reaching its full potential. You know you are capable of more, but you are craving advanced techniques, better customization, and the confidence to create results that keep clients coming back and referring everyone they know.',
+  'You are already in the beauty industry and want to increase your income without starting over. Whether you are a lash artist, makeup artist, or esthetician, you are ready to add one of the industry\'s most requested services to your menu so you can attract more clients, increase your revenue, and grow a more profitable business.',
 ]
 
 const formatItems = [
   {
     img: formatImg01,
-    alt: 'Complete Online Brow Course Modules',
+    alt: 'Complete the Online Training',
     step: '01',
-    title: 'Complete Online Brow Course Modules',
+    title: 'Complete the Online Training',
     paragraphs: [
-      'Master every step of the brow artistry process through 5 Core Online Modules — covering Brow Lamination, Mapping, Tinting, and Waxing. Each module is packed with in-depth theory, specialized techniques, and step-by-step video demonstrations designed to help you understand, apply, and perfect your craft before you ever step into the studio.',
-      "You'll receive instant access to the online training as soon as your deposit is submitted, giving you plenty of time to study, absorb, and build a strong foundation before your hands-on training day with Micah.",
+      'Receive instant access to MJP Beauty\'s All-In-One Online Brow Course as soon as your deposit is submitted. Master the foundations of Brow Lamination, Mapping, Hybrid Tinting, and Waxing through in-depth video lessons, theory, and step-by-step demonstrations before training day.',
+      "By learning the theory beforehand, your in-person training is dedicated entirely to hands-on practice, personalized coaching, and refining your skills for real clients.",
     ],
   },
   {
@@ -108,23 +108,73 @@ const kitItems = [
   'Concealer Brushes (2)',
 ]
 
+// ─── Flip-card student perks ──────────────────────────────────────────────────
+
+type PerkKey = 'cert' | 'discounts' | 'ebook' | 'masterclass'
+
+const FLIP_PERKS: Record<PerkKey, {
+  number: string
+  title: string
+  teaser?: string
+  backTitle: string
+  body: string
+}> = {
+  cert: {
+    number: '02',
+    title: 'Framed Certificate of Completion',
+    backTitle: 'Your certification',
+    body: 'Receive a professionally framed certificate to proudly display your achievement and showcase your certification to future clients.',
+  },
+  discounts: {
+    number: '05',
+    title: 'Exclusive student discount codes',
+    backTitle: 'Ongoing student pricing',
+    body: "Receive exclusive, ongoing student discounts with Standout Beauty, Beauty Distribution MD, and other leading beauty suppliers — helping you save on the professional products you'll use throughout your career.",
+  },
+  ebook: {
+    number: '07',
+    title: 'Glam Up Your Grid E-book',
+    teaser: 'Complimentary — $88 value.',
+    backTitle: 'Glam Up Your Grid',
+    body: "Complimentary access to MJP Beauty's Glam Up Your Grid E-book: Instagram marketing strategies to grow your business. An $88 value, yours free with your in-person seat.",
+  },
+  masterclass: {
+    number: '08',
+    title: 'Mastering Brow Laminations Masterclass',
+    teaser: 'Complimentary 30-minute masterclass.',
+    backTitle: '10 Mistakes to Avoid',
+    body: "Complimentary access to MJP Beauty's Mastering Brow Laminations: 10 Mistakes to Avoid Masterclass — a 30-minute masterclass breaking down the 10 things to avoid for long-lasting, natural brow laminations.",
+  },
+}
+
 // ─── Training FAQ data ────────────────────────────────────────────────────────
+
+const STUDENT_WORK = [
+  { name: 'Micah',    handle: '@micahkeziah.beauty', url: 'https://www.instagram.com/micahkeziah.beauty/', note: 'Beginner, certified October 2023' },
+  { name: 'Charis',   handle: '@enamouredby.ca',     url: 'https://www.instagram.com/enamouredby.cha/',    note: 'Beginner, certified July 2025' },
+  { name: 'Jonalene', handle: '@jrg.aesthetics',     url: 'https://www.instagram.com/jrg.aesthetics/',     note: 'Beginner, certified February 2023' },
+  { name: 'Eunice',   handle: '@bushystudio',        url: 'https://www.instagram.com/bushystudio/',        note: 'Beginner, certified November 2025' },
+  { name: 'Miranda',  handle: '@mbartistryco',       url: 'https://www.instagram.com/mbartistryco/',       note: 'Intermediate, certified July 2025' },
+  { name: 'Steph',    handle: '@softbrowedit',       url: 'https://www.instagram.com/softbrowedit/',       note: 'Intermediate, certified March 2026' },
+  { name: 'Bianca',   handle: '@prettylashesbyb',    url: 'https://www.instagram.com/prettylashesbyb/',    note: 'Beginner, certified May 2026' },
+]
 
 const TRAINING_FAQ = [
   {
-    q: 'What Makes this Training Different From Others?',
+    q: 'What does the in-person training day timeline look like?',
     a: (
       <p>
-        This isn't just another brow course. It's a proven, hybrid program combining in-depth
-        online training with hands-on mentorship, designed to get you real results fast. Over 400+
-        students have transformed their skills, gained loyal clients, and are growing their beauty
-        businesses to this day. If you want to master the details that create wow-worthy brows,
-        this is the course for you.
+        While the schedule may vary slightly for group or private training, the day typically
+        includes a welcome and theory Q&amp;A, hands-on practice drills (mapping and waxing),
+        lunch, <strong className="text-[#3d3530] font-semibold">Model #1</strong> (shape, tint
+        &amp; wax), <strong className="text-[#3d3530] font-semibold">Model #2</strong> (lamination,
+        shape, tint &amp; wax), followed by a final Q&amp;A, closing remarks, and certificate
+        presentation.
       </p>
     ),
   },
   {
-    q: 'Where Are the Trainings Held?',
+    q: 'Where are the trainings held?',
     a: (
       <div className="space-y-2">
         <p>
@@ -141,7 +191,7 @@ const TRAINING_FAQ = [
     ),
   },
   {
-    q: 'Who Organizes the Models?',
+    q: 'Who organizes the models?',
     a: (
       <div className="space-y-3">
         <p>
@@ -162,14 +212,14 @@ const TRAINING_FAQ = [
           Students are responsible for sourcing their own models for the in-person training day.
           Upon receiving the training deposit, Micah will send a confirmation email containing
           detailed guidance on selecting suitable model candidates. All models must be approved by
-          Micah through submission of a photo showing their natural brows. For students traveling
-          from out of town, Micah can provide models upon request.
+          Micah through submission of a photo showing their natural brows.
         </p>
+        <p>For students traveling from out of town, Micah can provide models upon request.</p>
       </div>
     ),
   },
   {
-    q: 'When Will I Gain Access to the Online Modules?',
+    q: 'When will I gain access to the online modules?',
     a: (
       <p>
         Access to the online training portion of the course will be sent to the student immediately
@@ -180,18 +230,17 @@ const TRAINING_FAQ = [
     ),
   },
   {
-    q: 'What Are the Payment Options?',
+    q: 'What are the payment options?',
     a: (
       <ol className="list-decimal list-inside space-y-1.5">
         <li>E-transfer</li>
-        <li>Cash</li>
-        <li>Credit Card / Invoice <span className="text-[#a0948a]">(subject to a 2.9% transaction fee)</span></li>
-        <li>Interest-free Payment Plan Option</li>
+        <li>Credit Card <span className="text-[#a0948a]">(subject to a processing fee)</span></li>
+        <li>Payment Plan</li>
       </ol>
     ),
   },
   {
-    q: 'How Does the Payment Plan Work?',
+    q: 'How does the payment plan work?',
     a: (
       <div className="space-y-3">
         <p>
@@ -201,40 +250,117 @@ const TRAINING_FAQ = [
           incremental payments to pay off the remaining balance, under three conditions:
         </p>
         <ol className="list-decimal list-inside space-y-1.5">
-          <li>When a payment is submitted, it must be a minimum of <strong className="text-[#3d3530] font-semibold">$300</strong></li>
-          <li>The remaining balance must be fully paid <strong className="text-[#3d3530] font-semibold">one week prior</strong> to the training date</li>
-          <li>Must be paid via <strong className="text-[#3d3530] font-semibold">e-transfer</strong></li>
+          <li>Each payment submitted must be a minimum of <strong className="text-[#3d3530] font-semibold">$300</strong></li>
+          <li>The remaining balance must be fully paid <strong className="text-[#3d3530] font-semibold">two weeks prior</strong> to the training date</li>
+          <li>Can be paid via <strong className="text-[#3d3530] font-semibold">e-transfer or credit card</strong></li>
         </ol>
-        <p>If this option interests you, please mention this in your inquiry email.</p>
+        <p>If this option interests you, please mention this in your submission.</p>
       </div>
     ),
   },
   {
-    q: 'How Does the Post-Training Mentorship Work?',
+    q: 'How does the post-training mentorship work?',
     a: (
       <p>
-        You have unlimited access to Micah over the next{' '}
+        You have unlimited access to trainer Micah over the following{' '}
         <strong className="text-[#3d3530] font-semibold">3 months post-training</strong> to ask
-        any questions regarding brow technique. You can also submit up to{' '}
-        <strong className="text-[#3d3530] font-semibold">5 model transformations</strong> which
+        any questions regarding brows! You can also submit up to{' '}
+        <strong className="text-[#3d3530] font-semibold">3 model transformations</strong> which
         Micah will take the time to analyze, review, and send back personalized and detailed
         feedback. This is meant for you to study and analyze so that you can continually improve
-        with each client. All in all, this post-training mentorship is meant to fast-track your
+        with each client! All in all, this post-training mentorship is meant to fast-track your
         career as a Brow Artist — an opportunity that not many trainings offer.
       </p>
+    ),
+  },
+  {
+    q: "I'm just starting out — Is this training suited for me?",
+    a: (
+      <p>
+        Absolutely! This training was designed with beginners in mind. You'll learn everything from
+        the fundamentals of brow artistry to advanced techniques, plus receive bonus business
+        modules to help you confidently launch and grow your brow business from the very beginning.
+      </p>
+    ),
+  },
+  {
+    q: 'Do you teach introduction to business and social media?',
+    a: (
+      <p>
+        Yes! Along with mastering brows the MJP Beauty way, you'll receive access to bonus business
+        modules inside the Online Training Portal. I cover topics like pricing for profit,
+        attracting your dream clients, setting up your Instagram for success, content strategy, and
+        more — so you can confidently build a profitable brow business after training. You'll also
+        receive complimentary access to my social media ebook,{' '}
+        <em className="text-[#3d3530]">Glam Up Your Grid</em>, where I share all of the strategies
+        I used to attract my dream clientele on Instagram!
+      </p>
+    ),
+  },
+  {
+    q: 'Do you travel for private or group trainings?',
+    a: (
+      <p>
+        Yes! Due to high demand, Micah travels to Vancouver once a year to host small-group
+        trainings. Join{' '}
+        <Link to="/freebies" className="underline underline-offset-2 text-[#3d3530] hover:text-[#827064] transition-colors duration-200">
+          this email list
+        </Link>{' '}
+        to be the first to hear about upcoming training dates, registration, and availability.
+      </p>
+    ),
+  },
+  {
+    q: "Where can I find Some of your students' work?",
+    a: (
+      <ul className="space-y-2.5">
+        {STUDENT_WORK.map((student) => (
+          <li key={student.handle} className="flex gap-3">
+            <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-[#827064] shrink-0" />
+            <span>
+              <strong className="text-[#3d3530] font-semibold">{student.name}</strong>{' '}
+              {student.url ? (
+                <a
+                  href={student.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-2 text-[#3d3530] hover:text-[#827064] transition-colors duration-200"
+                >
+                  {student.handle}
+                </a>
+              ) : (
+                <span className="text-[#3d3530]">{student.handle}</span>
+              )}{' '}
+              <span className="text-[#a0948a]">({student.note})</span>
+            </span>
+          </li>
+        ))}
+      </ul>
     ),
   },
 ]
 
 
+const ENROLL_STEPS = [
+  'Choose and decide based on our availability by clicking the “View All Available Dates” button to show our training calendar.',
+  'Choose your preferred training style by clicking the “Book Now” button.',
+  'Follow the prompt to submit your $500 non-refundable deposit.',
+  'Wait for your confirmation and welcome e-mail from MJP Beauty.',
+  'Begin your journey and gain immediate access to the online training!',
+]
+
 function HowToEnrollContent() {
   return (
-    <div className="max-w-2xl mx-auto text-center py-8">
-      <p className="text-[10px] tracking-[0.2em] uppercase text-[#a0948a] mb-3">Coming Soon</p>
-      <p className="text-sm text-[#6b5f58] leading-relaxed">
-        Step-by-step enrollment instructions will be available here shortly.
-      </p>
-    </div>
+    <ol className="max-w-2xl mx-auto flex flex-col gap-5">
+      {ENROLL_STEPS.map((step, i) => (
+        <li key={i} className="flex gap-4 items-start">
+          <span className="shrink-0 mt-0.5 w-7 h-7 rounded-full bg-[#f6f2ec] border border-[#e3e2de] flex items-center justify-center text-[11px] font-semibold text-[#827064]">
+            {i + 1}
+          </span>
+          <p className="text-sm text-[#6b5f58] leading-relaxed pt-1">{step}</p>
+        </li>
+      ))}
+    </ol>
   )
 }
 
@@ -257,11 +383,17 @@ const TRAINING_INFO_TABS = [
 
 type TrainingTabId = (typeof TRAINING_INFO_TABS)[number]['id']
 
-function TrainingInfoTabs() {
-  const [active, setActive] = useState<TrainingTabId>('enroll')
-
+function TrainingInfoTabs({
+  sectionRef,
+  active,
+  onChange,
+}: {
+  sectionRef: React.RefObject<HTMLElement | null>
+  active: TrainingTabId
+  onChange: (id: TrainingTabId) => void
+}) {
   return (
-    <section className="bg-[#f6f2ec] border-t border-[#e3e2de] py-16">
+    <section ref={sectionRef} className="bg-[#f6f2ec] border-t border-[#e3e2de] py-16">
       <div className="max-w-4xl mx-auto px-6">
 
         {/* Section heading */}
@@ -278,7 +410,7 @@ function TrainingInfoTabs() {
               return (
                 <button
                   key={id}
-                  onClick={() => setActive(id)}
+                  onClick={() => onChange(id)}
                   className={`group relative flex-1 flex flex-col items-center gap-1.5 py-3 px-2 transition-colors duration-200 ${
                     isActive ? 'text-[#6e5f55]' : 'text-[#a0948a] hover:text-[#6e5f55]'
                   }`}
@@ -409,12 +541,15 @@ export default function InPersonTrainingPage() {
   const [activeOption, setActiveOption] = useState(0)
   const [tooltipCard, setTooltipCard] = useState<number | null>(null)
   const [kitOpen, setKitOpen] = useState(false)
+  const [openPerk, setOpenPerk] = useState<PerkKey | null>(null)
   const [trainingDateGroups, setTrainingDateGroups] = useState<TrainingDateGroup[]>(
     optionCards.map((card) => ({ id: card.id, title: card.title, dates: [] }))
   )
   const [allDatesLoading, setAllDatesLoading] = useState(true)
   const [datesModalOpen, setDatesModalOpen] = useState(false)
   const [showGuidePopup, setShowGuidePopup] = useState(false)
+  const [infoTab, setInfoTab] = useState<TrainingTabId>('enroll')
+  const infoTabsRef = useRef<HTMLElement>(null)
   useScrollAnimation()
   const training = useTrainingBookingState()
 
@@ -455,6 +590,11 @@ export default function InPersonTrainingPage() {
     return () => {
       cancelled = true
     }
+  }, [])
+
+  const handleHowToEnroll = useCallback(() => {
+    setInfoTab('enroll')
+    infoTabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [])
 
   const handleOptionSwitch = useCallback(() => {
@@ -507,8 +647,11 @@ export default function InPersonTrainingPage() {
             MJP Beauty
           </p>
           <h1 className="hero-heading about-heading text-4xl sm:text-5xl md:text-6xl font-semibold text-white leading-tight max-w-3xl text-center">
-            The Ultimate In-Person Brow Training Experience
+            An Elevated In-Person Brow Training Experience
           </h1>
+          <p className="hero-tagline mt-5 text-base sm:text-lg text-white/75 max-w-xl tracking-[0.08em] font-light leading-relaxed">
+            With Canada's Leading Brow Educator
+          </p>
         </div>
       </section>
 
@@ -536,7 +679,7 @@ export default function InPersonTrainingPage() {
 
           {/* Right — Ideal For carousel */}
           <div className="anim-fade-right flex flex-col gap-6" style={{ transitionDelay: '0.2s' }}>
-            <p className="text-[0.9rem] uppercase tracking-[0.28em] text-[#a0948a]">Ideal For</p>
+            <p className="text-[0.9rem] uppercase tracking-[0.28em] text-[#a0948a]">This is for you if ...</p>
 
             <button
               onClick={advance}
@@ -592,9 +735,6 @@ export default function InPersonTrainingPage() {
       <section className="bg-white">
         {/* Section header */}
         <div className="anim-fade-up pt-16 pb-10 px-6 md:px-8 text-center">
-          <p className="text-[0.75rem] uppercase tracking-[0.28em] text-[#a0948a] mb-3">
-            The Training Format
-          </p>
           <h2 className="about-heading text-3xl sm:text-4xl md:text-[2.6rem] font-semibold text-[#3d3028] leading-tight">
             How it Works
           </h2>
@@ -723,7 +863,7 @@ export default function InPersonTrainingPage() {
           <div className="mt-8 flex items-center gap-4 max-w-xl mx-auto">
             <div className="flex-1 h-px bg-[#d6cec8]" />
             <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[#a0948a] whitespace-nowrap">
-              Select the format that&apos;s right for you
+              Select the training style that best suits you
             </p>
             <div className="flex-1 h-px bg-[#d6cec8]" />
           </div>
@@ -779,6 +919,7 @@ export default function InPersonTrainingPage() {
               groups={trainingDateGroups}
               loading={allDatesLoading}
               onViewAll={() => setDatesModalOpen(true)}
+              onHowToEnroll={handleHowToEnroll}
             />
           </div>
 
@@ -895,6 +1036,7 @@ export default function InPersonTrainingPage() {
               groups={trainingDateGroups}
               loading={allDatesLoading}
               onViewAll={() => setDatesModalOpen(true)}
+              onHowToEnroll={handleHowToEnroll}
             />
           </div>
           </div>
@@ -941,16 +1083,16 @@ export default function InPersonTrainingPage() {
               </h2>
             </div>
             <p className="text-sm text-[#a0948a] italic sm:text-right sm:max-w-[190px] leading-relaxed sm:pb-1">
-              Six exclusive benefits with every in-person seat.
+              Eight exclusive benefits with every in-person seat.
             </p>
           </div>
         </div>
 
         <div
           className="anim-fade-up mx-auto max-w-[1200px] hidden md:grid grid-cols-12 gap-3"
-          style={{ gridTemplateRows: '220px 220px 280px' }}
+          style={{ gridTemplateRows: '220px 220px 240px 240px' }}
         >
-          {/* No.6 - Featured: Three months of mentorship */}
+          {/* No.6 - Featured: Post-training mentorship */}
           <div
             className="col-start-1 col-span-6 row-start-1 row-span-2 rounded-2xl p-7 flex flex-col justify-between"
             style={{ backgroundColor: '#2a1a0e' }}
@@ -961,10 +1103,12 @@ export default function InPersonTrainingPage() {
             </div>
             <div>
               <h3 className="about-heading text-[2.2rem] lg:text-[2.6rem] font-semibold text-white leading-tight mb-4">
-                Three months of mentorship, direct from Micah.
+                Post-training mentorship.
               </h3>
-              <p className="text-white/50 text-sm leading-relaxed max-w-sm">
-                Unlimited Instagram DM support and up to 5 model submissions for personalized feedback.
+              <p className="text-white/50 text-sm leading-relaxed max-w-md">
+                Your learning doesn't end when training day is over. Enjoy 3 months of unlimited
+                chat support, and the opportunity to submit models for in-depth feedback — so you
+                continue growing with expert guidance every step of the way.
               </p>
             </div>
           </div>
@@ -1051,15 +1195,15 @@ export default function InPersonTrainingPage() {
           </div>
 
           {/* No.2 - Framed Certificate of Completion */}
-          <div
-            className="col-start-10 col-span-3 row-start-1 rounded-2xl p-5 flex flex-col justify-between"
-            style={{ backgroundColor: '#ede5dc' }}
-          >
-            <span className="text-xs font-semibold leading-none select-none text-[#c4b0a4]">02</span>
-            <h3 className="text-[#3d3028] text-[0.95rem] font-semibold leading-snug">
-              Framed Certificate of Completion
-            </h3>
-          </div>
+          <PerkFlipCard
+            {...FLIP_PERKS.cert}
+            className="col-start-10 col-span-3 row-start-1"
+            frontBg="#ede5dc"
+            numberColor="text-[#c4b0a4]"
+            open={openPerk === 'cert'}
+            onOpen={() => setOpenPerk('cert')}
+            onClose={() => setOpenPerk(null)}
+          />
 
           {/* No.3 - 1 Year Online Theory Access */}
           <Link
@@ -1087,18 +1231,44 @@ export default function InPersonTrainingPage() {
           </div>
 
           {/* No.5 — Exclusive student discount codes */}
-          <div
-            className="col-start-4 col-span-4 row-start-3 rounded-2xl p-5 flex flex-col justify-between"
-            style={{ backgroundColor: '#e8ddd3' }}
-          >
-            <span className="text-xs font-semibold leading-none select-none text-[#c4b0a4]">05</span>
-            <h3 className="text-[#3d3028] text-base font-semibold leading-snug">
-              Exclusive student discount codes
-            </h3>
-          </div>
+          <PerkFlipCard
+            {...FLIP_PERKS.discounts}
+            className="col-start-4 col-span-4 row-start-3"
+            frontBg="#e8ddd3"
+            numberColor="text-[#c4b0a4]"
+            titleClassName="text-base"
+            open={openPerk === 'discounts'}
+            onOpen={() => setOpenPerk('discounts')}
+            onClose={() => setOpenPerk(null)}
+          />
+
+          {/* No.7 — Glam Up Your Grid e-book */}
+          <PerkFlipCard
+            {...FLIP_PERKS.ebook}
+            className="col-start-8 col-span-5 row-start-3"
+            frontBg="#ede5dc"
+            numberColor="text-[#c4b0a4]"
+            titleClassName="text-base"
+            open={openPerk === 'ebook'}
+            onOpen={() => setOpenPerk('ebook')}
+            onClose={() => setOpenPerk(null)}
+          />
+
+          {/* No.8 — Brow lamination masterclass */}
+          <PerkFlipCard
+            {...FLIP_PERKS.masterclass}
+            className="col-start-1 col-span-5 row-start-4"
+            frontClassName="border border-[#e3e2de] shadow-[0_2px_16px_rgba(130,112,100,0.10)]"
+            frontBg="#ffffff"
+            numberColor="text-[#d4ccc4]"
+            titleClassName="text-base"
+            open={openPerk === 'masterclass'}
+            onOpen={() => setOpenPerk('masterclass')}
+            onClose={() => setOpenPerk(null)}
+          />
 
           {/* perk-02 — Group photo */}
-          <div className="col-start-8 col-span-5 row-start-3 rounded-2xl overflow-hidden relative">
+          <div className="col-start-6 col-span-7 row-start-4 rounded-2xl overflow-hidden relative">
             <img
               src={perk02Img}
               alt="MJP Beauty in-person students"
@@ -1122,10 +1292,12 @@ export default function InPersonTrainingPage() {
             </div>
             <div>
               <h3 className="about-heading text-2xl sm:text-3xl font-semibold text-white leading-tight mb-3">
-                Three months of mentorship, direct from Micah.
+                Post-training mentorship.
               </h3>
               <p className="text-white/50 text-sm leading-relaxed">
-                Unlimited Instagram DM support and up to 5 model submissions for personalized feedback.
+                Your learning doesn't end when training day is over. Enjoy 3 months of unlimited
+                chat support, and the opportunity to submit models for in-depth feedback — so you
+                continue growing with expert guidance every step of the way.
               </p>
             </div>
           </div>
@@ -1212,15 +1384,15 @@ export default function InPersonTrainingPage() {
           </div>
 
           {/* No.2 */}
-          <div
-            className="rounded-2xl p-5 flex flex-col justify-between min-h-[150px] sm:col-span-1"
-            style={{ backgroundColor: '#ede5dc' }}
-          >
-            <span className="text-xs font-semibold leading-none select-none text-[#c4b0a4]">02</span>
-            <h3 className="text-[#3d3028] text-[0.95rem] font-semibold leading-snug">
-              Framed Certificate of Completion
-            </h3>
-          </div>
+          <PerkFlipCard
+            {...FLIP_PERKS.cert}
+            height="190px"
+            frontBg="#ede5dc"
+            numberColor="text-[#c4b0a4]"
+            open={openPerk === 'cert'}
+            onOpen={() => setOpenPerk('cert')}
+            onClose={() => setOpenPerk(null)}
+          />
 
           {/* No.3 */}
           <Link
@@ -1248,15 +1420,40 @@ export default function InPersonTrainingPage() {
           </div>
 
           {/* No.5 */}
-          <div
-            className="rounded-2xl p-5 flex flex-col justify-between min-h-[150px]"
-            style={{ backgroundColor: '#e8ddd3' }}
-          >
-            <span className="text-xs font-semibold leading-none select-none text-[#c4b0a4]">05</span>
-            <h3 className="text-[#3d3028] text-[0.95rem] font-semibold leading-snug">
-              Exclusive student discount codes
-            </h3>
-          </div>
+          <PerkFlipCard
+            {...FLIP_PERKS.discounts}
+            height="190px"
+            frontBg="#e8ddd3"
+            numberColor="text-[#c4b0a4]"
+            open={openPerk === 'discounts'}
+            onOpen={() => setOpenPerk('discounts')}
+            onClose={() => setOpenPerk(null)}
+          />
+
+          {/* No.7 */}
+          <PerkFlipCard
+            {...FLIP_PERKS.ebook}
+            className="col-span-2 sm:col-span-1"
+            height="190px"
+            frontBg="#ede5dc"
+            numberColor="text-[#c4b0a4]"
+            open={openPerk === 'ebook'}
+            onOpen={() => setOpenPerk('ebook')}
+            onClose={() => setOpenPerk(null)}
+          />
+
+          {/* No.8 */}
+          <PerkFlipCard
+            {...FLIP_PERKS.masterclass}
+            className="col-span-2 sm:col-span-1"
+            height="190px"
+            frontBg="#ffffff"
+            frontClassName="border border-[#e3e2de] shadow-[0_2px_16px_rgba(130,112,100,0.10)]"
+            numberColor="text-[#d4ccc4]"
+            open={openPerk === 'masterclass'}
+            onOpen={() => setOpenPerk('masterclass')}
+            onClose={() => setOpenPerk(null)}
+          />
 
           {/* perk-02 */}
           <div className="col-span-2 rounded-2xl overflow-hidden relative h-[220px]">
@@ -1273,7 +1470,7 @@ export default function InPersonTrainingPage() {
       </section>
 
       {/* ── Info Tabs ────────────────────────────────────────────── */}
-      <TrainingInfoTabs />
+      <TrainingInfoTabs sectionRef={infoTabsRef} active={infoTab} onChange={setInfoTab} />
 
       <BackToTop />
 

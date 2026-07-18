@@ -221,9 +221,8 @@ export default function FreebiesPage() {
         <p className="hero-eyebrow text-[10px] tracking-[0.35em] uppercase text-[#a0948a] mb-3">MJP Beauty</p>
         <h1 className="hero-heading text-3xl font-semibold text-[#3d3530] mb-3">Freebies for You</h1>
         <p className="hero-tagline text-sm text-[#6b5f58] max-w-md mx-auto leading-relaxed">
-          Take the guesswork out of your services with these powerful, pro-level resources.
-          Whether you're refining your technique or just starting out, these tools
-          are designed to elevate your artistry and client care.
+          Free educational resources for Artists ready to refine their skills, start and
+          grow their business, and continue learning.
         </p>
       </div>
 
