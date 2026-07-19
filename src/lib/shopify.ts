@@ -86,6 +86,36 @@ const COLLECTION_PRODUCTS_QUERY = `
   }
 `
 
+const PRODUCT_SEARCH_QUERY = `
+  query SearchProducts($query: String!, $first: Int!) {
+    products(first: $first, query: $query) {
+      edges {
+        node {
+          id
+          title
+          handle
+          description
+          featuredImage {
+            url
+            altText
+          }
+          variants(first: 1) {
+            edges {
+              node {
+                id
+                price {
+                  amount
+                  currencyCode
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`
+
 const CART_CREATE_MUTATION = `
   mutation CartCreate($variantId: ID!) {
     cartCreate(input: {
@@ -137,6 +167,36 @@ export async function getCollectionProducts(collectionHandle: string, first = 50
     if (errors || !data?.collection) return []
 
     return data.collection.products.edges.map(({ node }: { node: any }) => {
+      const variant = node.variants.edges[0]?.node
+      return {
+        id: node.id,
+        title: node.title,
+        handle: node.handle ?? '',
+        description: node.description ?? '',
+        descriptionHtml: '',
+        variantId: variant?.id ?? '',
+        price: variant?.price?.amount ?? '0',
+        currencyCode: variant?.price?.currencyCode ?? 'CAD',
+        featuredImage: node.featuredImage ?? null,
+        images: [],
+      }
+    })
+  } catch {
+    return []
+  }
+}
+
+export async function searchProducts(term: string, first = 6): Promise<ShopifyProduct[]> {
+  const cleaned = term.trim()
+  if (!cleaned) return []
+
+  try {
+    const { data, errors } = await shopifyClient.request(PRODUCT_SEARCH_QUERY, {
+      variables: { query: `${cleaned}*`, first },
+    })
+    if (errors || !data?.products) return []
+
+    return data.products.edges.map(({ node }: { node: any }) => {
       const variant = node.variants.edges[0]?.node
       return {
         id: node.id,

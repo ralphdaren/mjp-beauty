@@ -17,7 +17,8 @@ export default function ServiceRow({ service, index, onVideoOpen, onBook }: Serv
 
   return (
     <div
-      className="anim-fade-up flex flex-col md:flex-row md:items-center gap-6 md:gap-0 py-10 md:py-14"
+      id={service.id}
+      className="anim-fade-up flex flex-col md:flex-row md:items-center gap-6 md:gap-0 py-10 md:py-14 scroll-mt-28"
       style={{ transitionDelay: `${index * 120}ms` }}
     >
       {/* Image carousel */}

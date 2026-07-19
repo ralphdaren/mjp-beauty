@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { NavLink, Link, useLocation } from 'react-router-dom'
-import { Menu, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight, User, CalendarCheck, ShoppingCart } from 'lucide-react'
+import { Menu, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight, User, CalendarCheck, Search } from 'lucide-react'
 import logoBrown from '@/assets/brand-kit/logo-brown.png'
 import AnnouncementBar from '@/components/AnnouncementBar'
+import SearchOverlay from '@/components/SearchOverlay'
 
 const optImg01 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_500/v1783027940/opt-img-01_ufhoau.jpg'
 import { getCollectionProducts } from '@/lib/shopify'
@@ -48,6 +49,7 @@ export default function Navbar() {
   const [isHidden, setIsHidden] = useState(false)
   const [isAcademyOpen, setIsAcademyOpen] = useState(false)
   const [isMobileAcademyOpen, setIsMobileAcademyOpen] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [shopifyProducts, setShopifyProducts] = useState<ShopifyProduct[]>([])
   const [currentSlide, setCurrentSlide] = useState(0)
   const [mobileSlide, setMobileSlide] = useState(0)
@@ -135,8 +137,23 @@ export default function Navbar() {
     setIsAcademyOpen(false)
     setIsMobileAcademyOpen(false)
     setIsOpen(false)
+    setIsSearchOpen(false)
     setCurrentSlide(0)
   }, [location.pathname])
+
+  // ⌘K / Ctrl+K opens search from anywhere.
+  useEffect(() => {
+    const handleKeydown = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        setIsSearchOpen(true)
+        setIsOpen(false)
+        setIsAcademyOpen(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeydown)
+    return () => window.removeEventListener('keydown', handleKeydown)
+  }, [])
 
   useEffect(() => {
     if ((!isAcademyOpen && !isMobileAcademyOpen) || productsFetched.current || !COLLECTION_HANDLE) return
@@ -167,6 +184,7 @@ export default function Navbar() {
   )
 
   return (
+    <>
     <header
       ref={headerRef}
       style={{
@@ -198,13 +216,13 @@ export default function Navbar() {
             >
               <User size={22} />
             </a>
-            <a
-              href="#"
-              aria-label="Cart"
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              aria-label="Search"
               className="p-2 text-brand rounded-md active:opacity-60 transition-opacity duration-200"
             >
-              <ShoppingCart size={22} />
-            </a>
+              <Search size={22} />
+            </button>
             <button
               className="p-2 text-brand rounded-md"
               onClick={() => setIsOpen(!isOpen)}
@@ -282,15 +300,15 @@ export default function Navbar() {
             </div>
 
             <div className="relative group">
-              <a
-                href="#"
-                aria-label="Cart"
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                aria-label="Search"
                 className="flex items-center justify-center p-2 -m-2 text-brand hover:opacity-70 transition-opacity duration-200"
               >
-                <ShoppingCart size={22} />
-              </a>
+                <Search size={22} />
+              </button>
               <span className="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 rounded-md bg-[#3d3530] text-white text-xs whitespace-nowrap opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200">
-                Cart
+                Search
               </span>
             </div>
 
@@ -656,5 +674,10 @@ export default function Navbar() {
         </div>
       </div>
     </header>
+
+    {/* Rendered outside <header> — the header's transform would otherwise
+        become the containing block for the overlay's fixed positioning. */}
+    <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+    </>
   )
 }
