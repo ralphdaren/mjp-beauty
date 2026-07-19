@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, X, ChevronLeft, ChevronRight, Star } from 'lucide-react'
 import { getProductByHandle, createCheckoutUrl, formatPrice } from '@/lib/shopify'
@@ -46,6 +46,9 @@ function formatDate(iso: string): string {
   }
 }
 
+// Max thumbnails rendered at once; any beyond this collapse into a "+N" tile.
+const THUMBNAIL_LIMIT = 5
+
 export default function ProductDetailPage() {
   const { handle } = useParams<{ handle: string }>()
   const [product, setProduct] = useState<ShopifyProduct | null>(null)
@@ -88,6 +91,39 @@ export default function ProductDetailPage() {
 
   const handlePrev = () => setCurrentImageIndex(i => (i - 1 + images.length) % images.length)
   const handleNext = () => setCurrentImageIndex(i => (i + 1) % images.length)
+
+  // Live finger offset while swiping; the track follows the drag, then snaps on release.
+  const trackRef = useRef<HTMLDivElement>(null)
+  const swipeStartX = useRef(0)
+  const [dragOffset, setDragOffset] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    swipeStartX.current = e.touches[0].clientX
+    setIsDragging(true)
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (isDragging) setDragOffset(e.touches[0].clientX - swipeStartX.current)
+  }
+
+  const handleTouchEnd = () => {
+    const width = trackRef.current?.offsetWidth ?? 0
+    // A quarter of the frame is enough intent to advance; anything less snaps back.
+    if (width > 0 && Math.abs(dragOffset) > width / 4) {
+      dragOffset < 0 ? handleNext() : handlePrev()
+    }
+    setDragOffset(0)
+    setIsDragging(false)
+  }
+
+  // Slide the thumbnail window so the active image is always one of the visible tiles.
+  const thumbStart = Math.min(
+    Math.max(0, currentImageIndex - Math.floor(THUMBNAIL_LIMIT / 2)),
+    Math.max(0, images.length - THUMBNAIL_LIMIT),
+  )
+  const visibleThumbs = images.slice(thumbStart, thumbStart + THUMBNAIL_LIMIT)
+  const hiddenThumbCount = images.length - (thumbStart + visibleThumbs.length)
 
   const handleAddToCart = useCallback(async () => {
     if (!product?.variantId) return
@@ -194,15 +230,32 @@ export default function ProductDetailPage() {
         <div className="max-w-[1200px] mx-auto grid md:grid-cols-2 gap-12 items-start">
 
           {/* Image carousel */}
-          <div>
+          <div className="min-w-0">
             {images.length > 0 ? (
               <>
-                <div className="relative aspect-square bg-[#f6f2ec] rounded-xl overflow-hidden">
-                  <img
-                    src={images[currentImageIndex].url}
-                    alt={images[currentImageIndex].altText || product.title}
-                    className="w-full h-full object-contain"
-                  />
+                <div
+                  ref={trackRef}
+                  className="relative aspect-square bg-[#f6f2ec] rounded-xl overflow-hidden touch-pan-y"
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                >
+                  <div
+                    className={`flex h-full ${isDragging ? '' : 'transition-transform duration-500 ease-out'} motion-reduce:transition-none`}
+                    style={{ transform: `translateX(calc(${currentImageIndex * -100}% + ${dragOffset}px))` }}
+                  >
+                    {images.map((img, i) => (
+                      <img
+                        key={i}
+                        src={img.url}
+                        alt={img.altText || product.title}
+                        className="w-full h-full shrink-0 object-contain select-none pointer-events-none"
+                        loading={i === 0 ? 'eager' : 'lazy'}
+                        decoding="async"
+                        draggable={false}
+                      />
+                    ))}
+                  </div>
                   {images.length > 1 && (
                     <>
                       <button
@@ -241,15 +294,26 @@ export default function ProductDetailPage() {
                     </div>
 
                     <div className="flex gap-2 mt-4 overflow-x-auto pb-1">
-                      {images.map((img, i) => (
-                        <button
-                          key={i}
-                          onClick={() => setCurrentImageIndex(i)}
-                          className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${i === currentImageIndex ? 'border-[#3d3028]' : 'border-[#e3e2de]'}`}
-                        >
-                          <img src={img.url} alt={img.altText || product.title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
-                        </button>
-                      ))}
+                      {visibleThumbs.map((img, i) => {
+                        const index = thumbStart + i
+                        // The final tile stands in for every remaining image when the set is capped.
+                        const isOverflowTile = hiddenThumbCount > 0 && i === visibleThumbs.length - 1
+                        return (
+                          <button
+                            key={index}
+                            onClick={() => setCurrentImageIndex(index)}
+                            className={`relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${index === currentImageIndex ? 'border-[#3d3028]' : 'border-[#e3e2de]'}`}
+                            aria-label={isOverflowTile ? `Show ${hiddenThumbCount} more image${hiddenThumbCount !== 1 ? 's' : ''}` : `Image ${index + 1}`}
+                          >
+                            <img src={img.url} alt={img.altText || product.title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                            {isOverflowTile && (
+                              <span className="absolute inset-0 flex items-center justify-center bg-[#3d3028]/65 text-white text-xs font-medium">
+                                +{hiddenThumbCount}
+                              </span>
+                            )}
+                          </button>
+                        )
+                      })}
                     </div>
                   </>
                 )}
