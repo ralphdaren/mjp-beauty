@@ -95,22 +95,22 @@ export default function Home() {
 
             <div className="h-px w-full bg-black/10" />
 
-            <div className="flex flex-wrap gap-x-6 gap-y-5">
-              <div className="flex items-center gap-2.5">
-                <span className="text-2xl font-semibold text-[color:var(--foreground)]">8.5+</span>
-                <p className="m-0 text-[0.68rem] uppercase tracking-[0.16em] text-[color:var(--muted-foreground)]">
+            <div className="grid grid-cols-3 gap-x-3 sm:flex sm:flex-wrap sm:gap-x-6 sm:gap-y-5">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2.5">
+                <span className="text-xl font-semibold text-[color:var(--foreground)] sm:text-2xl">8.5+</span>
+                <p className="m-0 text-[0.6rem] uppercase tracking-[0.1em] text-[color:var(--muted-foreground)] sm:text-[0.68rem] sm:tracking-[0.16em]">
                   YEARS<br />EXPERIENCE
                 </p>
               </div>
-              <div className="flex items-center gap-2.5">
-                <span className="text-2xl font-semibold text-[color:var(--foreground)]">450+</span>
-                <p className="m-0 text-[0.68rem] uppercase tracking-[0.16em] text-[color:var(--muted-foreground)]">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2.5">
+                <span className="text-xl font-semibold text-[color:var(--foreground)] sm:text-2xl">450+</span>
+                <p className="m-0 text-[0.6rem] uppercase tracking-[0.1em] text-[color:var(--muted-foreground)] sm:text-[0.68rem] sm:tracking-[0.16em]">
                   STUDENTS<br />WORLDWIDE
                 </p>
               </div>
-              <div className="flex items-center gap-2.5">
-                <span className="text-2xl font-semibold text-[color:var(--foreground)]">4000+</span>
-                <p className="m-0 text-[0.68rem] uppercase tracking-[0.16em] text-[color:var(--muted-foreground)]">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2.5">
+                <span className="text-xl font-semibold text-[color:var(--foreground)] sm:text-2xl">4000+</span>
+                <p className="m-0 text-[0.6rem] uppercase tracking-[0.1em] text-[color:var(--muted-foreground)] sm:text-[0.68rem] sm:tracking-[0.16em]">
                   SERVICES<br />PERFORMED
                 </p>
               </div>

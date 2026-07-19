@@ -107,7 +107,12 @@ function ScrollColumn({ images, duration }: { images: string[]; duration: number
       }
     })
 
+    // A slow or stalled image must never leave the column frozen forever —
+    // start scrolling anyway once the bulk of the copy has had time to arrive.
+    const fallback = window.setTimeout(start, 3000)
+
     return () => {
+      window.clearTimeout(fallback)
       imgs.forEach(img => {
         img.removeEventListener('load', onDone)
         img.removeEventListener('error', onDone)
@@ -136,7 +141,11 @@ function ScrollColumn({ images, duration }: { images: string[]; duration: number
             alt="Student review"
             className="reviews-img"
             draggable={false}
-            loading="lazy"
+            // The first copy sets the column height the animation depends on, so
+            // it must load even though most of it sits outside the viewport.
+            // Copies 2-4 reuse the same URLs and come straight from cache.
+            loading={i < images.length ? 'eager' : 'lazy'}
+            fetchPriority={i < images.length ? 'low' : undefined}
             decoding="async"
           />
         ))}
