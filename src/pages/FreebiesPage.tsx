@@ -91,7 +91,7 @@ function NewsletterPopup({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{
         backgroundColor: visible ? 'rgba(0,0,0,0.55)' : 'rgba(0,0,0,0)',
         backdropFilter: visible ? 'blur(4px)' : 'blur(0px)',
@@ -100,7 +100,7 @@ function NewsletterPopup({ onClose }: { onClose: () => void }) {
       onClick={dismiss}
     >
       <div
-        className="relative bg-white rounded-[2rem] overflow-hidden w-full max-w-[680px] shadow-2xl flex flex-col sm:flex-row"
+        className="relative bg-white rounded-[1.5rem] sm:rounded-[2rem] overflow-y-auto overscroll-contain w-full max-w-[680px] max-h-[90dvh] shadow-2xl flex flex-col sm:flex-row"
         style={{
           opacity: visible ? 1 : 0,
           transform: visible ? 'translateY(0) scale(1)' : 'translateY(24px) scale(0.97)',
@@ -118,7 +118,7 @@ function NewsletterPopup({ onClose }: { onClose: () => void }) {
         </button>
 
         {/* Left — image */}
-        <div className="sm:w-[42%] shrink-0 aspect-[3/4] sm:aspect-auto overflow-hidden">
+        <div className="sm:w-[42%] shrink-0 h-40 sm:h-auto sm:aspect-auto overflow-hidden">
           <img
             src={freebieCard}
             alt="Freebies"
@@ -129,7 +129,7 @@ function NewsletterPopup({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Right — content */}
-        <div className="flex flex-col justify-center px-8 py-10 flex-1">
+        <div className="flex flex-col justify-center px-6 py-7 sm:px-8 sm:py-10 flex-1">
           <p className="text-[10px] tracking-[0.3em] uppercase text-[#a0948a] mb-3">MJP Beauty</p>
           <h2 className="text-xl font-semibold text-[#3d3530] leading-snug mb-3">
             Stay in the Know —<br />Never Miss a Freebie!
