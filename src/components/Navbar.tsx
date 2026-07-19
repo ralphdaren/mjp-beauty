@@ -47,8 +47,11 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
   const [isAcademyOpen, setIsAcademyOpen] = useState(false)
+  const [isMobileAcademyOpen, setIsMobileAcademyOpen] = useState(false)
   const [shopifyProducts, setShopifyProducts] = useState<ShopifyProduct[]>([])
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [mobileSlide, setMobileSlide] = useState(0)
+  const mobileTrackRef = useRef<HTMLDivElement>(null)
   const productsFetched = useRef(false)
   const prevScrollY = useRef(0)
   const headerRef = useRef<HTMLElement>(null)
@@ -80,6 +83,23 @@ export default function Navbar() {
     }, 280)
   }
   const location = useLocation()
+
+  const closeDrawer = () => {
+    setIsOpen(false)
+    setIsMobileAcademyOpen(false)
+  }
+
+  const handleMobileScroll = () => {
+    const el = mobileTrackRef.current
+    if (!el || el.clientWidth === 0) return
+    setMobileSlide(Math.round(el.scrollLeft / el.clientWidth))
+  }
+
+  const scrollToMobileSlide = (i: number) => {
+    const el = mobileTrackRef.current
+    if (!el) return
+    el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' })
+  }
 
   const isOnAcademyPage = location.pathname === '/online-brow-courses'
 
@@ -113,18 +133,26 @@ export default function Navbar() {
 
   useEffect(() => {
     setIsAcademyOpen(false)
+    setIsMobileAcademyOpen(false)
+    setIsOpen(false)
     setCurrentSlide(0)
   }, [location.pathname])
 
   useEffect(() => {
-    if (!isAcademyOpen || productsFetched.current || !COLLECTION_HANDLE) return
+    if ((!isAcademyOpen && !isMobileAcademyOpen) || productsFetched.current || !COLLECTION_HANDLE) return
     productsFetched.current = true
     getCollectionProducts(COLLECTION_HANDLE, 10).then(setShopifyProducts).catch(() => {})
-  }, [isAcademyOpen])
+  }, [isAcademyOpen, isMobileAcademyOpen])
 
   useEffect(() => {
     if (!isAcademyOpen) setCurrentSlide(0)
   }, [isAcademyOpen])
+
+  useEffect(() => {
+    if (isMobileAcademyOpen) return
+    if (mobileTrackRef.current) mobileTrackRef.current.scrollLeft = 0
+    setMobileSlide(0)
+  }, [isMobileAcademyOpen])
 
   const enrichedModules = singleModules.map(mod => {
     const handle = mod.to.split('/').pop() ?? ''
@@ -153,21 +181,39 @@ export default function Navbar() {
       {/* Promo announcement marquee — doubles as the top accent band */}
       <AnnouncementBar />
 
-      <nav className="max-w-[1800px] mx-auto px-16">
+      <nav className="max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-16">
 
         {/* ── Mobile header bar ─────────────────────────────────────────── */}
         <div className="lg:hidden h-16 flex items-center justify-between">
-          <NavLink to="/" className="shrink-0">
-            <img src={logoBrown} alt="MJP Beauty" className="h-12 w-auto" />
+          <NavLink to="/" className="shrink-0 -ml-1">
+            <img src={logoBrown} alt="MJP Beauty" className="h-10 sm:h-12 w-auto" />
           </NavLink>
-          <button
-            className="p-2 text-brand rounded-md"
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label="Toggle menu"
-            aria-expanded={isOpen}
-          >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="flex items-center gap-0.5 sm:gap-1 -mr-2">
+            <a
+              href="https://mjpbeautyacademy.thinkific.com/users/sign_in"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Student Login"
+              className="p-2 text-brand rounded-md active:opacity-60 transition-opacity duration-200"
+            >
+              <User size={22} />
+            </a>
+            <a
+              href="#"
+              aria-label="Cart"
+              className="p-2 text-brand rounded-md active:opacity-60 transition-opacity duration-200"
+            >
+              <ShoppingCart size={22} />
+            </a>
+            <button
+              className="p-2 text-brand rounded-md"
+              onClick={() => setIsOpen(!isOpen)}
+              aria-label="Toggle menu"
+              aria-expanded={isOpen}
+            >
+              {isOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
 
         {/* ── Desktop layout ────────────────────────────────────────────── */}
@@ -438,22 +484,19 @@ export default function Navbar() {
       <div
         className={[
           'lg:hidden overflow-hidden transition-all duration-300',
-          isOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0',
+          isOpen ? 'max-h-[calc(100dvh-6rem)] opacity-100' : 'max-h-0 opacity-0',
         ].join(' ')}
       >
-        <div className="bg-brand-light border-t border-brand-border px-6 pb-6 pt-4 flex flex-col gap-1">
+        <div className="bg-brand-light border-t border-brand-border px-4 sm:px-8 pb-6 pt-4 flex flex-col gap-1 max-h-[calc(100dvh-6rem)] overflow-y-auto overscroll-contain">
           {[
             { label: 'Home', to: '/', end: true },
             { label: 'In-Person Academy', to: '/in-person-training', end: false },
-            { label: 'Online Brow Academy', to: '/online-brow-courses', end: false },
-            { label: 'Freebies', to: '/freebies', end: false },
-            { label: 'BIZ Mentorship', to: '/biz-mentorship', end: false },
           ].map(({ label, to, end }) => (
             <NavLink
               key={to}
               to={to}
               end={end}
-              onClick={() => setIsOpen(false)}
+              onClick={closeDrawer}
               className={({ isActive }) =>
                 [
                   'text-sm tracking-wide py-3 border-b border-brand-border transition-colors duration-200',
@@ -464,31 +507,151 @@ export default function Navbar() {
               {label}
             </NavLink>
           ))}
+
+          {/* Online Brow Academy — collapsible section */}
+          <div className="border-b border-brand-border">
+            <button
+              onClick={() => setIsMobileAcademyOpen((prev) => !prev)}
+              aria-expanded={isMobileAcademyOpen}
+              className={[
+                'w-full flex items-center justify-between gap-2 text-sm tracking-wide py-3 text-left transition-colors duration-200',
+                isMobileAcademyOpen || isOnAcademyPage ? 'text-brand font-medium' : 'text-[#5a5047]',
+              ].join(' ')}
+            >
+              Online Brow Academy
+              <ChevronDown
+                size={16}
+                className={`shrink-0 transition-transform duration-300 ${isMobileAcademyOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+
+            <div
+              className={[
+                'overflow-hidden transition-all duration-300 ease-in-out',
+                isMobileAcademyOpen ? 'max-h-[1400px] opacity-100' : 'max-h-0 opacity-0',
+              ].join(' ')}
+            >
+              <div className="pb-4 flex flex-col gap-4">
+                {/* Featured course card */}
+                <NavLink
+                  to={featuredCourse.to}
+                  onClick={closeDrawer}
+                  className="flex gap-3 items-stretch rounded-xl overflow-hidden border border-brand-border bg-white"
+                >
+                  <div className="relative w-24 shrink-0 overflow-hidden">
+                    <img
+                      src={featuredCourse.img}
+                      alt={featuredCourse.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  <div className="py-3 pr-3 flex flex-col gap-1 min-w-0">
+                    <p className="text-[0.55rem] tracking-[0.18em] uppercase text-[#a0948a]">
+                      {featuredCourse.imgLabel}
+                    </p>
+                    <h3 className="font-semibold text-[#3d3028] text-sm leading-snug">{featuredCourse.title}</h3>
+                    <p className="text-[0.7rem] tracking-[0.18em] uppercase text-brand flex items-center gap-1.5 mt-0.5">
+                      Explore <ArrowRight size={11} />
+                    </p>
+                  </div>
+                </NavLink>
+
+                {/* Single courses */}
+                <div>
+                  <p className="text-[0.6rem] tracking-[0.28em] uppercase text-[#3d3028] font-medium mb-3">
+                    Single Courses
+                  </p>
+                  {/* Swipeable pages of 2 — mirrors the desktop carousel */}
+                  <div
+                    ref={mobileTrackRef}
+                    onScroll={handleMobileScroll}
+                    className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                  >
+                    {Array.from({ length: totalSlides }).map((_, page) => (
+                      <div key={page} className="w-full shrink-0 snap-start grid grid-cols-2 gap-3">
+                        {enrichedModules
+                          .slice(page * ITEMS_PER_SLIDE, (page + 1) * ITEMS_PER_SLIDE)
+                          .map((mod) => (
+                            <Link key={mod.num} to={mod.to} onClick={closeDrawer} className="flex flex-col">
+                              <div className="rounded-lg overflow-hidden bg-[#f6f2ec] aspect-square mb-2">
+                                {mod.image ? (
+                                  <img
+                                    src={mod.image.url}
+                                    alt={mod.image.altText || mod.name}
+                                    className="w-full h-full object-contain"
+                                    loading="lazy"
+                                    decoding="async"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full" />
+                                )}
+                              </div>
+                              <div className="flex items-baseline gap-1.5">
+                                <span className="text-[0.55rem] text-[#c4b8b0] font-light shrink-0">{mod.num}</span>
+                                <span className="text-[0.72rem] text-[#3d3028] leading-snug">{mod.name}</span>
+                              </div>
+                            </Link>
+                          ))}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Dot nav — tappable, and reflects swipe position */}
+                  <div className="flex items-center justify-center gap-1.5 mt-3">
+                    {Array.from({ length: totalSlides }).map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => scrollToMobileSlide(i)}
+                        aria-label={`Slide ${i + 1}`}
+                        className={`rounded-full transition-all duration-300 ${
+                          i === mobileSlide ? 'w-5 h-1.5 bg-brand' : 'w-1.5 h-1.5 bg-[#c4b8b0]'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <NavLink
+                  to="/online-modules"
+                  onClick={closeDrawer}
+                  className="self-start flex items-center gap-1.5 px-4 py-2 text-[0.7rem] tracking-[0.12em] uppercase rounded-full border border-brand text-brand hover:bg-brand hover:text-white active:bg-brand active:text-white transition-colors duration-200"
+                >
+                  Browse Courses <ArrowRight size={12} />
+                </NavLink>
+              </div>
+            </div>
+          </div>
+
+          {[
+            { label: 'Freebies', to: '/freebies', end: false },
+            { label: 'BIZ Mentorship', to: '/biz-mentorship', end: false },
+          ].map(({ label, to, end }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              onClick={closeDrawer}
+              className={({ isActive }) =>
+                [
+                  'text-sm tracking-wide py-3 border-b border-brand-border transition-colors duration-200',
+                  isActive ? 'text-brand font-medium' : 'text-[#5a5047] hover:text-brand',
+                ].join(' ')
+              }
+            >
+              {label}
+            </NavLink>
+          ))}
+
           <div className="flex flex-col gap-3 mt-4">
             <NavLink
               to="/book-appointment"
-              onClick={() => setIsOpen(false)}
+              onClick={closeDrawer}
               className="px-5 py-2.5 text-sm tracking-wide rounded-full text-white bg-brand text-center hover:opacity-90 transition-opacity duration-200"
             >
               Book an Appointment
             </NavLink>
-            <a
-              href="https://mjpbeautyacademy.thinkific.com/users/sign_in"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setIsOpen(false)}
-              className="px-5 py-2.5 text-sm tracking-wide rounded-full text-brand border border-brand text-center hover:bg-brand hover:text-white transition-colors duration-200"
-            >
-              Student Login
-            </a>
-            <a
-              href="#"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm tracking-wide rounded-full text-brand border border-brand text-center hover:bg-brand hover:text-white transition-colors duration-200"
-            >
-              <ShoppingCart size={16} />
-              Cart
-            </a>
           </div>
         </div>
       </div>
