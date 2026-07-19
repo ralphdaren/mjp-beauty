@@ -747,9 +747,48 @@ export default function InPersonTrainingPage() {
           </div>
         </div>
 
-        {/* Image strips */}
+        {/* Mobile: stacked cards, all content always visible (no hover) */}
+        <div className="md:hidden flex flex-col">
+          {formatItems.map((item, i) => (
+            <div key={i} className="relative w-full">
+              <div className="relative h-64 overflow-hidden">
+                <img
+                  src={item.img}
+                  alt={item.alt}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background:
+                      'linear-gradient(to top, rgba(20,10,5,0.82) 0%, rgba(20,10,5,0.12) 55%, transparent 100%)',
+                  }}
+                />
+                <div className="absolute inset-x-0 bottom-0 px-6 pb-5 flex items-end gap-3">
+                  <span className="text-[2.5rem] font-semibold leading-none select-none text-white/30">
+                    {item.step}
+                  </span>
+                  <h3 className="text-lg font-semibold text-white leading-snug pb-1">
+                    {item.title}
+                  </h3>
+                </div>
+              </div>
+              <div className="bg-[#f6f2ec] px-6 py-7 flex flex-col gap-3">
+                {item.paragraphs.map((para, j) => (
+                  <p key={j} className="text-[#5a5047] text-base leading-relaxed">
+                    {para}
+                  </p>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop: hover-to-expand image strips */}
         <div
-          className="flex w-full overflow-hidden"
+          className="hidden md:flex w-full overflow-hidden"
           style={{ height: '680px' }}
           onMouseLeave={() => setHoveredFormat(null)}
         >
@@ -1048,18 +1087,18 @@ export default function InPersonTrainingPage() {
           style={{ transitionDelay: '0.3s' }}
         >
           {/* Two-column: Deposit | Balance */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-10 justify-items-center">
+          <div className="grid grid-cols-2 gap-5 sm:gap-10 justify-items-center">
 
-            <div>
-              <p className="text-[#3d3028] text-lg font-semibold leading-snug mb-1.5">$500 Deposit</p>
-              <p className="text-[#5a5047] text-sm leading-relaxed">
+            <div className="text-center sm:text-left">
+              <p className="text-[#3d3028] text-base sm:text-lg font-semibold leading-snug mb-1.5">$500 Deposit</p>
+              <p className="text-[#5a5047] text-[0.8rem] sm:text-sm leading-relaxed">
                 To secure your spot &amp; gain instant access to online modules
               </p>
             </div>
 
-            <div>
-              <p className="text-[#3d3028] text-lg font-semibold leading-snug mb-1.5">Remaining Balance</p>
-              <p className="text-[#5a5047] text-sm leading-relaxed">
+            <div className="text-center sm:text-left">
+              <p className="text-[#3d3028] text-base sm:text-lg font-semibold leading-snug mb-1.5">Remaining Balance</p>
+              <p className="text-[#5a5047] text-[0.8rem] sm:text-sm leading-relaxed">
                 Must be submitted two weeks before your training day
               </p>
             </div>
