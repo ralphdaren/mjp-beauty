@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, X, ChevronLeft, ChevronRight, Star } from 'lucide-react'
+import { ArrowLeft, X, ChevronLeft, ChevronRight, Star, Lock } from 'lucide-react'
 import { getProductByHandle, createCheckoutUrl, formatPrice } from '@/lib/shopify'
 import type { ShopifyProduct } from '@/lib/shopify'
 import { getProductReviews, submitReview } from '@/lib/judgeme'
@@ -54,7 +54,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<ShopifyProduct | null>(null)
   const [loading, setLoading] = useState(true)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [addingToCart, setAddingToCart] = useState(false)
+  const [checkingOut, setCheckingOut] = useState(false)
   const [reviews, setReviews] = useState<JudgeMeReview[]>([])
 
   // Review list state
@@ -125,14 +125,14 @@ export default function ProductDetailPage() {
   const visibleThumbs = images.slice(thumbStart, thumbStart + THUMBNAIL_LIMIT)
   const hiddenThumbCount = images.length - (thumbStart + visibleThumbs.length)
 
-  const handleAddToCart = useCallback(async () => {
+  const handleCheckout = useCallback(async () => {
     if (!product?.variantId) return
-    setAddingToCart(true)
+    setCheckingOut(true)
     try {
       const url = await createCheckoutUrl(product.variantId)
       if (url) window.location.href = url
     } finally {
-      setAddingToCart(false)
+      setCheckingOut(false)
     }
   }, [product])
 
@@ -354,11 +354,12 @@ export default function ProductDetailPage() {
             ) : null}
 
             <button
-              onClick={handleAddToCart}
-              disabled={addingToCart}
-              className="w-full py-3.5 rounded-lg bg-[#3d3028] text-white text-xs uppercase tracking-[0.2em] font-medium hover:bg-[#2a1a0e] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleCheckout}
+              disabled={checkingOut}
+              className="w-full py-3.5 rounded-lg bg-[#3d3028] text-white text-xs uppercase tracking-[0.2em] font-medium hover:bg-[#2a1a0e] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
             >
-              {addingToCart ? 'Processing…' : 'Add to Cart'}
+              <Lock size={13} />
+              {checkingOut ? 'Processing…' : 'Checkout'}
             </button>
           </div>
 
