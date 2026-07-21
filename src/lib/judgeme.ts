@@ -18,6 +18,8 @@ export type ReviewSubmission = {
   rating: number
   title: string
   body: string
+  // Decoy field — only a bot fills it in. See the hidden input in the review forms.
+  honeypot?: string
 }
 
 export async function getAllPublishedReviews(): Promise<JudgeMeReview[]> {
@@ -65,6 +67,7 @@ export async function submitReview(
         rating: submission.rating,
         title: submission.title,
         body: submission.body,
+        honeypot: submission.honeypot ?? '',
       }),
     })
     if (!res.ok) {

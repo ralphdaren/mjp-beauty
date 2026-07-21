@@ -38,7 +38,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'POST') {
     if (!(await enforceRateLimit(req, res, judgemeWriteLimiter))) return
-    const { id, email, name, rating, title, body } = (req.body ?? {}) as Record<string, unknown>
+    const { id, email, name, rating, title, body, honeypot } = (req.body ?? {}) as Record<string, unknown>
+
+    // A real visitor never sees the decoy field, so anything in it means a bot.
+    // Answer with a plausible success so it doesn't retry or adapt.
+    if (honeypot) {
+      return res.status(200).json({ message: 'Review submitted' })
+    }
+
     if (!isValidEmail(email) || !isNonEmptyString(name, 200) || !isNonEmptyString(body, 5000)) {
       return res.status(400).json({ message: 'Missing or invalid required fields: id, email, name, rating, body' })
     }

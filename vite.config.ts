@@ -51,7 +51,14 @@ function judgemeDevPlugin(env: Record<string, string>): Plugin {
           ;(async () => {
             try {
               const payload = JSON.parse(raw) as Record<string, unknown>
-              const { id, email, name, rating, title, body } = payload
+              const { id, email, name, rating, title, body, honeypot } = payload
+
+              // Mirrors the production handler: bots get a plausible success.
+              if (honeypot) {
+                res.writeHead(200, { 'Content-Type': 'application/json' })
+                res.end(JSON.stringify({ message: 'Review submitted' }))
+                return
+              }
 
               if (!id || !email || !name || !rating || !body) {
                 res.writeHead(400, { 'Content-Type': 'application/json' })

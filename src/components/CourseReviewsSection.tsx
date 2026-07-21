@@ -49,7 +49,7 @@ function formatDate(iso: string): string {
 const inputClass =
   'w-full px-4 py-2.5 rounded-lg border border-[#e3e2de] bg-white text-sm text-[#3d3028] placeholder:text-[#c4b8b0] focus:outline-none focus:border-[#827064] transition-colors'
 
-const emptyForm = { name: '', email: '', title: '', body: '', rating: 0 }
+const emptyForm = { name: '', email: '', title: '', body: '', rating: 0, honeypot: '' }
 
 export default function CourseReviewsSection({
   products,
@@ -123,6 +123,7 @@ export default function CourseReviewsSection({
       rating: form.rating,
       title: form.title,
       body: form.body,
+      honeypot: form.honeypot,
     })
     setSubmitting(false)
     setSubmitResult(result)
@@ -368,6 +369,24 @@ export default function CourseReviewsSection({
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                  {/* Honeypot — off-screen and skipped by keyboard and screen
+                      readers, so only a bot ever fills it in. */}
+                  <div
+                    style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}
+                    aria-hidden="true"
+                  >
+                    <label htmlFor="review-website">Website</label>
+                    <input
+                      type="text"
+                      id="review-website"
+                      name="website"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={form.honeypot}
+                      onChange={e => setForm(f => ({ ...f, honeypot: e.target.value }))}
+                    />
+                  </div>
+
                   {/* Which course */}
                   <div>
                     <label className="text-xs font-medium text-[#6b5f58] tracking-wide block mb-2">

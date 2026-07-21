@@ -63,7 +63,7 @@ export default function ProductDetailPage() {
 
   // Modal state
   const [showModal, setShowModal] = useState(false)
-  const [form, setForm] = useState({ name: '', email: '', rating: 0, title: '', body: '' })
+  const [form, setForm] = useState({ name: '', email: '', rating: 0, title: '', body: '', honeypot: '' })
   const [hoverRating, setHoverRating] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [submitResult, setSubmitResult] = useState<{ ok: boolean; message: string } | null>(null)
@@ -161,7 +161,7 @@ export default function ProductDetailPage() {
 
   const openModal = () => {
     setSubmitResult(null)
-    setForm({ name: '', email: '', rating: 0, title: '', body: '' })
+    setForm({ name: '', email: '', rating: 0, title: '', body: '', honeypot: '' })
     setHoverRating(0)
     setShowModal(true)
   }
@@ -183,6 +183,7 @@ export default function ProductDetailPage() {
       rating: form.rating,
       title: form.title.trim(),
       body: form.body.trim(),
+      honeypot: form.honeypot,
     })
     setSubmitting(false)
     setSubmitResult(result)
@@ -565,6 +566,24 @@ export default function ProductDetailPage() {
               ) : (
                 /* Review form */
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                  {/* Honeypot — off-screen and skipped by keyboard and screen
+                      readers, so only a bot ever fills it in. */}
+                  <div
+                    style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}
+                    aria-hidden="true"
+                  >
+                    <label htmlFor="product-review-website">Website</label>
+                    <input
+                      type="text"
+                      id="product-review-website"
+                      name="website"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={form.honeypot}
+                      onChange={e => setForm(f => ({ ...f, honeypot: e.target.value }))}
+                    />
+                  </div>
+
                   {/* Star rating picker */}
                   <div>
                     <label className="text-xs font-medium text-[#6b5f58] tracking-wide block mb-2">
