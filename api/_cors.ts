@@ -5,6 +5,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
 const ALLOWED_ORIGINS = [
+  'https://mjpbeauty.com',
+  'https://www.mjpbeauty.com',
   'https://mjp-beauty-ralph-daren-s-projects.vercel.app',
   'http://localhost:5173',
   'http://localhost:4173',

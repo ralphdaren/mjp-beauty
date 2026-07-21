@@ -4,18 +4,38 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
-function judgemeSubmitDevPlugin(env: Record<string, string>): Plugin {
+// Dev stand-in for the /api/judgeme Vercel function — same path, so the app
+// code is identical in dev and production.
+function judgemeDevPlugin(env: Record<string, string>): Plugin {
   return {
-    name: 'judgeme-submit-dev',
+    name: 'judgeme-dev',
     configureServer(server) {
-      server.middlewares.use('/api/judgeme-submit', (req, res) => {
+      server.middlewares.use('/api/judgeme', (req, res) => {
         if (req.method === 'OPTIONS') {
           res.writeHead(204, {
             'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type',
           })
           res.end()
+          return
+        }
+
+        if (req.method === 'GET') {
+          ;(async () => {
+            try {
+              const upstream = await fetch(
+                `https://api.judge.me/api/v1/reviews?shop_domain=${env.VITE_JUDGEME_SHOP_DOMAIN}&per_page=200`,
+                { headers: { 'X-Api-Token': env.JUDGEME_PRIVATE_TOKEN ?? '' } },
+              )
+              const data = await upstream.json()
+              res.writeHead(upstream.status, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify(data))
+            } catch {
+              res.writeHead(500, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify({ reviews: [] }))
+            }
+          })()
           return
         }
 
@@ -78,22 +98,10 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
-    plugins: [react(), tailwindcss(), judgemeSubmitDevPlugin(env)],
+    plugins: [react(), tailwindcss(), judgemeDevPlugin(env)],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
-      },
-    },
-    server: {
-      proxy: {
-        '/api/judgeme-reviews': {
-          target: 'https://api.judge.me',
-          changeOrigin: true,
-          rewrite: () => `/api/v1/reviews?shop_domain=${env.VITE_JUDGEME_SHOP_DOMAIN}&per_page=200`,
-          headers: {
-            'X-Api-Token': env.JUDGEME_PRIVATE_TOKEN ?? '',
-          },
-        },
       },
     },
   }

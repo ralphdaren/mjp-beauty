@@ -39,8 +39,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
     if (!(await enforceRateLimit(req, res, judgemeWriteLimiter))) return
     const { id, email, name, rating, title, body } = (req.body ?? {}) as Record<string, unknown>
-    if (!isNonEmptyString(id, 100) || !isValidEmail(email) || !isNonEmptyString(name, 200) || !isNonEmptyString(body, 5000)) {
+    if (!isValidEmail(email) || !isNonEmptyString(name, 200) || !isNonEmptyString(body, 5000)) {
       return res.status(400).json({ message: 'Missing or invalid required fields: id, email, name, rating, body' })
+    }
+    // Judge.me keys reviews by the numeric Shopify product id, which the client
+    // parses out of the product gid — so it arrives as a number, not a string.
+    const idNum = Number(id)
+    if (!Number.isInteger(idNum) || idNum <= 0) {
+      return res.status(400).json({ message: 'id must be a positive integer product id' })
     }
     const ratingNum = Number(rating)
     if (!Number.isInteger(ratingNum) || ratingNum < 1 || ratingNum > 5) {
@@ -53,7 +59,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const upstream = await fetch('https://api.judge.me/api/v1/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Api-Token': API_TOKEN },
-        body: JSON.stringify({ shop_domain: SHOP_DOMAIN, platform: 'shopify', id, email, name, rating, title, body }),
+        body: JSON.stringify({ shop_domain: SHOP_DOMAIN, platform: 'shopify', id: idNum, email, name, rating: ratingNum, title, body }),
       })
       const data = await upstream.json()
       return res.status(upstream.status).json(data)

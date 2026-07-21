@@ -5,6 +5,7 @@ import { HelpCircle } from 'lucide-react'
 import { useScrollAnimation } from '@/hooks/useScrollAnimation'
 import BackToTop from '@/components/BackToTop'
 import Accordion from '@/components/Accordion'
+import CourseReviewsSection from '@/components/CourseReviewsSection'
 import { getProductByHandle, createCheckoutUrl, formatPrice } from '@/lib/shopify'
 import type { ShopifyProduct } from '@/lib/shopify'
 const olHeadImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_1600/v1783027948/ol-head_xivqpl.jpg'
@@ -908,6 +909,8 @@ export default function OnlineBrowAcademyPage() {
           </div>
         </div>
       </section>
+
+      <CourseReviewsSection products={shopifyProducts} />
 
       <OnlineFaqSection />
 
