@@ -7,9 +7,21 @@ export interface TrainingDetails {
   lastName: string
   email: string
   phone: string
+  /** Where the student lives — surfaced in the admin dashboard so Micah can
+   *  confirm the students local to each training city. */
+  city: string
+  /** Two-letter province/territory code, e.g. 'MB'. */
+  province: string
 }
 
-const EMPTY_DETAILS: TrainingDetails = { firstName: '', lastName: '', email: '', phone: '' }
+const EMPTY_DETAILS: TrainingDetails = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  city: '',
+  province: '',
+}
 
 export function useTrainingBookingState() {
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -84,7 +96,9 @@ export function useTrainingBookingState() {
       firstName: details.firstName.trim(),
       lastName: details.lastName.trim(),
       email: details.email.trim(),
-      phone: details.phone.trim() || undefined,
+      phone: details.phone.trim(),
+      city: details.city.trim(),
+      province: details.province,
       honeypot: honeypot || undefined,
     })
     setSubmitting(false)

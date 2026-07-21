@@ -83,7 +83,7 @@ export default function DrawerStep4({
       <div className="flex items-start gap-2.5 bg-[#fdf8f3] border border-[#e8ddd4] rounded-xl px-4 py-3 mb-5">
         <Clock size={15} className="text-[#a58a72] shrink-0 mt-0.5" />
         <p className="text-[11px] text-[#6b5f58] leading-relaxed">
-          We'll hold your spot for <span className="font-medium text-[#3d3530]">72 hours</span>. Micah will reach out with your invoice and deposit instructions to lock it in. If the deposit isn't received in time, the spot is released.
+          We'll hold your spot for <span className="font-medium text-[#3d3530]">48 hours</span>. Micah will reach out with your invoice and deposit instructions to lock it in. If the deposit isn't received in time, the spot is released.
         </p>
       </div>
 

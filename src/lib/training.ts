@@ -52,7 +52,9 @@ export interface CreateTrainingHoldPayload {
   firstName: string
   lastName?: string
   email: string
-  phone?: string
+  phone: string
+  city: string
+  province: string
   honeypot?: string
 }
 

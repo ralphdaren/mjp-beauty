@@ -1,5 +1,8 @@
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, ChevronDown } from 'lucide-react'
 import type { TrainingDetails } from '../../../hooks/useTrainingBookingState'
+import { isValidPhone } from '../../../lib/phone'
+import { PROVINCES } from '../../../data/provinces'
+import PhoneInput from '../../PhoneInput'
 
 interface DrawerStep3Props {
   details: TrainingDetails
@@ -13,6 +16,10 @@ interface DrawerStep3Props {
 const inputCls =
   'w-full px-3 py-2.5 rounded-lg border border-[#e3e2de] text-sm text-[#3d3530] placeholder:text-[#c0b4ac] focus:outline-none focus:border-[#827064] bg-white transition-colors'
 const labelCls = 'block text-[10px] font-semibold uppercase tracking-[0.15em] text-[#a0948a] mb-1.5'
+// Padding spelled out rather than reusing inputCls — the native select arrow is
+// replaced by a positioned ChevronDown, so the right side needs room for it.
+const selectCls =
+  'w-full pl-3 pr-9 py-2.5 rounded-lg border border-[#e3e2de] text-sm focus:outline-none focus:border-[#827064] bg-white transition-colors appearance-none cursor-pointer'
 
 export default function DrawerStep3({
   details,
@@ -22,7 +29,12 @@ export default function DrawerStep3({
   onBack,
   onContinue,
 }: DrawerStep3Props) {
-  const canContinue = details.firstName.trim() !== '' && details.email.trim().includes('@')
+  const canContinue =
+    details.firstName.trim() !== '' &&
+    details.email.trim().includes('@') &&
+    isValidPhone(details.phone) &&
+    details.city.trim() !== '' &&
+    details.province !== ''
 
   return (
     <div>
@@ -87,17 +99,45 @@ export default function DrawerStep3({
         />
       </div>
 
-      <div className="mb-6">
-        <label className={labelCls}>
-          Phone <span className="text-[#c0b4ac] normal-case tracking-normal">(optional)</span>
-        </label>
-        <input
-          type="tel"
-          value={details.phone}
-          onChange={(e) => onUpdateDetails({ phone: e.target.value })}
-          placeholder="Phone Number"
-          className={inputCls}
-        />
+      <div className="mb-4">
+        <PhoneInput value={details.phone} onChange={(phone) => onUpdateDetails({ phone })} />
+      </div>
+
+      {/* Location — lets Micah see which students are local to the training city */}
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        <div>
+          <label className={labelCls}>City</label>
+          <input
+            type="text"
+            value={details.city}
+            onChange={(e) => onUpdateDetails({ city: e.target.value })}
+            placeholder="Winnipeg"
+            className={inputCls}
+          />
+        </div>
+        <div>
+          <label className={labelCls}>Province</label>
+          <div className="relative">
+            <select
+              value={details.province}
+              onChange={(e) => onUpdateDetails({ province: e.target.value })}
+              className={`${selectCls} ${details.province === '' ? 'text-[#c0b4ac]' : 'text-[#3d3530]'}`}
+            >
+              <option value="" disabled>
+                Select
+              </option>
+              {PROVINCES.map((p) => (
+                <option key={p.code} value={p.code} className="text-[#3d3530]">
+                  {p.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              size={13}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#a0948a] pointer-events-none"
+            />
+          </div>
+        </div>
       </div>
 
       <button

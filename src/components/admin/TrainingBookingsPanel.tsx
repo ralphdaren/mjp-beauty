@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, MapPin } from 'lucide-react'
 
 type EffectiveStatus = 'hold' | 'confirmed' | 'cancelled' | 'expired'
 
@@ -12,6 +12,9 @@ interface TrainingBooking {
   last_name: string
   email: string
   phone: string | null
+  /** Where the student lives — not where the training is held. */
+  city: string | null
+  province: string | null
   expires_at: string
   created_at: string
   training_dates: { option: 'group' | 'private'; starts_at: string; location: string } | null
@@ -142,6 +145,12 @@ export default function TrainingBookingsPanel({ token }: { token: string }) {
                   <p className="text-sm font-semibold text-[#3d3530]">{b.first_name} {b.last_name}</p>
                   <p className="text-xs text-[#6b5f58] break-all">{b.email}</p>
                   {b.phone && <p className="text-xs text-[#a0948a]">{b.phone}</p>}
+                  {b.city && (
+                    <p className="text-xs text-[#6b5f58] flex items-center gap-1 mt-0.5">
+                      <MapPin size={11} className="shrink-0 text-[#a0948a]" />
+                      {b.province ? `${b.city}, ${b.province}` : b.city}
+                    </p>
+                  )}
                 </div>
                 <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-[0.08em] shrink-0 ${s.bg} ${s.text}`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />

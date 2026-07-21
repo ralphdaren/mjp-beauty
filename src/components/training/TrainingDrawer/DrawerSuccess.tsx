@@ -18,11 +18,11 @@ export default function DrawerSuccess({ firstName, selectedOption, selectedDate,
       </div>
       <div className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-600 text-[10px] uppercase tracking-[0.15em] font-medium px-3 py-1 rounded-full mb-3">
         <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-        Spot Held — 72 Hours
+        Spot Held — 48 Hours
       </div>
       <h2 className="text-xl font-semibold text-[#3d3530] mb-2">You're on the list!</h2>
       <p className="text-sm text-[#6b5f58] leading-relaxed mb-8">
-        Hey {firstName}, your spot is reserved for 72 hours. Micah will reach out with your invoice and deposit
+        Hey {firstName}, your spot is reserved for 48 hours. Micah will reach out with your invoice and deposit
         instructions to lock it in.
       </p>
 
