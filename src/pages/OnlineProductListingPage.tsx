@@ -156,7 +156,7 @@ export default function OnlineModulesPage() {
                         <span className="text-xs text-[#5a5047] ml-1">CAD</span>
                       </div>
                       {reviewSummaries[selectedTrack.handle] && (
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 shrink-0 whitespace-nowrap">
                           <Star size={11} fill="#3d3028" stroke="#3d3028" />
                           <span className="text-xs text-[#3d3028] font-medium leading-none">
                             {reviewSummaries[selectedTrack.handle].avg.toFixed(1)}
@@ -226,7 +226,7 @@ export default function OnlineModulesPage() {
                   <div className="px-4 pb-4 flex flex-col flex-1">
                     <div className="mt-auto">
                       <div className="h-px bg-[#e3e2de] mb-3" />
-                      <div className="flex items-center justify-between mb-3">
+                      <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between mb-3">
                         <div className="flex items-baseline gap-1">
                           <span className="text-xl font-semibold text-[#3d3028] leading-none">
                             {formatPrice(product.price)}
@@ -234,12 +234,12 @@ export default function OnlineModulesPage() {
                           <span className="text-xs text-[#5a5047] ml-1">CAD</span>
                         </div>
                         {reviewSummaries[product.handle] && (
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1 shrink-0 whitespace-nowrap">
                             <Star size={11} fill="#3d3028" stroke="#3d3028" />
-                            <span className="text-xs text-[#3d3028] font-medium leading-none">
+                            <span className="text-[0.7rem] sm:text-xs text-[#3d3028] font-medium leading-none">
                               {reviewSummaries[product.handle].avg.toFixed(1)}
                             </span>
-                            <span className="text-xs text-[#a0948a] leading-none">
+                            <span className="text-[0.7rem] sm:text-xs text-[#a0948a] leading-none">
                               ({reviewSummaries[product.handle].count} reviews)
                             </span>
                           </div>
