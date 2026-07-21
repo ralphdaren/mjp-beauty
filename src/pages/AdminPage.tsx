@@ -426,19 +426,19 @@ export default function AdminPage() {
       </div>
 
       {/* Tabs */}
-      <div className="px-6 pt-5 pb-3 flex gap-1 max-w-5xl mx-auto">
+      <div className="px-3 sm:px-6 pt-5 pb-3 flex gap-1 max-w-5xl mx-auto">
         {(['pending', 'accepted', 'declined', 'cancelled'] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 rounded-full text-xs font-medium transition-colors capitalize flex items-center gap-1.5 ${
+            className={`px-2 sm:px-4 py-2 rounded-full text-[11px] sm:text-xs font-medium transition-colors capitalize flex items-center gap-1 sm:gap-1.5 whitespace-nowrap ${
               tab === t
                 ? 'bg-[#3d3530] text-white'
                 : 'bg-white text-[#6b5f58] hover:bg-[#ede9e3]'
             }`}
           >
             {t}
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${tab === t ? 'bg-white/20' : 'bg-[#f6f2ec]'}`}>
+            <span className={`text-[9px] sm:text-[10px] px-[3px] sm:px-1.5 py-0.5 rounded-full ${tab === t ? 'bg-white/20' : 'bg-[#f6f2ec]'}`}>
               {tabCount(t)}
             </span>
           </button>
