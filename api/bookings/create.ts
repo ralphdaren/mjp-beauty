@@ -133,7 +133,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 <li><strong>Service:</strong> ${safeServiceName} — ${safeTierLabel}</li>
                 <li><strong>Appointment:</strong> ${appointmentDate}</li>
               </ul>
-              <p>Log in to your admin dashboard to accept or decline.</p>
+              <p>Head to your dashboard to accept or decline this request:</p>
+              <p><a href="${SITE_URL}/admin" style="display:inline-block;padding:10px 20px;background:#3d3530;color:#ffffff;text-decoration:none;border-radius:999px;font-size:13px;">Open my dashboard</a></p>
             `,
           })
         : Promise.resolve(),
