@@ -107,9 +107,11 @@ export default function OnlineModulesPage() {
 
                 <div className="flex-1 p-6 md:p-8 flex flex-col">
                   <p className="text-[10px] tracking-[0.3em] uppercase text-[#a0948a] mb-2">Featured · Complete Program</p>
-                  <h2 className="text-2xl font-semibold text-[#3d3028] mb-2 leading-snug">All-In-One Course</h2>
+                  <h2 className="text-2xl font-semibold text-[#3d3028] mb-2 leading-snug">All-In-One Brow Course</h2>
                   <p className="text-sm text-[#6b5f58] leading-relaxed mb-6 max-w-lg">
-                    Every module bundled into one complete program. Choose the track that fits where you are in your career.
+                    A comprehensive training where you'll learn the MJP Beauty way in brow laminations, mapping, tinting, waxing along with bonus modules for starting and elevating your brow business.
+
+                    Choose the format that suits your learning style:
                   </p>
 
                   {/* Track selector */}
