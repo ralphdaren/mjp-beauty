@@ -7,7 +7,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { randomUUID } from 'crypto'
 import { Resend } from 'resend'
 import { supabase } from './_supabase.js'
-import { squareFetch, getLocationId, getCatalogItems, findVariationByLabel } from './_square.js'
+import { squareFetch, getLocationId, getCatalogItems, findVariation } from './_square.js'
 import { escapeHtml } from './_html.js'
 import { enforceRateLimit, adminLimiter } from './_ratelimit.js'
 import { setCorsHeaders } from './_cors.js'
@@ -25,6 +25,7 @@ function isAuthorized(req: VercelRequest): boolean {
 
 interface RequestedItem {
   serviceName: string
+  variationId: string | null
   tierLabel: string
   teamMemberId: string | null
 }
@@ -34,12 +35,16 @@ function requestedItems(request: any): RequestedItem[] {
   if (Array.isArray(request.items) && request.items.length > 0) {
     return request.items.map((item: any) => ({
       serviceName: String(item.serviceName ?? request.service_name),
+      // Absent on rows stored before ids were recorded — those fall back to the
+      // label, which is what they were booked under anyway.
+      variationId: item.variationId ?? null,
       tierLabel: String(item.tierLabel ?? request.tier_label),
       teamMemberId: item.teamMemberId ?? null,
     }))
   }
   return [{
     serviceName: request.service_name,
+    variationId: null,
     tierLabel: request.tier_label,
     teamMemberId: request.team_member_id ?? null,
   }]
@@ -100,7 +105,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // One segment per booked service, run back to back. Rows written before
         // multi-service booking have no `items`, so fall back to their columns.
         const appointmentSegments = requestedItems(request).map((item) => {
-          const match = findVariationByLabel(catalogItems, item.tierLabel)
+          const match = findVariation(catalogItems, item)
           if (!match) throw new Error(`No Square variation found for: "${item.tierLabel}"`)
 
           const segment: Record<string, unknown> = {

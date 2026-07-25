@@ -13,62 +13,72 @@ const browLamVid = 'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_a
 const browWtVid  = 'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1781343535/brow-wt-vid-01_jladew.mp4'
 const keratinVid = 'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1781343313/keratin-lt-vid-01_cuveqw.mp4'
 
+// Service and option names, prices and durations all come from Square, joined on
+// the `squareItemId` / `squareVariationId` below — Micah renaming a service in
+// her dashboard changes the site. The names here are only what the page paints
+// with before /api/services answers, and what it falls back to if Square is
+// down, so keep them roughly in sync. Copy, photos, video and order stay local:
+// Square has no field for them.
 export const SERVICES: Service[] = [
   {
     id: 'brow-lam',
+    squareItemId: 'YC5WXRVSX5IZ3UW7DYKPZZEE',
     name: 'Brow Lamination',
     tagline: 'Lift • Define • Fluff',
     description:
       'The process of lifting the brow hairs to add fullness, symmetry, and definition. Softens the structure of the hairs allowing endless styling options from fluffy soap brows to clean and sleek. Lasts up to 6–8 weeks.',
     duration: '20 – 75 min',
     tiers: [
-      { label: 'Signature Lamination Package (with Tint)', price: '$123.81', duration: '1 hr 15 min' },
-      { label: 'Naked Brow Lamination (No Tint)', price: '$109.52', duration: '1 hr' },
-      { label: 'Brow Lamination Only (No Shaping, No Tint)', price: '$80.95', duration: '45 min' },
-      { label: 'Brow Lamination Maintenance (with Tint)', price: '$61.90', duration: '30 min' },
-      { label: 'Brow Lamination Maintenance (No Tint)', price: '$47.62', duration: '20 min' },
+      { squareVariationId: 'J6EZ73GAHF7HZ5K3TYB6UIAW', label: 'Signature Lamination Package (with Tint)', price: '$123.81', duration: '1 hr 15 min' },
+      { squareVariationId: 'FMQBMRIZFAHBOYWXXZOGW24O', label: 'Naked Brow Lamination (No Tint)', price: '$109.52', duration: '1 hr' },
+      { squareVariationId: 'E6FTQQUGSGWYA3QR7BYN6KVP', label: 'Brow Lamination Only (No Shaping, No Tint)', price: '$80.95', duration: '45 min' },
+      { squareVariationId: 'OUDTDQ2IQIA4TWQQRX6RHHGE', label: 'Brow Lamination Maintenance (with Tint)', price: '$61.90', duration: '30 min' },
+      { squareVariationId: '4RVTGMBS2ZF4PCR25YLFN2AH', label: 'Brow Lamination Maintenance (No Tint)', price: '$47.62', duration: '20 min' },
     ],
     images: [browLamImg1, browLamImg2],
     video: browLamVid,
   },
   {
     id: 'brow-st',
+    squareItemId: '3RAVUNV7FLJBFDJ7QKW4QZYL',
     name: 'Brow Shape & Tint',
     tagline: 'Sculpted • Tinted • Polished',
     description:
       'A complete brow enhancement package — brow shaping, waxing, and tinting all in one. Brow tint lasts up to 1 week on the skin and 4+ weeks on the hairs for a defined, polished finish.',
     duration: '40 min+',
     tiers: [
-      { label: 'Returning Client', price: '$61.90', duration: '30 min' },
-      { label: 'New Client', price: '$66.67', duration: '30 min' },
+      { squareVariationId: 'I56EZ4ZJVCHX67FYG4HO4Y6Q', label: 'Returning Client', price: '$61.90', duration: '30 min' },
+      { squareVariationId: 'C5ZUZMXVN2XL7MW6R4EHGCHJ', label: 'New Client', price: '$66.67', duration: '30 min' },
     ],
     images: [browStImg1, browStImg2],
     video: null,
   },
   {
     id: 'brow-wt',
+    squareItemId: 'W65IACOA3FHRYB37VBKLJ6UR',
     name: 'Brow Shape & Wax',
     tagline: 'Clean • Shaped • Fresh',
     description:
       'Give your brows life again with a quick and easy brow shaping and waxing package. Includes the option of filling in the brows with a brow pencil and highlighting the brow bone to further accentuate your new brows.',
     duration: '20 min+',
     tiers: [
-      { label: 'Returning Client', price: '$47.62', duration: '20 min', squareVariationName: 'Brow Shape & Wax (Returning Client)' },
-      { label: 'New Client', price: '$52.38', duration: '30 min', squareVariationName: 'Brow Shape & Wax (New Client)' },
+      { squareVariationId: 'A7FNDDOMO5463V545DTSJU45', label: 'Brow Shape & Wax (Returning Client)', price: '$47.62', duration: '20 min' },
+      { squareVariationId: '4X5533WAUJRRY3CNH36PHYDT', label: 'Brow Shape & Wax (New Client)', price: '$52.38', duration: '30 min' },
     ],
     images: [browWtImg1, browWtImg2],
     video: browWtVid,
   },
   {
     id: 'keratin-lt',
+    squareItemId: 'BVWO65BJPHOOPXK4ZMMVRXC3',
     name: 'Keratin Lash Lift',
     tagline: 'Lifted • Curled • Luminous',
     description:
       'Enhances and lifts your natural lashes making them appear longer, fuller, and freshly curled. Paired with a vitamin mask for deep nourishment. Lasts 6-8 weeks — the most low-maintenance service you can get.',
     duration: '45 min+',
     tiers: [
-      { label: 'With Tint', price: '$104.76', duration: '1 hr' },
-      { label: 'No Tint', price: '$95.24', duration: '45 min' },
+      { squareVariationId: 'QUUXGEOUYHNGG5EBW6NFUBG7', label: 'With Tint', price: '$104.76', duration: '1 hr' },
+      { squareVariationId: '4TCRSEX7L6N4K2WVZR5JSRBR', label: 'No Tint', price: '$95.24', duration: '45 min' },
     ],
     images: [keratinImg1, keratinImg2],
     video: keratinVid,

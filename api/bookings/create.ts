@@ -15,7 +15,7 @@ import { Resend } from 'resend'
 import { supabase } from '../_supabase.js'
 import { escapeHtml } from '../_html.js'
 import {
-  squareFetch, getCatalogItems, getLocationId, findVariationByLabel, variationMinutes,
+  squareFetch, getCatalogItems, getLocationId, findVariation, variationMinutes,
   type VariationMatch,
 } from '../_square.js'
 import { getHeldBlocks, overlapsBlock } from '../_holds.js'
@@ -32,6 +32,7 @@ const MAX_SERVICES = 5
 
 interface RequestedItem {
   serviceName: string
+  variationId: string | null
   tierLabel: string
   teamMemberId: string | null
 }
@@ -41,12 +42,14 @@ function parseItems(raw: unknown): RequestedItem[] | null {
 
   const items: RequestedItem[] = []
   for (const entry of raw) {
-    const { serviceName, tierLabel, teamMemberId } = (entry ?? {}) as Record<string, unknown>
+    const { serviceName, variationId, tierLabel, teamMemberId } = (entry ?? {}) as Record<string, unknown>
     if (!isNonEmptyString(tierLabel, 100)) return null
     if (!isOptionalString(serviceName, 200) || !isOptionalString(teamMemberId, 100)) return null
+    if (!isOptionalString(variationId, 100)) return null
     items.push({
-      // Only a hint until Square confirms it — see resolveServiceName below.
+      // Both are only hints until Square confirms them — see the resolvers below.
       serviceName: serviceName ? String(serviceName) : '',
+      variationId: variationId ? String(variationId) : null,
       tierLabel: String(tierLabel),
       teamMemberId: teamMemberId ? String(teamMemberId) : null,
     })
@@ -54,15 +57,20 @@ function parseItems(raw: unknown): RequestedItem[] | null {
   return items
 }
 
-// Only `tierLabel` is checked against the catalog, so the service name that
-// arrives with it is unverified free text — and it lands in the admin's
-// notification email. Square's own item name wins; the browser's value is kept
-// only when the two agree, so the dashboard keeps the site's wording without
-// letting anyone plant arbitrary text in Micah's inbox.
+// Everything the browser says about a service is unverified free text, and it
+// lands in the admin's notification email — so Square's own names win. The
+// browser's values are kept only when the two agree, which keeps the wording
+// identical to the booking page without letting anyone plant arbitrary text in
+// Micah's inbox.
 function resolveServiceName(claimed: string, match: VariationMatch, tierLabel: string): string {
   const itemName = match.itemName.trim()
   if (claimed && itemName && claimed.toLowerCase().trim() === itemName.toLowerCase()) return claimed
   return itemName || tierLabel
+}
+
+/** Square's name for the option actually booked — the id is what resolved it. */
+function resolveTierLabel(claimed: string, match: VariationMatch): string {
+  return match.variationName.trim() || claimed
 }
 
 // True when Square lists `startMs` as an opening long enough for the whole
@@ -138,15 +146,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const matches: VariationMatch[] = []
     for (const item of requested) {
-      const match = findVariationByLabel(catalogItems, item.tierLabel)
+      const match = findVariation(catalogItems, item)
       if (!match) return res.status(404).json({ error: `No Square variation found matching: "${item.tierLabel}"` })
       matches.push(match)
     }
 
     const durationMinutes = matches.reduce((total, match) => total + variationMinutes(match), 0)
+    // Stored with Square's id and Square's wording, so a later rename can still
+    // be traced back to the option that was actually booked.
     const items: RequestedItem[] = requested.map((item, index) => ({
       ...item,
+      variationId: matches[index].id,
       serviceName: resolveServiceName(item.serviceName, matches[index], item.tierLabel),
+      tierLabel: resolveTierLabel(item.tierLabel, matches[index]),
     }))
 
     const startMs = new Date(String(startAt)).getTime()

@@ -1,8 +1,10 @@
 export interface PriceTier {
+  /** Square's variation name once the catalog loads; the fallback until then. */
   label: string
   price: string
   duration?: string
-  squareVariationName?: string
+  /** Stable join key. Survives Micah renaming the option in her dashboard. */
+  squareVariationId?: string
   // Raw numbers from Square, set by mergeCatalog. `price`/`duration` stay the
   // display strings; these are what the basket totals add up.
   priceCents?: number
@@ -27,7 +29,10 @@ export interface BookingItem {
 
 export interface Service {
   id: string
+  /** Square's item name once the catalog loads; the fallback until then. */
   name: string
+  /** Stable join key. Survives Micah renaming the service in her dashboard. */
+  squareItemId?: string
   tagline: string
   description: string
   duration: string

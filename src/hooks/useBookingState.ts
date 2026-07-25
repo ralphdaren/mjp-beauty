@@ -1,12 +1,18 @@
 import { useState, useEffect, useMemo } from 'react'
 import type { BookingItem, Service, PriceTier, Slot, DrawerStep } from '../types/booking'
 import { MAX_SERVICES_PER_BOOKING } from '../types/booking'
-import { squareNameFor, tierMinutes } from '../lib/catalog'
+import { tierMinutes } from '../lib/catalog'
 
-/** Every service in the appointment, in the order Square will run them. */
+// Every service in the appointment, in the order Square will run them. Both keys
+// are sent per service and stay positionally paired: the id is what Square is
+// really asked about, the label only covers a tier the catalog hasn't given an
+// id to yet.
 function availabilityQuery(items: BookingItem[]): string {
   return items
-    .map((item) => `tierLabel=${encodeURIComponent(squareNameFor(item.tier))}`)
+    .map((item) =>
+      `tierLabel=${encodeURIComponent(item.tier.label)}` +
+      `&variationId=${encodeURIComponent(item.tier.squareVariationId ?? '')}`,
+    )
     .join('&')
 }
 
@@ -67,7 +73,7 @@ export function useBookingState() {
   // Availability is searched for the whole basket at once, so every effect below
   // re-runs when a service is added, removed or swapped — not on identity churn.
   const basketKey = useMemo(
-    () => items.map((item) => squareNameFor(item.tier)).join('|'),
+    () => items.map((item) => item.tier.squareVariationId ?? item.tier.label).join('|'),
     [items],
   )
 
@@ -249,7 +255,8 @@ export function useBookingState() {
         body: JSON.stringify({
           items: items.map((item, index) => ({
             serviceName: item.service.name,
-            tierLabel: squareNameFor(item.tier),
+            variationId: item.tier.squareVariationId ?? null,
+            tierLabel: item.tier.label,
             teamMemberId: selectedTeamMemberIds[index] ?? null,
           })),
           startAt: selectedStartAt,

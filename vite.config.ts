@@ -123,27 +123,32 @@ function servicesDevPlugin(env: Record<string, string>): Plugin {
               },
             })
             const data = (await upstream.json()) as { objects?: any[] }
-            const variations = []
+            // Mirrors listServiceItems in api/_square.ts — keep the two in step,
+            // since this is the only shape the app sees in dev.
+            const items = []
             for (const item of data.objects ?? []) {
               const itemData = item.item_data
               if (!itemData || itemData.product_type !== 'APPOINTMENTS_SERVICE' || itemData.is_archived) continue
+              const variations = []
               for (const v of itemData.variations ?? []) {
                 const name = v.item_variation_data?.name
-                if (!name) continue
+                if (!name || !v.id) continue
                 variations.push({
+                  id: v.id,
                   name,
                   priceCents: v.item_variation_data?.price_money?.amount ?? null,
                   durationMs: v.item_variation_data?.service_duration ?? null,
                   bookable: v.item_variation_data?.available_for_booking === true,
                 })
               }
+              if (variations.length > 0) items.push({ id: item.id, name: itemData.name ?? '', variations })
             }
             res.writeHead(200, { 'Content-Type': 'application/json' })
-            res.end(JSON.stringify({ variations }))
+            res.end(JSON.stringify({ items, variations: items.flatMap((i) => i.variations) }))
           } catch {
             // Empty list — the app falls back to the values in booking.ts.
             res.writeHead(500, { 'Content-Type': 'application/json' })
-            res.end(JSON.stringify({ variations: [] }))
+            res.end(JSON.stringify({ items: [], variations: [] }))
           }
         })()
       })

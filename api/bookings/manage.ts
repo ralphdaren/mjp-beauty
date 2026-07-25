@@ -32,9 +32,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const items = Array.isArray(request.items) && request.items.length > 0
       ? request.items.map((item: any) => ({
           serviceName: String(item.serviceName ?? request.service_name),
+          variationId: item.variationId ?? null,
           tierLabel: String(item.tierLabel ?? request.tier_label),
         }))
-      : [{ serviceName: request.service_name, tierLabel: request.tier_label }]
+      : [{ serviceName: request.service_name, variationId: null, tierLabel: request.tier_label }]
 
     return res.status(200).json({
       status: request.status,

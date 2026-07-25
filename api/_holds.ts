@@ -6,7 +6,7 @@
 // not a single start time — and anything overlapping that range is taken.
 
 import { supabase } from './_supabase.js'
-import { findVariationByLabel, variationMinutes } from './_square.js'
+import { findVariation, variationMinutes } from './_square.js'
 
 export interface Block {
   start: number
@@ -20,22 +20,25 @@ interface HoldRow {
   start_at: string
   duration_minutes: number | null
   tier_label: string | null
-  items: Array<{ tierLabel?: string }> | null
+  items: Array<{ tierLabel?: string; variationId?: string | null }> | null
 }
 
 // Rows written before duration_minutes existed still carry their service labels,
-// so their length is recoverable from the catalog we already have in hand.
+// so their length is recoverable from the catalog we already have in hand. Rows
+// older than `variationId` resolve by name, which is why a service Micah has
+// since renamed can read as zero minutes — the row still holds its own start.
 function rowMinutes(row: HoldRow, catalogItems: any[]): number {
   if (row.duration_minutes != null) return row.duration_minutes
 
-  const labels = Array.isArray(row.items) && row.items.length
-    ? row.items.map((item) => item.tierLabel).filter((l): l is string => !!l)
+  const refs = Array.isArray(row.items) && row.items.length
+    ? row.items.flatMap((item) =>
+        item.tierLabel ? [{ tierLabel: item.tierLabel, variationId: item.variationId ?? null }] : [])
     : row.tier_label
-      ? [row.tier_label]
+      ? [{ tierLabel: row.tier_label, variationId: null }]
       : []
 
-  return labels.reduce((total, label) => {
-    const match = findVariationByLabel(catalogItems, label)
+  return refs.reduce((total, ref) => {
+    const match = findVariation(catalogItems, ref)
     return total + (match ? variationMinutes(match) : 0)
   }, 0)
 }

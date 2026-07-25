@@ -1,12 +1,14 @@
-// GET /api/bookings/availability?tierLabel=...&date=YYYY-MM-DD   → { slots }
-// GET /api/bookings/availability?tierLabel=...&month=YYYY-MM     → { dates }
+// GET /api/bookings/availability?tierLabel=…&variationId=…&date=YYYY-MM-DD → { slots }
+// GET /api/bookings/availability?tierLabel=…&variationId=…&month=YYYY-MM   → { dates }
 //
 // `tierLabel` may be repeated, once per service, for an appointment that books
 // several services back to back — Square searches for one opening long enough
-// to fit them all, in the order they're passed.
+// to fit them all, in the order they're passed. `variationId` is optional and
+// positional: the nth id goes with the nth label, and an empty one falls back to
+// resolving that service by name.
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { squareFetch, getCatalogItems, getLocationId, findVariationsByLabels, variationMinutes } from '../_square.js'
+import { squareFetch, getCatalogItems, getLocationId, findVariations, variationMinutes, type VariationRef } from '../_square.js'
 import { getHeldBlocks, overlapsBlock } from '../_holds.js'
 import { enforceRateLimit, availabilityLimiter } from '../_ratelimit.js'
 import { setCorsHeaders } from '../_cors.js'
@@ -19,11 +21,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCorsHeaders(req, res)
   if (!(await enforceRateLimit(req, res, availabilityLimiter))) return
 
-  const { tierLabel, date, month } = req.query
+  const { tierLabel, variationId, date, month } = req.query
 
-  const tierLabels = (Array.isArray(tierLabel) ? tierLabel : [tierLabel]).filter(
-    (label): label is string => isNonEmptyString(label, 100),
-  )
+  // Zipped before filtering so a service whose id is blank keeps its label lined
+  // up with the right position.
+  const rawLabels = Array.isArray(tierLabel) ? tierLabel : [tierLabel]
+  const rawIds = Array.isArray(variationId) ? variationId : [variationId]
+  const refs: VariationRef[] = rawLabels.flatMap((label, index) => {
+    if (!isNonEmptyString(label, 100)) return []
+    const id = rawIds[index]
+    return [{ tierLabel: label, variationId: isNonEmptyString(id, 100) ? id : null }]
+  })
+  const tierLabels = refs.map((ref) => ref.tierLabel)
 
   if (tierLabels.length === 0) {
     return res.status(400).json({ error: 'tierLabel is required' })
@@ -43,7 +52,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     let matches
     try {
-      matches = findVariationsByLabels(catalogItems, tierLabels)
+      matches = findVariations(catalogItems, refs)
     } catch (err) {
       return res.status(404).json({ error: String(err instanceof Error ? err.message : err) })
     }

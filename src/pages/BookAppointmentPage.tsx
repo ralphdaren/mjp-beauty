@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom'
 import { useScrollAnimation } from '../hooks/useScrollAnimation'
 import { useBookingState } from '../hooks/useBookingState'
 import { useServices } from '../hooks/useServices'
-import { squareNameFor } from '../lib/catalog'
 import ServiceRow from '../components/booking/ServiceRow'
 import VideoModal from '../components/booking/VideoModal'
 import InfoTabs from '../components/booking/InfoTabs'
@@ -20,19 +19,23 @@ export default function BookAppointmentPage() {
 
   // Coming from a "Reschedule" link on the manage-booking page: pre-select the
   // same services and jump straight to date & time selection. One `tier` param
-  // per booked service, in order — Square variation names are unique across the
-  // catalog, so each one resolves to exactly one service. Waits for `ready` so
-  // the tiers carry Square's current price, not the booking.ts fallback the page
-  // first rendered with.
+  // per booked service, in order, each optionally paired with the Square
+  // variation id it was booked under — the id is matched first, so a service
+  // renamed since the original booking still resolves. Waits for `ready` so the
+  // tiers carry Square's current names and prices, not the booking.ts fallbacks
+  // the page first rendered with.
   useEffect(() => {
     if (appliedReschedule.current || !ready) return
     const tierLabels = searchParams.getAll('tier')
+    const variationIds = searchParams.getAll('variation')
     const rescheduleToken = searchParams.get('rescheduleToken')
     if (tierLabels.length === 0) return
 
-    const selections = tierLabels.flatMap((label) => {
+    const selections = tierLabels.flatMap((label, index) => {
+      const variationId = variationIds[index]
       for (const service of services) {
-        const tier = service.tiers.find((t) => squareNameFor(t) === label)
+        const tier = service.tiers.find((t) =>
+          (variationId && t.squareVariationId === variationId) || t.label === label)
         if (tier) return [{ service, tier }]
       }
       return []
