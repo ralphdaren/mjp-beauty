@@ -13,9 +13,18 @@ interface BookingRequest {
   phone: string | null
   service_name: string
   tier_label: string
+  // Every service on the request, for appointments that booked more than one.
+  // Null on requests taken before multi-service booking existed.
+  items: Array<{ serviceName: string; tierLabel: string }> | null
+  duration_minutes: number | null
   start_at: string
   square_booking_id: string | null
   reviewed_at: string | null
+}
+
+/** Falls back to the single-service columns for pre-multi-service rows. */
+function requestServices(r: BookingRequest): Array<{ serviceName: string; tierLabel: string }> {
+  return r.items?.length ? r.items : [{ serviceName: r.service_name, tierLabel: r.tier_label }]
 }
 
 type Tab = 'pending' | 'accepted' | 'declined' | 'cancelled'
@@ -226,16 +235,18 @@ export default function AdminPage() {
       })
     : tabFiltered
 
+  // A multi-service request matches if any of its services matches the filter.
   const filtered = searched.filter((r) => {
-    if (serviceFilter && r.service_name !== serviceFilter) return false
-    if (optionFilter && r.tier_label !== optionFilter) return false
+    const services = requestServices(r)
+    if (serviceFilter && !services.some((i) => i.serviceName === serviceFilter)) return false
+    if (optionFilter && !services.some((i) => i.tierLabel === optionFilter)) return false
     if (dateFrom && r.start_at < dateFrom) return false
     if (dateTo && r.start_at.slice(0, 10) > dateTo) return false
     return true
   })
 
-  const serviceOptions = [...new Set(requests.map((r) => r.service_name))].sort()
-  const optionOptions = [...new Set(requests.map((r) => r.tier_label))].sort()
+  const serviceOptions = [...new Set(requests.flatMap((r) => requestServices(r).map((i) => i.serviceName)))].sort()
+  const optionOptions = [...new Set(requests.flatMap((r) => requestServices(r).map((i) => i.tierLabel)))].sort()
   const hasActiveFilters = !!(dateFrom || dateTo || serviceFilter || optionFilter)
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
@@ -504,17 +515,23 @@ export default function AdminPage() {
 
               {/* Booking details */}
               <div className="bg-[#f6f2ec] rounded-xl p-4 space-y-2 mb-4 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-[#a0948a] uppercase tracking-[0.1em]">Service</span>
-                  <span className="text-[#3d3530] font-medium text-right">{r.service_name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#a0948a] uppercase tracking-[0.1em]">Option</span>
-                  <span className="text-[#3d3530] text-right">{r.tier_label}</span>
-                </div>
+                {requestServices(r).map((item, index) => (
+                  <div key={`${item.tierLabel}-${index}`} className="flex justify-between gap-3">
+                    <span className="text-[#a0948a] uppercase tracking-[0.1em] shrink-0">
+                      {requestServices(r).length > 1 ? `Service ${index + 1}` : 'Service'}
+                    </span>
+                    <span className="text-right">
+                      <span className="text-[#3d3530] font-medium block">{item.serviceName}</span>
+                      <span className="text-[#6b5f58] block">{item.tierLabel}</span>
+                    </span>
+                  </div>
+                ))}
                 <div className="flex justify-between">
                   <span className="text-[#a0948a] uppercase tracking-[0.1em]">Appointment</span>
-                  <span className="text-[#3d3530] text-right">{formatDate(r.start_at)}</span>
+                  <span className="text-[#3d3530] text-right">
+                    {formatDate(r.start_at)}
+                    {r.duration_minutes ? ` · ${r.duration_minutes} min` : ''}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#a0948a] uppercase tracking-[0.1em]">Submitted</span>

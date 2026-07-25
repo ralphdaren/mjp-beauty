@@ -80,18 +80,28 @@ export function listServiceVariations(items: any[]): CatalogVariation[] {
   return variations
 }
 
+export interface VariationMatch {
+  id: string
+  version: number
+  durationMs: number | null
+}
+
 // Find a catalog variation by name (case-insensitive exact match).
 // Returns the variation id + version, or null with a list of available names for debugging.
 export function findVariationByLabel(
   items: any[],
   tierLabel: string,
-): { id: string; version: number } | { id: null; availableNames: string[] } {
+): VariationMatch | { id: null; availableNames: string[] } {
   const needle = tierLabel.toLowerCase().trim()
   for (const item of items) {
     for (const v of item.item_data?.variations ?? []) {
       const name: string = v.item_variation_data?.name ?? ''
       if (name.toLowerCase().trim() === needle) {
-        return { id: v.id as string, version: v.version as number }
+        return {
+          id: v.id as string,
+          version: v.version as number,
+          durationMs: (v.item_variation_data?.service_duration as number | undefined) ?? null,
+        }
       }
     }
   }
@@ -102,4 +112,21 @@ export function findVariationByLabel(
     }
   }
   return { id: null, availableNames }
+}
+
+/**
+ * Resolves every service in a multi-service appointment, in booking order.
+ * Throws on the first label Square doesn't know, so callers can 404 with it.
+ */
+export function findVariationsByLabels(items: any[], tierLabels: string[]): VariationMatch[] {
+  return tierLabels.map((label) => {
+    const match = findVariationByLabel(items, label)
+    if (!match.id) throw new Error(`No Square variation found matching: "${label}"`)
+    return match
+  })
+}
+
+/** Minutes a service runs for, 0 when Square has no duration on the variation. */
+export function variationMinutes(match: VariationMatch): number {
+  return match.durationMs != null ? Math.round(match.durationMs / 60000) : 0
 }

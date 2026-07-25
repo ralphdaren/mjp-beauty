@@ -1,28 +1,19 @@
 // GET /api/bookings/availability?tierLabel=...&date=YYYY-MM-DD   → { slots }
 // GET /api/bookings/availability?tierLabel=...&month=YYYY-MM     → { dates }
+//
+// `tierLabel` may be repeated, once per service, for an appointment that books
+// several services back to back — Square searches for one opening long enough
+// to fit them all, in the order they're passed.
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { squareFetch, getCatalogItems, getLocationId, findVariationByLabel } from '../_square.js'
-import { supabase } from '../_supabase.js'
+import { squareFetch, getCatalogItems, getLocationId, findVariationsByLabels, variationMinutes } from '../_square.js'
+import { getHeldBlocks, overlapsBlock } from '../_holds.js'
 import { enforceRateLimit, availabilityLimiter } from '../_ratelimit.js'
 import { setCorsHeaders } from '../_cors.js'
 import { isNonEmptyString, isValidDateOnly } from '../_validate.js'
 
 const CLIENT_TIMEZONE = 'America/Winnipeg'
-
-// Requests still awaiting admin review hold their slot too, even though
-// Square doesn't know about them yet — otherwise a second customer could
-// book the same time while the first is still pending review.
-async function getPendingStartTimes(fromIso: string, toIso: string): Promise<Set<number>> {
-  const { data } = await supabase
-    .from('booking_requests')
-    .select('start_at')
-    .eq('status', 'pending')
-    .gte('start_at', fromIso)
-    .lte('start_at', toIso)
-
-  return new Set((data ?? []).map((r) => new Date(r.start_at as string).getTime()))
-}
+const MAX_SERVICES = 5
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCorsHeaders(req, res)
@@ -30,8 +21,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const { tierLabel, date, month } = req.query
 
-  if (!isNonEmptyString(tierLabel, 100)) {
+  const tierLabels = (Array.isArray(tierLabel) ? tierLabel : [tierLabel]).filter(
+    (label): label is string => isNonEmptyString(label, 100),
+  )
+
+  if (tierLabels.length === 0) {
     return res.status(400).json({ error: 'tierLabel is required' })
+  }
+  if (tierLabels.length > MAX_SERVICES) {
+    return res.status(400).json({ error: `At most ${MAX_SERVICES} services can be booked in one appointment` })
   }
   if (!date && !month) {
     return res.status(400).json({ error: 'either date (YYYY-MM-DD) or month (YYYY-MM) is required' })
@@ -42,16 +40,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const [locationId, catalogItems] = await Promise.all([getLocationId(), getCatalogItems()])
-    const match = findVariationByLabel(catalogItems, tierLabel)
 
-    if (!match.id) {
-      return res.status(404).json({
-        error: `No Square variation found matching: "${tierLabel}"`,
-        availableVariations: (match as any).availableNames,
-      })
+    let matches
+    try {
+      matches = findVariationsByLabels(catalogItems, tierLabels)
+    } catch (err) {
+      return res.status(404).json({ error: String(err instanceof Error ? err.message : err) })
     }
 
-    const { id: variationId, version: variationVersion } = match as { id: string; version: number }
+    // One segment per service — Square chains them and only returns start times
+    // with room for the whole appointment.
+    const segmentFilters = matches.map((match) => ({ service_variation_id: match.id }))
+    const totalMinutes = matches.reduce((total, match) => total + variationMinutes(match), 0)
+    const totalMs = Math.max(totalMinutes, 1) * 60_000
 
     // ── Slots for a specific day ──────────────────────────────────────────────
     if (date && typeof date === 'string') {
@@ -60,7 +61,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const startAt = dayStart > now ? dayStart.toISOString() : now.toISOString()
       const endAt = `${date}T23:59:59.999Z`
 
-      const [availData, pendingTimes] = await Promise.all([
+      const [availData, heldBlocks] = await Promise.all([
         squareFetch('/v2/bookings/availability/search', {
           method: 'POST',
           body: JSON.stringify({
@@ -68,25 +69,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               filter: {
                 location_id: locationId,
                 start_at_range: { start_at: startAt, end_at: endAt },
-                segment_filters: [{ service_variation_id: variationId }],
+                segment_filters: segmentFilters,
               },
             },
           }),
         }),
-        getPendingStartTimes(dayStart.toISOString(), endAt),
+        getHeldBlocks(dayStart.toISOString(), endAt, catalogItems),
       ])
 
       const slots = (availData.availabilities as any[] ?? [])
-        .filter((a: any) => !pendingTimes.has(new Date(a.start_at).getTime()))
-        .map((a: any) => ({
-          time: new Date(a.start_at).toLocaleTimeString('en-US', {
-            hour: 'numeric', minute: '2-digit', hour12: true, timeZone: CLIENT_TIMEZONE,
-          }),
-          startAt: a.start_at as string,
-          teamMemberId: (a.appointment_segments as any[])?.[0]?.team_member_id ?? null,
-          serviceVariationId: variationId,
-          serviceVariationVersion: variationVersion,
-        }))
+        .filter((a: any) => {
+          const start = new Date(a.start_at).getTime()
+          return !overlapsBlock(start, start + totalMs, heldBlocks)
+        })
+        .map((a: any) => {
+          const segments = (a.appointment_segments as any[]) ?? []
+          const teamMemberIds = matches.map(
+            (_, index) => (segments[index]?.team_member_id as string | undefined) ?? segments[0]?.team_member_id ?? null,
+          )
+          return {
+            time: new Date(a.start_at).toLocaleTimeString('en-US', {
+              hour: 'numeric', minute: '2-digit', hour12: true, timeZone: CLIENT_TIMEZONE,
+            }),
+            startAt: a.start_at as string,
+            teamMemberId: teamMemberIds[0],
+            teamMemberIds,
+          }
+        })
 
       return res.status(200).json({ slots })
     }
@@ -100,7 +109,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const lastDay = new Date(year, mon, 0).getDate()
       const endAt = `${month}-${String(lastDay).padStart(2, '0')}T23:59:59.999Z`
 
-      const [availData, pendingTimes] = await Promise.all([
+      const [availData, heldBlocks] = await Promise.all([
         squareFetch('/v2/bookings/availability/search', {
           method: 'POST',
           body: JSON.stringify({
@@ -108,17 +117,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               filter: {
                 location_id: locationId,
                 start_at_range: { start_at: startAt, end_at: endAt },
-                segment_filters: [{ service_variation_id: variationId }],
+                segment_filters: segmentFilters,
               },
             },
           }),
         }),
-        getPendingStartTimes(monthStart.toISOString(), endAt),
+        getHeldBlocks(monthStart.toISOString(), endAt, catalogItems),
       ])
 
       const dateSet = new Set<string>()
       for (const a of (availData.availabilities as any[] ?? [])) {
-        if (pendingTimes.has(new Date(a.start_at).getTime())) continue
+        const start = new Date(a.start_at).getTime()
+        if (overlapsBlock(start, start + totalMs, heldBlocks)) continue
         const local = new Date(a.start_at).toLocaleDateString('en-CA', { timeZone: CLIENT_TIMEZONE })
         dateSet.add(local)
       }

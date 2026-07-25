@@ -1,15 +1,37 @@
-import { ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { Service } from '../../../types/booking'
 
-interface DrawerStep1Props {
+interface DrawerServicesProps {
   services: Service[]
+  /** How many services are already in the appointment — 0 on a fresh booking. */
+  bookedCount: number
   onSelectService: (service: Service) => void
+  onBack: () => void
 }
 
-export default function DrawerStep1({ services, onSelectService }: DrawerStep1Props) {
+export default function DrawerServices({
+  services,
+  bookedCount,
+  onSelectService,
+  onBack,
+}: DrawerServicesProps) {
   return (
     <div>
-      <p className="text-sm text-[#6b5f58] mb-5">Which service are you booking today?</p>
+      {bookedCount > 0 && (
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1 text-xs text-[#827064] hover:text-[#3d3530] transition-colors mb-5"
+        >
+          <ChevronLeft size={13} />
+          Back to appointment
+        </button>
+      )}
+
+      <p className="text-sm text-[#6b5f58] mb-5">
+        {bookedCount > 0
+          ? 'Which service would you like to add?'
+          : 'Which service are you booking today?'}
+      </p>
       <div className="space-y-3">
         {services.map((service) => (
           <button

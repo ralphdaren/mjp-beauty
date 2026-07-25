@@ -1,11 +1,13 @@
 import { ChevronLeft, Clock } from 'lucide-react'
-import type { Service, PriceTier, Slot } from '../../../types/booking'
+import type { BookingItem, Slot } from '../../../types/booking'
 import { formatDate } from '../../../lib/utils'
+import { formatDuration } from '../../../lib/catalog'
 import MiniCalendar from '../MiniCalendar'
 
-interface DrawerStep2Props {
-  selectedService: Service
-  selectedTier: PriceTier | null
+interface DrawerDateTimeProps {
+  items: BookingItem[]
+  /** Length of the whole appointment — availability is searched for all of it. */
+  totalMinutes: number
   selectedDate: string | null
   selectedTime: string | null
   slots: Slot[] | null
@@ -13,7 +15,6 @@ interface DrawerStep2Props {
   slotsError: string | null
   availableDates: Set<string>
   datesLoading: boolean
-  onSelectTier: (tier: PriceTier) => void
   onSelectDate: (date: string) => void
   onSelectSlot: (slot: Slot) => void
   onMonthChange: (year: number, month: number) => void
@@ -21,9 +22,9 @@ interface DrawerStep2Props {
   onContinue: () => void
 }
 
-export default function DrawerStep2({
-  selectedService,
-  selectedTier,
+export default function DrawerDateTime({
+  items,
+  totalMinutes,
   selectedDate,
   selectedTime,
   slots,
@@ -31,14 +32,13 @@ export default function DrawerStep2({
   slotsError,
   availableDates,
   datesLoading,
-  onSelectTier,
   onSelectDate,
   onSelectSlot,
   onMonthChange,
   onBack,
   onContinue,
-}: DrawerStep2Props) {
-  const canContinue = !!selectedTier && !!selectedDate && !!selectedTime
+}: DrawerDateTimeProps) {
+  const canContinue = !!selectedDate && !!selectedTime
 
   return (
     <div>
@@ -50,49 +50,18 @@ export default function DrawerStep2({
         Back
       </button>
 
-      <div className="mb-5">
-        <p className="text-[10px] tracking-[0.2em] uppercase text-[#a0948a] mb-0.5">{selectedService.tagline}</p>
-        <h3 className="text-base font-semibold text-[#3d3530]">{selectedService.name}</h3>
+      {/* What we're finding time for */}
+      <div className="mb-6 rounded-xl bg-[#f6f2ec] px-4 py-3">
+        <p className="text-sm text-[#3d3530] leading-snug">
+          {items.map((item) => item.service.name).join(' + ')}
+        </p>
+        {totalMinutes > 0 && (
+          <p className="flex items-center gap-1 text-[11px] text-[#a0948a] mt-1">
+            <Clock size={10} />
+            {formatDuration(totalMinutes * 60000)} total
+          </p>
+        )}
       </div>
-
-      {/* Tier options */}
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a0948a] mb-3">Choose an option</p>
-      <div className="space-y-2 mb-6">
-        {selectedService.tiers.map((tier) => {
-          const isSelected = selectedTier?.label === tier.label
-          return (
-            <button
-              key={tier.label}
-              onClick={() => onSelectTier(tier)}
-              className={`w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
-                isSelected
-                  ? 'border-[#3d3530] bg-[#f6f2ec]'
-                  : 'border-[#e3e2de] hover:border-[#c0b4ac] hover:bg-[#fdf9f6]'
-              }`}
-            >
-              <div
-                className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-                  isSelected ? 'border-[#3d3530]' : 'border-[#c0b4ac]'
-                }`}
-              >
-                {isSelected && <div className="w-2 h-2 rounded-full bg-[#3d3530]" />}
-              </div>
-              <span className="flex-1 text-sm text-[#3d3530] leading-snug">{tier.label}</span>
-              <div className="text-right shrink-0">
-                <p className="text-sm font-semibold text-[#3d3530]">{tier.price}</p>
-                {tier.duration && (
-                  <p className="flex items-center gap-0.5 text-[10px] text-[#a0948a] justify-end">
-                    <Clock size={9} />
-                    {tier.duration}
-                  </p>
-                )}
-              </div>
-            </button>
-          )
-        })}
-      </div>
-
-      <div className="border-t border-[#e3e2de] mb-6" />
 
       {/* Calendar */}
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a0948a] mb-4">Pick a date</p>
@@ -105,7 +74,7 @@ export default function DrawerStep2({
       />
 
       {/* Time slots */}
-      {selectedDate && selectedTier && (
+      {selectedDate && (
         <div className="mt-6">
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a0948a] mb-3">
             Available times — {formatDate(selectedDate)}
@@ -119,7 +88,11 @@ export default function DrawerStep2({
           ) : slotsError ? (
             <p className="text-sm text-red-400 text-center py-4">Could not load times. Please try again.</p>
           ) : !slots || slots.length === 0 ? (
-            <p className="text-sm text-[#a0948a] text-center py-4">No availability on this date.</p>
+            <p className="text-sm text-[#a0948a] text-center py-4">
+              {items.length > 1
+                ? 'No opening long enough for all these services on this date.'
+                : 'No availability on this date.'}
+            </p>
           ) : (
             <div className="grid grid-cols-3 gap-2">
               {slots.map((slot) => {

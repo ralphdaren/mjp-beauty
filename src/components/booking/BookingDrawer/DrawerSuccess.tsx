@@ -1,11 +1,10 @@
 import { Clock } from 'lucide-react'
-import type { Service, PriceTier } from '../../../types/booking'
+import type { BookingItem } from '../../../types/booking'
 import { formatDate } from '../../../lib/utils'
 
 interface DrawerSuccessProps {
   firstName: string
-  selectedService: Service | null
-  selectedTier: PriceTier | null
+  items: BookingItem[]
   selectedDate: string | null
   selectedTime: string | null
   onClose: () => void
@@ -13,8 +12,7 @@ interface DrawerSuccessProps {
 
 export default function DrawerSuccess({
   firstName,
-  selectedService,
-  selectedTier,
+  items,
   selectedDate,
   selectedTime,
   onClose,
@@ -35,13 +33,17 @@ export default function DrawerSuccess({
 
       <div className="bg-[#f6f2ec] rounded-2xl p-5 w-full text-left space-y-4 mb-8">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Service</p>
-          <p className="text-sm font-medium text-[#3d3530]">{selectedService?.name}</p>
-        </div>
-        <div className="border-t border-[#e3e2de]" />
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Option</p>
-          <p className="text-sm text-[#3d3530] leading-snug">{selectedTier?.label}</p>
+          <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-2">
+            {items.length === 1 ? 'Service' : `${items.length} services`}
+          </p>
+          <ul className="space-y-2.5">
+            {items.map((item) => (
+              <li key={item.id}>
+                <p className="text-sm font-medium text-[#3d3530] leading-snug">{item.service.name}</p>
+                <p className="text-xs text-[#a0948a] leading-snug mt-0.5">{item.tier.label}</p>
+              </li>
+            ))}
+          </ul>
         </div>
         <div className="border-t border-[#e3e2de]" />
         <div className="flex gap-8">

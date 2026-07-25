@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { ChevronLeft, X } from 'lucide-react'
-import type { DrawerStep, PriceTier } from '../../../types/booking'
+import type { BookingItem, DrawerStep } from '../../../types/booking'
 import { useSquareCard } from '../../../hooks/useSquareCard'
-import { TAX_RATE, parsePrice } from '../../../lib/pricing'
+import { TAX_RATE, basketTotals, formatMoney } from '../../../lib/pricing'
 import { isValidPhone } from '../../../lib/phone'
 import PhoneInput from '../../PhoneInput'
 
@@ -23,11 +23,11 @@ function formatCancellationDeadline(startAt: string): string {
   return `${get('hour')}:${get('minute')} ${get('dayPeriod')} on ${get('weekday')}, ${get('month')} ${get('day')}`
 }
 
-function formatCancellationFee(price: string): string {
-  const { amount } = parsePrice(price)
-  if (isNaN(amount)) return ''
-  const feeWithTax = amount * 0.5 * (1 + TAX_RATE)
-  return `CA$${feeWithTax.toFixed(2)}`
+// 50% of everything booked — a late cancellation costs the whole appointment.
+function formatCancellationFee(items: BookingItem[]): string {
+  const { prefix, subtotal } = basketTotals(items)
+  if (isNaN(subtotal)) return ''
+  return formatMoney(prefix === '$' ? 'CA$' : prefix, subtotal * 0.5 * (1 + TAX_RATE))
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
@@ -37,12 +37,12 @@ const labelCls = 'block text-[10px] font-semibold uppercase tracking-[0.15em] te
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
-interface DrawerStep3Props {
+interface DrawerDetailsProps {
   step: DrawerStep
   open: boolean
   locationId: string | null
   selectedStartAt: string | null
-  selectedTier: PriceTier | null
+  items: BookingItem[]
   firstName: string
   lastName: string
   email: string
@@ -58,17 +58,17 @@ interface DrawerStep3Props {
   onPolicyConsentChange: (v: boolean) => void
   onHoneypotChange: (v: string) => void
   onBack: () => void
-  onStep3Continue: (sourceId: string) => void
+  onDetailsContinue: (sourceId: string) => void
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function DrawerStep3({
+export default function DrawerDetails({
   step,
   open,
   locationId,
   selectedStartAt,
-  selectedTier,
+  items,
   firstName,
   lastName,
   email,
@@ -84,12 +84,12 @@ export default function DrawerStep3({
   onPolicyConsentChange,
   onHoneypotChange,
   onBack,
-  onStep3Continue,
-}: DrawerStep3Props) {
-  const { error: cardError, isLoading: step3Loading, tokenize } = useSquareCard({
-    active: step === 3 && open,
+  onDetailsContinue,
+}: DrawerDetailsProps) {
+  const { error: cardError, isLoading: cardLoading, tokenize } = useSquareCard({
+    active: step === 4 && open,
     locationId,
-    onSuccess: onStep3Continue,
+    onSuccess: onDetailsContinue,
   })
 
   // ── Policy modal ──
@@ -104,7 +104,7 @@ export default function DrawerStep3({
     policyConsent
 
   const deadline = selectedStartAt ? formatCancellationDeadline(selectedStartAt) : null
-  const fee = selectedTier ? formatCancellationFee(selectedTier.price) : null
+  const fee = items.length > 0 ? formatCancellationFee(items) : null
 
   return (
     <div>
@@ -284,11 +284,11 @@ export default function DrawerStep3({
       </div>
 
       <button
-        disabled={!canContinue || step3Loading}
+        disabled={!canContinue || cardLoading}
         onClick={tokenize}
         className="w-full py-3.5 bg-[#3d3530] text-white text-xs tracking-[0.15em] uppercase rounded-full disabled:opacity-35 disabled:cursor-not-allowed hover:enabled:bg-[#2a2320] active:enabled:scale-[0.98] transition-all"
       >
-        {step3Loading ? 'Verifying card…' : 'Continue'}
+        {cardLoading ? 'Verifying card…' : 'Continue'}
       </button>
     </div>
   )

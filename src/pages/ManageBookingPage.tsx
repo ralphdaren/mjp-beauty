@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-react'
-import { SERVICES } from '../data/booking'
 
 const CLIENT_TIMEZONE = 'America/Winnipeg'
 
-interface ManageBookingData {
-  status: 'pending' | 'accepted' | 'declined' | 'cancelled'
+interface ManageBookingItem {
   serviceName: string
   tierLabel: string
+}
+
+interface ManageBookingData {
+  status: 'pending' | 'accepted' | 'declined' | 'cancelled'
+  items: ManageBookingItem[]
   startAt: string
   firstName: string
 }
@@ -76,13 +79,13 @@ export default function ManageBookingPage() {
     // Don't cancel the old request yet — only navigate into the booking
     // widget with the old token in tow, so it's cancelled once the customer
     // actually completes a new booking (see handleConfirm in useBookingState).
-    const service = SERVICES.find((s) => s.name === data.serviceName)
+    // One `tier` param per booked service, in order — the booking page resolves
+    // each Square variation name back to its service and rebuilds the basket.
     const params = new URLSearchParams()
-    if (service) {
-      params.set('reschedule', service.id)
-      params.set('tier', data.tierLabel)
-      params.set('rescheduleToken', token)
+    for (const item of data.items) {
+      params.append('tier', item.tierLabel)
     }
+    if (params.has('tier')) params.set('rescheduleToken', token)
     navigate(`/book-appointment${params.toString() ? `?${params.toString()}` : ''}`)
   }
 
@@ -164,7 +167,11 @@ export default function ManageBookingPage() {
       <h1 className="text-lg font-semibold text-[#3d3530] mb-4">Hi {data.firstName},</h1>
 
       <div className="bg-[#f6f2ec] rounded-xl p-4 space-y-2 mb-6">
-        <p className="text-sm text-[#3d3530]"><strong>{data.serviceName}</strong> — {data.tierLabel}</p>
+        {data.items.map((item, index) => (
+          <p key={`${item.serviceName}-${index}`} className="text-sm text-[#3d3530]">
+            <strong>{item.serviceName}</strong> — {item.tierLabel}
+          </p>
+        ))}
         <p className="flex items-center gap-1.5 text-sm text-[#6b5f58]">
           <Clock size={13} />
           {formatAppointment(data.startAt)}

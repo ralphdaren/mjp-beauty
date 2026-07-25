@@ -1,18 +1,40 @@
-import { useState, useEffect } from 'react'
-import type { Service, PriceTier, Slot, DrawerStep } from '../types/booking'
+import { useState, useEffect, useMemo } from 'react'
+import type { BookingItem, Service, PriceTier, Slot, DrawerStep } from '../types/booking'
+import { MAX_SERVICES_PER_BOOKING } from '../types/booking'
+import { squareNameFor, tierMinutes } from '../lib/catalog'
+
+/** Every service in the appointment, in the order Square will run them. */
+function availabilityQuery(items: BookingItem[]): string {
+  return items
+    .map((item) => `tierLabel=${encodeURIComponent(squareNameFor(item.tier))}`)
+    .join('&')
+}
+
+function newItemId(): string {
+  return typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `item-${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
 
 export function useBookingState() {
   const [videoSrc, setVideoSrc] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [step, setStep] = useState<DrawerStep>(1)
 
-  // Selection state
-  const [selectedService, setSelectedService] = useState<Service | null>(null)
-  const [selectedTier, setSelectedTier] = useState<PriceTier | null>(null)
+  // The appointment being built — one entry per service, booked back to back.
+  const [items, setItems] = useState<BookingItem[]>([])
+
+  // The service/option pair the customer is picking right now on step 1. It only
+  // joins `items` once they add it, so backing out of the picker changes nothing.
+  const [draftService, setDraftService] = useState<Service | null>(null)
+  const [draftTier, setDraftTier] = useState<PriceTier | null>(null)
+  const [editingItemId, setEditingItemId] = useState<string | null>(null)
+
+  // Time selection
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [selectedStartAt, setSelectedStartAt] = useState<string | null>(null)
-  const [selectedTeamMemberId, setSelectedTeamMemberId] = useState<string | null>(null)
+  const [selectedTeamMemberIds, setSelectedTeamMemberIds] = useState<(string | null)[]>([])
   const [rescheduleToken, setRescheduleToken] = useState<string | null>(null)
 
   // Availability
@@ -42,6 +64,13 @@ export function useBookingState() {
   // input on the page do. Non-empty means the submission is bot traffic.
   const [honeypot, setHoneypot] = useState('')
 
+  // Availability is searched for the whole basket at once, so every effect below
+  // re-runs when a service is added, removed or swapped — not on identity churn.
+  const basketKey = useMemo(
+    () => items.map((item) => squareNameFor(item.tier)).join('|'),
+    [items],
+  )
+
   // Fetch Square location ID once on mount
   useEffect(() => {
     fetch('/api/locations/id')
@@ -50,20 +79,19 @@ export function useBookingState() {
       .catch(() => {})
   }, [])
 
-  // Fetch available dates when tier changes
+  // Fetch available dates when the basket changes
   useEffect(() => {
-    if (!selectedTier) { setAvailableDates(new Set()); return }
+    if (items.length === 0) { setAvailableDates(new Set()); return }
     const now = new Date()
-    fetchAvailableDates(selectedTier, now.getFullYear(), now.getMonth())
-  }, [selectedTier?.label])
+    fetchAvailableDates(items, now.getFullYear(), now.getMonth())
+  }, [basketKey])
 
-  // Fetch time slots when tier + date change
+  // Fetch time slots when the basket or date changes
   useEffect(() => {
-    if (!selectedTier || !selectedDate) { setSlots(null); return }
+    if (items.length === 0 || !selectedDate) { setSlots(null); return }
     setSlotsLoading(true)
     setSlotsError(null)
-    const label = encodeURIComponent(selectedTier.squareVariationName ?? selectedTier.label)
-    fetch(`/api/bookings/availability?tierLabel=${label}&date=${selectedDate}`)
+    fetch(`/api/bookings/availability?${availabilityQuery(items)}&date=${selectedDate}`)
       .then((r) => r.json())
       .then((data) => {
         if (data.error) setSlotsError(data.error)
@@ -71,13 +99,12 @@ export function useBookingState() {
       })
       .catch((err) => setSlotsError(String(err)))
       .finally(() => setSlotsLoading(false))
-  }, [selectedTier?.label, selectedDate])
+  }, [basketKey, selectedDate])
 
-  function fetchAvailableDates(tier: PriceTier, year: number, month: number) {
-    const label    = encodeURIComponent(tier.squareVariationName ?? tier.label)
+  function fetchAvailableDates(forItems: BookingItem[], year: number, month: number) {
     const monthStr = `${year}-${String(month + 1).padStart(2, '0')}`
     setDatesLoading(true)
-    fetch(`/api/bookings/availability?tierLabel=${label}&month=${monthStr}`)
+    fetch(`/api/bookings/availability?${availabilityQuery(forItems)}&month=${monthStr}`)
       .then((r) => r.json())
       .then((data) => setAvailableDates(new Set<string>(data.dates ?? [])))
       .catch(() => setAvailableDates(new Set()))
@@ -86,60 +113,117 @@ export function useBookingState() {
 
   // ─── Handlers ─────────────────────────────────────────────────────────────
 
-  function handleSelectService(service: Service) {
-    setSelectedService(service)
-    setSelectedTier(null)
+  // Changing what's booked changes how long the appointment runs, so any slot
+  // already picked no longer means anything.
+  function clearTimeSelection() {
     setSelectedDate(null)
     setSelectedTime(null)
     setSelectedStartAt(null)
-    setSelectedTeamMemberId(null)
+    setSelectedTeamMemberIds([])
     setSlots(null)
-    setStep(2)
+    setSlotsError(null)
+  }
+
+  function clearDraft() {
+    setDraftService(null)
+    setDraftTier(null)
+    setEditingItemId(null)
+  }
+
+  function handleSelectService(service: Service) {
+    setDraftService(service)
+    setDraftTier(null)
   }
 
   function handleSelectTier(tier: PriceTier) {
-    setSelectedTier(tier)
-    setSelectedTime(null)
-    setSelectedStartAt(null)
-    setSelectedTeamMemberId(null)
+    setDraftTier(tier)
+  }
+
+  // Commits the step 1 picker into the appointment — as a new service, or as a
+  // replacement when the customer came in through a summary pencil.
+  function handleAddDraft() {
+    if (!draftService || !draftTier) return
+    const service = draftService
+    const tier = draftTier
+    setItems((prev) => {
+      if (editingItemId) {
+        return prev.map((item) => (item.id === editingItemId ? { ...item, service, tier } : item))
+      }
+      if (prev.length >= MAX_SERVICES_PER_BOOKING) return prev
+      return [...prev, { id: newItemId(), service, tier }]
+    })
+    clearDraft()
+    clearTimeSelection()
+    setStep(2)
+  }
+
+  // Back out of the option picker without touching the appointment.
+  function handleCancelDraft() {
+    clearDraft()
+    if (items.length > 0) setStep(2)
+  }
+
+  function handleEditItem(id: string) {
+    const item = items.find((i) => i.id === id)
+    if (!item) return
+    setDraftService(item.service)
+    setDraftTier(item.tier)
+    setEditingItemId(id)
+    setStep(1)
+  }
+
+  function handleRemoveItem(id: string) {
+    const remaining = items.filter((item) => item.id !== id)
+    setItems(remaining)
+    clearTimeSelection()
+    if (remaining.length === 0) {
+      clearDraft()
+      setStep(1)
+    }
+  }
+
+  function handleAddAnother() {
+    clearDraft()
+    setStep(1)
   }
 
   function handleSelectDate(date: string) {
     setSelectedDate(date)
     setSelectedTime(null)
     setSelectedStartAt(null)
-    setSelectedTeamMemberId(null)
+    setSelectedTeamMemberIds([])
   }
 
   function handleSelectSlot(slot: Slot) {
     setSelectedTime(slot.time)
     setSelectedStartAt(slot.startAt)
-    setSelectedTeamMemberId(slot.teamMemberId)
+    setSelectedTeamMemberIds(slot.teamMemberIds ?? [slot.teamMemberId])
   }
 
   function handleMonthChange(year: number, month: number) {
-    if (selectedTier) fetchAvailableDates(selectedTier, year, month)
+    if (items.length > 0) fetchAvailableDates(items, year, month)
   }
 
   function handleBack() {
     setStep((s) => {
-      const prev = Math.max(1, s - 1) as DrawerStep
-      if (s === 4) setCardSourceId(null)
-      return prev
+      if (s === 5) setCardSourceId(null)
+      // Step 1 is the service list; leaving the summary means starting a new pick.
+      if (s === 2) clearDraft()
+      return Math.max(1, s - 1) as DrawerStep
     })
   }
 
   function handleContinue() {
-    setStep((s) => Math.min(4, s + 1) as DrawerStep)
+    setStep((s) => Math.min(5, s + 1) as DrawerStep)
   }
 
-  function handleStep3Continue(sourceId: string) {
+  function handleDetailsContinue(sourceId: string) {
     setCardSourceId(sourceId)
-    setStep(4)
+    setStep(5)
   }
 
   async function handleConfirm() {
-    if (!selectedService || !selectedTier || !selectedStartAt || !cardSourceId) return
+    if (items.length === 0 || !selectedStartAt || !cardSourceId) return
 
     // Bot filled the hidden honeypot field — pretend success without touching
     // Square/Supabase/Resend at all.
@@ -159,16 +243,17 @@ export function useBookingState() {
       if (!cardRes.ok) throw new Error(cardData.error ?? 'Failed to save card')
       const customerId: string = cardData.customerId
 
-      const squareTierLabel = selectedTier.squareVariationName ?? selectedTier.label
       const bookingRes = await fetch('/api/bookings/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tierLabel: squareTierLabel,
+          items: items.map((item, index) => ({
+            serviceName: item.service.name,
+            tierLabel: squareNameFor(item.tier),
+            teamMemberId: selectedTeamMemberIds[index] ?? null,
+          })),
           startAt: selectedStartAt,
-          teamMemberId: selectedTeamMemberId,
           customerId,
-          serviceName: selectedService.name,
           firstName,
           lastName,
           email,
@@ -201,13 +286,9 @@ export function useBookingState() {
   // Clears the previous booking so a reopened drawer never inherits its
   // selections, card or form values. Shared by every entry point below.
   function resetBooking() {
-    setSelectedTier(null)
-    setSelectedDate(null)
-    setSelectedTime(null)
-    setSelectedStartAt(null)
-    setSelectedTeamMemberId(null)
-    setSlots(null)
-    setSlotsError(null)
+    setItems([])
+    clearDraft()
+    clearTimeSelection()
     setFirstName('')
     setLastName('')
     setEmail('')
@@ -220,34 +301,40 @@ export function useBookingState() {
 
   function openDrawer() {
     resetBooking()
-    setSelectedService(null)
     setRescheduleToken(null)
     setStep(1)
     setDrawerOpen(true)
   }
 
-  // "Book Now" on a service row — skips the service picker and lands on step 2
-  // with that service chosen, so the client only has to pick an option.
+  // "Book Now" on a service row — opens the option picker for that service, so
+  // the client only has to choose an option to get their first item added.
   function openDrawerForService(service: Service) {
     resetBooking()
-    setSelectedService(service)
+    setDraftService(service)
     setRescheduleToken(null)
-    setStep(2)
+    setStep(1)
     setDrawerOpen(true)
   }
 
-  function openDrawerWithSelection(service: Service, tier: PriceTier, forRescheduleToken: string | null = null) {
+  // Reschedule: the same services are already chosen, so land straight on the
+  // date & time step with the basket pre-filled.
+  function openDrawerWithItems(
+    selections: Array<{ service: Service; tier: PriceTier }>,
+    forRescheduleToken: string | null = null,
+  ) {
+    if (selections.length === 0) return
     resetBooking()
-    setSelectedService(service)
-    setSelectedTier(tier)
+    setItems(selections.map((s) => ({ id: newItemId(), service: s.service, tier: s.tier })))
     setRescheduleToken(forRescheduleToken)
-    setStep(2)
+    setStep(3)
     setDrawerOpen(true)
   }
 
   function closeDrawer() {
     setDrawerOpen(false)
   }
+
+  const totalMinutes = items.reduce((sum, item) => sum + tierMinutes(item.tier), 0)
 
   return {
     // Video
@@ -257,13 +344,17 @@ export function useBookingState() {
     drawerOpen,
     openDrawer,
     openDrawerForService,
-    openDrawerWithSelection,
+    openDrawerWithItems,
     closeDrawer,
     step,
     bookingSuccess,
-    // Selection
-    selectedService,
-    selectedTier,
+    // Appointment
+    items,
+    totalMinutes,
+    draftService,
+    draftTier,
+    editingItemId,
+    // Time selection
     selectedDate,
     selectedTime,
     selectedStartAt,
@@ -288,12 +379,17 @@ export function useBookingState() {
     // Handlers
     handleSelectService,
     handleSelectTier,
+    handleAddDraft,
+    handleCancelDraft,
+    handleEditItem,
+    handleRemoveItem,
+    handleAddAnother,
     handleSelectDate,
     handleSelectSlot,
     handleMonthChange,
     handleBack,
     handleContinue,
-    handleStep3Continue,
+    handleDetailsContinue,
     handleConfirm,
     setFirstName,
     setLastName,

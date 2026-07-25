@@ -1,4 +1,4 @@
-// GET  /api/bookings/manage?token=...              → { status, serviceName, tierLabel, startAt, firstName }
+// GET  /api/bookings/manage?token=...              → { status, items, startAt, firstName }
 // POST /api/bookings/manage { token, action: 'cancel' } → { ok: true }
 // Lets a customer look up and cancel their own booking request while it's
 // still pending, using the opaque manage_token emailed to them at creation.
@@ -27,10 +27,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (fetchError || !request) return res.status(404).json({ error: 'Booking request not found' })
 
   if (req.method === 'GET') {
+    // `items` covers requests booked with several services; older rows only
+    // have the single-service columns.
+    const items = Array.isArray(request.items) && request.items.length > 0
+      ? request.items.map((item: any) => ({
+          serviceName: String(item.serviceName ?? request.service_name),
+          tierLabel: String(item.tierLabel ?? request.tier_label),
+        }))
+      : [{ serviceName: request.service_name, tierLabel: request.tier_label }]
+
     return res.status(200).json({
       status: request.status,
-      serviceName: request.service_name,
-      tierLabel: request.tier_label,
+      items,
       startAt: request.start_at,
       firstName: request.first_name,
     })

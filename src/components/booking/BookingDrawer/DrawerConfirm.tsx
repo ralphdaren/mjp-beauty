@@ -1,11 +1,12 @@
-import { ChevronLeft } from 'lucide-react'
-import type { Service, PriceTier } from '../../../types/booking'
+import { ChevronLeft, Clock } from 'lucide-react'
+import type { BookingItem } from '../../../types/booking'
 import { formatDate } from '../../../lib/utils'
-import { TAX_RATE, parsePrice, formatMoney } from '../../../lib/pricing'
+import { formatDuration } from '../../../lib/catalog'
+import { basketTotals, formatMoney } from '../../../lib/pricing'
 
-interface DrawerStep4Props {
-  selectedService: Service
-  selectedTier: PriceTier
+interface DrawerConfirmProps {
+  items: BookingItem[]
+  totalMinutes: number
   selectedDate: string
   selectedTime: string
   confirmLoading: boolean
@@ -13,18 +14,16 @@ interface DrawerStep4Props {
   onConfirm: () => void
 }
 
-export default function DrawerStep4({
-  selectedService,
-  selectedTier,
+export default function DrawerConfirm({
+  items,
+  totalMinutes,
   selectedDate,
   selectedTime,
   confirmLoading,
   onBack,
   onConfirm,
-}: DrawerStep4Props) {
-  const { prefix, amount: subtotal } = parsePrice(selectedTier.price)
-  const tax = subtotal * TAX_RATE
-  const total = subtotal + tax
+}: DrawerConfirmProps) {
+  const { prefix, subtotal, tax, total } = basketTotals(items)
 
   return (
     <div>
@@ -40,13 +39,20 @@ export default function DrawerStep4({
 
       <div className="bg-[#f6f2ec] rounded-2xl p-5 space-y-4 mb-5">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Service</p>
-          <p className="text-sm font-medium text-[#3d3530]">{selectedService.name}</p>
-        </div>
-        <div className="border-t border-[#e3e2de]" />
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Option</p>
-          <p className="text-sm text-[#3d3530] leading-snug">{selectedTier.label}</p>
+          <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-2">
+            {items.length === 1 ? 'Service' : `${items.length} services`}
+          </p>
+          <ul className="space-y-2.5">
+            {items.map((item) => (
+              <li key={item.id} className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-[#3d3530] leading-snug">{item.service.name}</p>
+                  <p className="text-xs text-[#a0948a] leading-snug mt-0.5">{item.tier.label}</p>
+                </div>
+                <p className="text-sm text-[#3d3530] whitespace-nowrap">{item.tier.price}</p>
+              </li>
+            ))}
+          </ul>
         </div>
         <div className="border-t border-[#e3e2de]" />
         <div className="flex gap-8">
@@ -58,6 +64,15 @@ export default function DrawerStep4({
             <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Time</p>
             <p className="text-sm text-[#3d3530]">{selectedTime}</p>
           </div>
+          {totalMinutes > 0 && (
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] mb-0.5">Duration</p>
+              <p className="flex items-center gap-1 text-sm text-[#3d3530]">
+                <Clock size={11} className="text-[#a0948a]" />
+                {formatDuration(totalMinutes * 60000)}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

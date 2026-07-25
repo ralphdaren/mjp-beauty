@@ -18,23 +18,29 @@ export default function BookAppointmentPage() {
   const [searchParams] = useSearchParams()
   const appliedReschedule = useRef(false)
 
-  // Coming from a "Reschedule" link on the manage-booking page: pre-select
-  // the same service/tier and jump straight to date & time selection. Waits for
-  // `ready` so the pre-selected tier carries Square's current price, not the
-  // booking.ts fallback the page first rendered with.
+  // Coming from a "Reschedule" link on the manage-booking page: pre-select the
+  // same services and jump straight to date & time selection. One `tier` param
+  // per booked service, in order — Square variation names are unique across the
+  // catalog, so each one resolves to exactly one service. Waits for `ready` so
+  // the tiers carry Square's current price, not the booking.ts fallback the page
+  // first rendered with.
   useEffect(() => {
     if (appliedReschedule.current || !ready) return
-    const serviceId = searchParams.get('reschedule')
-    const tierLabel = searchParams.get('tier')
+    const tierLabels = searchParams.getAll('tier')
     const rescheduleToken = searchParams.get('rescheduleToken')
-    if (!serviceId || !tierLabel) return
+    if (tierLabels.length === 0) return
 
-    const service = services.find((s) => s.id === serviceId)
-    const tier = service?.tiers.find((t) => squareNameFor(t) === tierLabel)
-    if (!service || !tier) return
+    const selections = tierLabels.flatMap((label) => {
+      for (const service of services) {
+        const tier = service.tiers.find((t) => squareNameFor(t) === label)
+        if (tier) return [{ service, tier }]
+      }
+      return []
+    })
+    if (selections.length !== tierLabels.length) return
 
     appliedReschedule.current = true
-    b.openDrawerWithSelection(service, tier, rescheduleToken)
+    b.openDrawerWithItems(selections, rescheduleToken)
   }, [searchParams, services, ready, b])
 
   return (
@@ -79,12 +85,15 @@ export default function BookAppointmentPage() {
         onClose={b.closeDrawer}
         step={b.step}
         bookingSuccess={b.bookingSuccess}
-        selectedService={b.selectedService}
-        selectedTier={b.selectedTier}
+        items={b.items}
+        totalMinutes={b.totalMinutes}
         selectedDate={b.selectedDate}
         selectedTime={b.selectedTime}
         selectedStartAt={b.selectedStartAt}
         services={services}
+        draftService={b.draftService}
+        draftTier={b.draftTier}
+        editingItemId={b.editingItemId}
         slots={b.slots}
         slotsLoading={b.slotsLoading}
         slotsError={b.slotsError}
@@ -101,12 +110,17 @@ export default function BookAppointmentPage() {
         honeypot={b.honeypot}
         onSelectService={b.handleSelectService}
         onSelectTier={b.handleSelectTier}
+        onAddDraft={b.handleAddDraft}
+        onCancelDraft={b.handleCancelDraft}
+        onEditItem={b.handleEditItem}
+        onRemoveItem={b.handleRemoveItem}
+        onAddAnother={b.handleAddAnother}
         onSelectDate={b.handleSelectDate}
         onSelectSlot={b.handleSelectSlot}
         onMonthChange={b.handleMonthChange}
         onBack={b.handleBack}
         onContinue={b.handleContinue}
-        onStep3Continue={b.handleStep3Continue}
+        onDetailsContinue={b.handleDetailsContinue}
         onConfirm={b.handleConfirm}
         onFirstNameChange={b.setFirstName}
         onLastNameChange={b.setLastName}

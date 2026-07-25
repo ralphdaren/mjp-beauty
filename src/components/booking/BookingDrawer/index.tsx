@@ -1,39 +1,51 @@
 import { useEffect } from 'react'
 import { X } from 'lucide-react'
-import type { Service, PriceTier, Slot, DrawerStep } from '../../../types/booking'
+import type { BookingItem, Service, PriceTier, Slot, DrawerStep } from '../../../types/booking'
 import StepIndicator from './StepIndicator'
 import DrawerSuccess from './DrawerSuccess'
-import DrawerStep1 from './DrawerStep1'
-import DrawerStep2 from './DrawerStep2'
-import DrawerStep3 from './DrawerStep3'
-import DrawerStep4 from './DrawerStep4'
+import DrawerServices from './DrawerServices'
+import DrawerOptions from './DrawerOptions'
+import DrawerSummary from './DrawerSummary'
+import DrawerDateTime from './DrawerDateTime'
+import DrawerDetails from './DrawerDetails'
+import DrawerConfirm from './DrawerConfirm'
 
 export interface BookingDrawerProps {
   open: boolean
   onClose: () => void
   step: DrawerStep
   bookingSuccess: boolean
-  selectedService: Service | null
-  selectedTier: PriceTier | null
+  // The appointment being built
+  items: BookingItem[]
+  totalMinutes: number
   selectedDate: string | null
   selectedTime: string | null
   selectedStartAt: string | null
-  // Step 1
+  // Step 1 — service list + option picker
   services: Service[]
-  // Step 2
+  draftService: Service | null
+  draftTier: PriceTier | null
+  editingItemId: string | null
+  onSelectService: (s: Service) => void
+  onSelectTier: (t: PriceTier) => void
+  onAddDraft: () => void
+  onCancelDraft: () => void
+  // Step 2 — summary
+  onEditItem: (id: string) => void
+  onRemoveItem: (id: string) => void
+  onAddAnother: () => void
+  // Step 3 — date & time
   slots: Slot[] | null
   slotsLoading: boolean
   slotsError: string | null
   availableDates: Set<string>
   datesLoading: boolean
-  onSelectService: (s: Service) => void
-  onSelectTier: (t: PriceTier) => void
   onSelectDate: (d: string) => void
   onSelectSlot: (slot: Slot) => void
   onMonthChange: (year: number, month: number) => void
   onBack: () => void
   onContinue: () => void
-  // Step 3
+  // Step 4 — details
   firstName: string
   lastName: string
   email: string
@@ -49,8 +61,8 @@ export interface BookingDrawerProps {
   onCardConsentChange: (v: boolean) => void
   onPolicyConsentChange: (v: boolean) => void
   onHoneypotChange: (v: string) => void
-  onStep3Continue: (sourceId: string) => void
-  // Step 4
+  onDetailsContinue: (sourceId: string) => void
+  // Step 5 — confirm
   confirmLoading: boolean
   onConfirm: () => void
 }
@@ -60,19 +72,27 @@ export default function BookingDrawer({
   onClose,
   step,
   bookingSuccess,
-  selectedService,
-  selectedTier,
+  items,
+  totalMinutes,
   selectedDate,
   selectedTime,
   selectedStartAt,
   services,
+  draftService,
+  draftTier,
+  editingItemId,
+  onSelectService,
+  onSelectTier,
+  onAddDraft,
+  onCancelDraft,
+  onEditItem,
+  onRemoveItem,
+  onAddAnother,
   slots,
   slotsLoading,
   slotsError,
   availableDates,
   datesLoading,
-  onSelectService,
-  onSelectTier,
   onSelectDate,
   onSelectSlot,
   onMonthChange,
@@ -93,7 +113,7 @@ export default function BookingDrawer({
   onCardConsentChange,
   onPolicyConsentChange,
   onHoneypotChange,
-  onStep3Continue,
+  onDetailsContinue,
   confirmLoading,
   onConfirm,
 }: BookingDrawerProps) {
@@ -121,8 +141,7 @@ export default function BookingDrawer({
         {bookingSuccess ? (
           <DrawerSuccess
             firstName={firstName}
-            selectedService={selectedService}
-            selectedTier={selectedTier}
+            items={items}
             selectedDate={selectedDate}
             selectedTime={selectedTime}
             onClose={onClose}
@@ -148,14 +167,42 @@ export default function BookingDrawer({
 
             {/* Scrollable step content */}
             <div className="flex-1 overflow-y-auto px-6 pb-8">
-              {step === 1 && (
-                <DrawerStep1 services={services} onSelectService={onSelectService} />
+              {/* Step 1 picks one service at a time: the list, then its options. */}
+              {step === 1 && !draftService && (
+                <DrawerServices
+                  services={services}
+                  bookedCount={items.length}
+                  onSelectService={onSelectService}
+                  onBack={onCancelDraft}
+                />
               )}
 
-              {step === 2 && selectedService && (
-                <DrawerStep2
-                  selectedService={selectedService}
-                  selectedTier={selectedTier}
+              {step === 1 && draftService && (
+                <DrawerOptions
+                  service={draftService}
+                  selectedTier={draftTier}
+                  isEditing={editingItemId !== null}
+                  onSelectTier={onSelectTier}
+                  onBack={onCancelDraft}
+                  onAdd={onAddDraft}
+                />
+              )}
+
+              {step === 2 && items.length > 0 && (
+                <DrawerSummary
+                  items={items}
+                  onEditItem={onEditItem}
+                  onRemoveItem={onRemoveItem}
+                  onAddAnother={onAddAnother}
+                  onBack={onBack}
+                  onContinue={onContinue}
+                />
+              )}
+
+              {step === 3 && items.length > 0 && (
+                <DrawerDateTime
+                  items={items}
+                  totalMinutes={totalMinutes}
                   selectedDate={selectedDate}
                   selectedTime={selectedTime}
                   slots={slots}
@@ -163,7 +210,6 @@ export default function BookingDrawer({
                   slotsError={slotsError}
                   availableDates={availableDates}
                   datesLoading={datesLoading}
-                  onSelectTier={onSelectTier}
                   onSelectDate={onSelectDate}
                   onSelectSlot={onSelectSlot}
                   onMonthChange={onMonthChange}
@@ -172,13 +218,13 @@ export default function BookingDrawer({
                 />
               )}
 
-              {step === 3 && (
-                <DrawerStep3
+              {step === 4 && (
+                <DrawerDetails
                   step={step}
                   open={open}
                   locationId={locationId}
                   selectedStartAt={selectedStartAt}
-                  selectedTier={selectedTier}
+                  items={items}
                   firstName={firstName}
                   lastName={lastName}
                   email={email}
@@ -194,14 +240,14 @@ export default function BookingDrawer({
                   onPolicyConsentChange={onPolicyConsentChange}
                   onHoneypotChange={onHoneypotChange}
                   onBack={onBack}
-                  onStep3Continue={onStep3Continue}
+                  onDetailsContinue={onDetailsContinue}
                 />
               )}
 
-              {step === 4 && selectedService && selectedTier && selectedDate && selectedTime && (
-                <DrawerStep4
-                  selectedService={selectedService}
-                  selectedTier={selectedTier}
+              {step === 5 && items.length > 0 && selectedDate && selectedTime && (
+                <DrawerConfirm
+                  items={items}
+                  totalMinutes={totalMinutes}
                   selectedDate={selectedDate}
                   selectedTime={selectedTime}
                   confirmLoading={confirmLoading}

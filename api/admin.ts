@@ -23,6 +23,28 @@ function isAuthorized(req: VercelRequest): boolean {
   return req.headers['authorization'] === `Bearer ${process.env.ADMIN_SECRET}`
 }
 
+interface RequestedItem {
+  serviceName: string
+  tierLabel: string
+  teamMemberId: string | null
+}
+
+/** Every service on a request — from `items`, or the pre-multi-service columns. */
+function requestedItems(request: any): RequestedItem[] {
+  if (Array.isArray(request.items) && request.items.length > 0) {
+    return request.items.map((item: any) => ({
+      serviceName: String(item.serviceName ?? request.service_name),
+      tierLabel: String(item.tierLabel ?? request.tier_label),
+      teamMemberId: item.teamMemberId ?? null,
+    }))
+  }
+  return [{
+    serviceName: request.service_name,
+    tierLabel: request.tier_label,
+    teamMemberId: request.team_member_id ?? null,
+  }]
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCorsHeaders(req, res)
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
@@ -74,15 +96,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (action === 'accept') {
       try {
         const [locationId, catalogItems] = await Promise.all([getLocationId(), getCatalogItems()])
-        const match = findVariationByLabel(catalogItems, request.tier_label)
-        if (!match.id) throw new Error(`No Square variation found for: "${request.tier_label}"`)
 
-        const { id: variationId, version: variationVersion } = match as { id: string; version: number }
-        const appointmentSegment: Record<string, unknown> = {
-          service_variation_id: variationId,
-          service_variation_version: variationVersion,
-        }
-        if (request.team_member_id) appointmentSegment.team_member_id = request.team_member_id
+        // One segment per booked service, run back to back. Rows written before
+        // multi-service booking have no `items`, so fall back to their columns.
+        const appointmentSegments = requestedItems(request).map((item) => {
+          const match = findVariationByLabel(catalogItems, item.tierLabel)
+          if (!match.id) throw new Error(`No Square variation found for: "${item.tierLabel}"`)
+
+          const segment: Record<string, unknown> = {
+            service_variation_id: match.id,
+            service_variation_version: match.version,
+          }
+          const teamMemberId = item.teamMemberId ?? request.team_member_id
+          if (teamMemberId) segment.team_member_id = teamMemberId
+          return segment
+        })
 
         const bookingData = await squareFetch('/v2/bookings', {
           method: 'POST',
@@ -92,7 +120,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               location_id: locationId,
               start_at: request.start_at,
               ...(request.square_customer_id ? { customer_id: request.square_customer_id } : {}),
-              appointment_segments: [appointmentSegment],
+              appointment_segments: appointmentSegments,
             },
           }),
         })
@@ -133,7 +161,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           subject: 'Your booking request — MJP Beauty',
           html: `
             <p>Hi ${escapeHtml(request.first_name)},</p>
-            <p>Thank you for reaching out to MJP Beauty. Unfortunately, we're unable to accommodate your request for <strong>${escapeHtml(request.service_name)} — ${escapeHtml(request.tier_label)}</strong> on <strong>${appointmentDate}</strong>.</p>
+            <p>Thank you for reaching out to MJP Beauty. Unfortunately, we're unable to accommodate your request for ${
+              requestedItems(request)
+                .map((item) => `<strong>${escapeHtml(item.serviceName)} — ${escapeHtml(item.tierLabel)}</strong>`)
+                .join(' and ')
+            } on <strong>${appointmentDate}</strong>.</p>
             <p>We'd love to find another time that works for you. Feel free to submit a new booking request anytime.</p>
             <p>— Micah at MJP Beauty</p>
           `,
