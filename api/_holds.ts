@@ -36,7 +36,7 @@ function rowMinutes(row: HoldRow, catalogItems: any[]): number {
 
   return labels.reduce((total, label) => {
     const match = findVariationByLabel(catalogItems, label)
-    return total + (match.id ? variationMinutes(match) : 0)
+    return total + (match ? variationMinutes(match) : 0)
   }, 0)
 }
 

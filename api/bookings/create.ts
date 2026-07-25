@@ -83,7 +83,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let durationMinutes = 0
     for (const item of items) {
       const match = findVariationByLabel(catalogItems, item.tierLabel)
-      if (!match.id) return res.status(404).json({ error: `No Square variation found matching: "${item.tierLabel}"` })
+      if (!match) return res.status(404).json({ error: `No Square variation found matching: "${item.tierLabel}"` })
       durationMinutes += variationMinutes(match)
     }
 

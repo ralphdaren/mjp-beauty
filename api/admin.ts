@@ -101,7 +101,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // multi-service booking have no `items`, so fall back to their columns.
         const appointmentSegments = requestedItems(request).map((item) => {
           const match = findVariationByLabel(catalogItems, item.tierLabel)
-          if (!match.id) throw new Error(`No Square variation found for: "${item.tierLabel}"`)
+          if (!match) throw new Error(`No Square variation found for: "${item.tierLabel}"`)
 
           const segment: Record<string, unknown> = {
             service_variation_id: match.id,

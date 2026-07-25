@@ -87,11 +87,8 @@ export interface VariationMatch {
 }
 
 // Find a catalog variation by name (case-insensitive exact match).
-// Returns the variation id + version, or null with a list of available names for debugging.
-export function findVariationByLabel(
-  items: any[],
-  tierLabel: string,
-): VariationMatch | { id: null; availableNames: string[] } {
+// Returns the variation id + version, or null when Square has no such name.
+export function findVariationByLabel(items: any[], tierLabel: string): VariationMatch | null {
   const needle = tierLabel.toLowerCase().trim()
   for (const item of items) {
     for (const v of item.item_data?.variations ?? []) {
@@ -105,13 +102,7 @@ export function findVariationByLabel(
       }
     }
   }
-  const availableNames: string[] = []
-  for (const item of items) {
-    for (const v of item.item_data?.variations ?? []) {
-      availableNames.push(`${item.item_data?.name} — ${v.item_variation_data?.name}`)
-    }
-  }
-  return { id: null, availableNames }
+  return null
 }
 
 /**
@@ -121,7 +112,7 @@ export function findVariationByLabel(
 export function findVariationsByLabels(items: any[], tierLabels: string[]): VariationMatch[] {
   return tierLabels.map((label) => {
     const match = findVariationByLabel(items, label)
-    if (!match.id) throw new Error(`No Square variation found matching: "${label}"`)
+    if (!match) throw new Error(`No Square variation found matching: "${label}"`)
     return match
   })
 }
