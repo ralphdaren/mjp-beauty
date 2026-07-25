@@ -14,6 +14,11 @@ const REELS = [
 
 const N = REELS.length
 
+// Cloudinary renders a still from the video itself, so the queued side cards
+// have something to show before their <video> has decoded a frame.
+const posterFor = (url: string) =>
+  url.replace('/video/upload/', '/video/upload/so_0,w_400/').replace(/\.mp4$/, '.jpg')
+
 // Center card: tall portrait rectangle
 // Side ±1: square matching center width
 // Side ±2: smaller square (partially clipped at viewport edge)
@@ -21,34 +26,55 @@ const CW = 300   // center width
 const CH = 545   // center height
 const S1 = 275   // ±1 square side
 const S2 = 220   // ±2 square side
+const GAP = 12   // visible space between adjacent cards
 
-// x = translateX from the container's horizontal center (card-center to card-center)
-// Gap between adjacent cards is 12px of visible space
-const X1 = CW / 2 + 12 + S1 / 2   // ≈ 300
-const X2 = X1 + S1 / 2 + 12 + S2 / 2  // ≈ 560
+// A 300px center card on a phone pushes the side cards almost entirely
+// off-screen, leaving only a sliver at each edge. Below that, scale the whole
+// layout down together so the neighbours still read as videos.
+function getDims(vw: number) {
+  const cw = Math.min(CW, Math.round(vw * 0.6))
+  const k = cw / CW
+  const ch = Math.round(CH * k)
+  const s1 = Math.round(S1 * k)
+  const s2 = Math.round(S2 * k)
+  const gap = Math.max(8, Math.round(GAP * k))
+  // x = translateX from the container's horizontal centre (card-centre to card-centre)
+  const x1 = cw / 2 + gap + s1 / 2
+  const x2 = x1 + s1 / 2 + gap + s2 / 2
+  return { cw, ch, s1, s2, x1, x2, park: x2 + s2 }
+}
 
 function getDiff(i: number, active: number): number {
   const raw = ((i - active) % N + N) % N
   return raw > N / 2 ? raw - N : raw
 }
 
-function getSlot(diff: number) {
+function getSlot(diff: number, d: ReturnType<typeof getDims>) {
   switch (diff) {
-    case -2: return { x: -X2, w: S2, h: S2, opacity: 0.5,  z: 1 }
-    case -1: return { x: -X1, w: S1, h: S1, opacity: 0.82, z: 2 }
-    case  0: return { x:   0, w: CW, h: CH, opacity: 1,    z: 3 }
-    case  1: return { x:  X1, w: S1, h: S1, opacity: 0.82, z: 2 }
-    case  2: return { x:  X2, w: S2, h: S2, opacity: 0.5,  z: 1 }
+    case -2: return { x: -d.x2, w: d.s2, h: d.s2, opacity: 0.5,  z: 1 }
+    case -1: return { x: -d.x1, w: d.s1, h: d.s1, opacity: 0.82, z: 2 }
+    case  0: return { x:    0,  w: d.cw, h: d.ch, opacity: 1,    z: 3 }
+    case  1: return { x:  d.x1, w: d.s1, h: d.s1, opacity: 0.82, z: 2 }
+    case  2: return { x:  d.x2, w: d.s2, h: d.s2, opacity: 0.5,  z: 1 }
     // park off-screen at the same square size so they slide in naturally
-    default: return { x: diff < 0 ? -860 : 860, w: S2, h: S2, opacity: 0, z: -1 }
+    default: return { x: diff < 0 ? -d.park : d.park, w: d.s2, h: d.s2, opacity: 0, z: -1 }
   }
 }
 
 export default function InstagramReels() {
   const [active, setActive] = useState(0)
   const [inView, setInView] = useState(false)
+  const [vw, setVw] = useState(() => (typeof window === 'undefined' ? 1280 : window.innerWidth))
   const sectionRef = useRef<HTMLElement | null>(null)
   const videoRefs = useRef<(HTMLVideoElement | null)[]>(new Array(N).fill(null))
+
+  const dims = getDims(vw)
+
+  useEffect(() => {
+    const onResize = () => setVw(window.innerWidth)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
 
   useEffect(() => {
     const el = sectionRef.current
@@ -77,16 +103,45 @@ export default function InstagramReels() {
     })
   }, [active, inView])
 
+  const step = (dir: 1 | -1) => setActive(i => (i + dir + N) % N)
+
+  // Track the finger so a horizontal drag advances the carousel. Nothing is
+  // preventDefault-ed, so a mostly-vertical drag still scrolls the page.
+  const touchStart = useRef<{ x: number; y: number } | null>(null)
+  const swiped = useRef(false)
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+    swiped.current = false
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const start = touchStart.current
+    touchStart.current = null
+    if (!start) return
+    const dx = e.changedTouches[0].clientX - start.x
+    const dy = e.changedTouches[0].clientY - start.y
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+      swiped.current = true
+      step(dx < 0 ? 1 : -1)
+    }
+  }
+
   return (
     <section ref={sectionRef} className="bg-[#fefefe] py-20 border-t border-[#e3e2de] overflow-hidden">
       {/* Carousel */}
-      <div className="relative" style={{ height: CH + 60 }}>
+      <div
+        className="relative"
+        style={{ height: dims.ch + 60, touchAction: 'pan-y' }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <div className="absolute inset-0 flex items-center justify-center">
           {REELS.map((url, i) => {
             const diff = getDiff(i, active)
             const abs  = Math.abs(diff)
             const visible = abs <= 2
-            const s = getSlot(diff)
+            const s = getSlot(diff, dims)
 
             return (
               <div
@@ -108,12 +163,18 @@ export default function InstagramReels() {
                   ].join(', '),
                   willChange: 'width, height, transform, opacity',
                 }}
-                onClick={() => abs > 0 && visible && setActive(i)}
+                onClick={() => {
+                  // A swipe ends with a click on whichever card was under the
+                  // finger; ignore it so the swipe target wins.
+                  if (swiped.current) return
+                  if (abs > 0 && visible) setActive(i)
+                }}
               >
                 {inView ? (
                   <video
                     ref={el => { videoRefs.current[i] = el }}
                     src={url}
+                    poster={posterFor(url)}
                     loop
                     muted
                     playsInline
