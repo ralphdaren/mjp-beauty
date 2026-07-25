@@ -84,6 +84,8 @@ export interface VariationMatch {
   id: string
   version: number
   durationMs: number | null
+  /** Name of the parent catalog item — the service this option belongs to. */
+  itemName: string
 }
 
 // Find a catalog variation by name (case-insensitive exact match).
@@ -98,6 +100,7 @@ export function findVariationByLabel(items: any[], tierLabel: string): Variation
           id: v.id as string,
           version: v.version as number,
           durationMs: (v.item_variation_data?.service_duration as number | undefined) ?? null,
+          itemName: (item.item_data?.name as string | undefined) ?? '',
         }
       }
     }
