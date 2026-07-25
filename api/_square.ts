@@ -50,6 +50,36 @@ export async function getCatalogItems(): Promise<any[]> {
   return objects
 }
 
+export interface CatalogVariation {
+  name: string
+  priceCents: number | null
+  durationMs: number | null
+  bookable: boolean
+}
+
+// Flattens the appointment services into a plain list of variations for the
+// public /api/services route. Only name, price, duration and bookability are
+// exposed — Square's own item descriptions and image_ids are deliberately never
+// read, since the site uses its own copy and Cloudinary photos.
+export function listServiceVariations(items: any[]): CatalogVariation[] {
+  const variations: CatalogVariation[] = []
+  for (const item of items) {
+    const data = item.item_data
+    if (!data || data.product_type !== 'APPOINTMENTS_SERVICE' || data.is_archived) continue
+    for (const v of data.variations ?? []) {
+      const name: string | undefined = v.item_variation_data?.name
+      if (!name) continue
+      variations.push({
+        name,
+        priceCents: v.item_variation_data?.price_money?.amount ?? null,
+        durationMs: v.item_variation_data?.service_duration ?? null,
+        bookable: v.item_variation_data?.available_for_booking === true,
+      })
+    }
+  }
+  return variations
+}
+
 // Find a catalog variation by name (case-insensitive exact match).
 // Returns the variation id + version, or null with a list of available names for debugging.
 export function findVariationByLabel(

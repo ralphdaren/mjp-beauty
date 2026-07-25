@@ -7,7 +7,7 @@ interface ServiceRowProps {
   service: Service
   index: number
   onVideoOpen: (src: string) => void
-  onBook: () => void
+  onBook: (service: Service) => void
 }
 
 export default function ServiceRow({ service, index, onVideoOpen, onBook }: ServiceRowProps) {
@@ -97,7 +97,7 @@ export default function ServiceRow({ service, index, onVideoOpen, onBook }: Serv
         </div>
 
         <button
-          onClick={onBook}
+          onClick={() => onBook(service)}
           className="md:hidden mt-6 block w-full py-3 bg-[#3d3530] text-white text-xs tracking-[0.15em] uppercase text-center rounded-full hover:bg-[#2a2320] active:scale-[0.98] transition-all"
         >
           Book Now
@@ -110,7 +110,7 @@ export default function ServiceRow({ service, index, onVideoOpen, onBook }: Serv
           {String(index + 1).padStart(2, '0')}
         </span>
         <button
-          onClick={onBook}
+          onClick={() => onBook(service)}
           className="block w-full py-3 bg-[#3d3530] text-white text-xs tracking-[0.15em] uppercase text-center rounded-full hover:bg-[#2a2320] active:scale-[0.98] transition-all"
         >
           Book Now

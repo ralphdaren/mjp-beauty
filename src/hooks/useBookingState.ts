@@ -198,9 +198,9 @@ export function useBookingState() {
     }
   }
 
-  function openDrawer() {
-    setStep(1)
-    setSelectedService(null)
+  // Clears the previous booking so a reopened drawer never inherits its
+  // selections, card or form values. Shared by every entry point below.
+  function resetBooking() {
     setSelectedTier(null)
     setSelectedDate(null)
     setSelectedTime(null)
@@ -216,29 +216,32 @@ export function useBookingState() {
     setPolicyConsent(false)
     setCardSourceId(null)
     setBookingSuccess(false)
+  }
+
+  function openDrawer() {
+    resetBooking()
+    setSelectedService(null)
     setRescheduleToken(null)
+    setStep(1)
+    setDrawerOpen(true)
+  }
+
+  // "Book Now" on a service row — skips the service picker and lands on step 2
+  // with that service chosen, so the client only has to pick an option.
+  function openDrawerForService(service: Service) {
+    resetBooking()
+    setSelectedService(service)
+    setRescheduleToken(null)
+    setStep(2)
     setDrawerOpen(true)
   }
 
   function openDrawerWithSelection(service: Service, tier: PriceTier, forRescheduleToken: string | null = null) {
-    setStep(2)
+    resetBooking()
     setSelectedService(service)
     setSelectedTier(tier)
-    setSelectedDate(null)
-    setSelectedTime(null)
-    setSelectedStartAt(null)
-    setSelectedTeamMemberId(null)
-    setSlots(null)
-    setSlotsError(null)
-    setFirstName('')
-    setLastName('')
-    setEmail('')
-    setPhone('')
-    setCardConsent(false)
-    setPolicyConsent(false)
-    setCardSourceId(null)
-    setBookingSuccess(false)
     setRescheduleToken(forRescheduleToken)
+    setStep(2)
     setDrawerOpen(true)
   }
 
@@ -253,6 +256,7 @@ export function useBookingState() {
     // Drawer
     drawerOpen,
     openDrawer,
+    openDrawerForService,
     openDrawerWithSelection,
     closeDrawer,
     step,

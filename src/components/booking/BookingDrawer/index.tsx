@@ -18,6 +18,8 @@ export interface BookingDrawerProps {
   selectedDate: string | null
   selectedTime: string | null
   selectedStartAt: string | null
+  // Step 1
+  services: Service[]
   // Step 2
   slots: Slot[] | null
   slotsLoading: boolean
@@ -63,6 +65,7 @@ export default function BookingDrawer({
   selectedDate,
   selectedTime,
   selectedStartAt,
+  services,
   slots,
   slotsLoading,
   slotsError,
@@ -146,7 +149,7 @@ export default function BookingDrawer({
             {/* Scrollable step content */}
             <div className="flex-1 overflow-y-auto px-6 pb-8">
               {step === 1 && (
-                <DrawerStep1 onSelectService={onSelectService} />
+                <DrawerStep1 services={services} onSelectService={onSelectService} />
               )}
 
               {step === 2 && selectedService && (

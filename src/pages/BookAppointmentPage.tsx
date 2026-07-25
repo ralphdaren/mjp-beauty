@@ -2,7 +2,8 @@ import { useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useScrollAnimation } from '../hooks/useScrollAnimation'
 import { useBookingState } from '../hooks/useBookingState'
-import { SERVICES } from '../data/booking'
+import { useServices } from '../hooks/useServices'
+import { squareNameFor } from '../lib/catalog'
 import ServiceRow from '../components/booking/ServiceRow'
 import VideoModal from '../components/booking/VideoModal'
 import InfoTabs from '../components/booking/InfoTabs'
@@ -13,25 +14,28 @@ import BookingDrawer from '../components/booking/BookingDrawer'
 export default function BookAppointmentPage() {
   useScrollAnimation()
   const b = useBookingState()
+  const { services, ready } = useServices()
   const [searchParams] = useSearchParams()
   const appliedReschedule = useRef(false)
 
   // Coming from a "Reschedule" link on the manage-booking page: pre-select
-  // the same service/tier and jump straight to date & time selection.
+  // the same service/tier and jump straight to date & time selection. Waits for
+  // `ready` so the pre-selected tier carries Square's current price, not the
+  // booking.ts fallback the page first rendered with.
   useEffect(() => {
-    if (appliedReschedule.current) return
+    if (appliedReschedule.current || !ready) return
     const serviceId = searchParams.get('reschedule')
     const tierLabel = searchParams.get('tier')
     const rescheduleToken = searchParams.get('rescheduleToken')
     if (!serviceId || !tierLabel) return
 
-    const service = SERVICES.find((s) => s.id === serviceId)
-    const tier = service?.tiers.find((t) => (t.squareVariationName ?? t.label) === tierLabel)
+    const service = services.find((s) => s.id === serviceId)
+    const tier = service?.tiers.find((t) => squareNameFor(t) === tierLabel)
     if (!service || !tier) return
 
     appliedReschedule.current = true
     b.openDrawerWithSelection(service, tier, rescheduleToken)
-  }, [searchParams, b])
+  }, [searchParams, services, ready, b])
 
   return (
     <>
@@ -48,13 +52,13 @@ export default function BookAppointmentPage() {
       {/* Services list */}
       <main className="bg-[#fefefe] py-4 px-6 md:px-10 lg:px-16">
         <div className="max-w-5xl mx-auto divide-y divide-[#e3e2de]">
-          {SERVICES.map((service, index) => (
+          {services.map((service, index) => (
             <ServiceRow
               key={service.id}
               service={service}
               index={index}
               onVideoOpen={b.setVideoSrc}
-              onBook={b.openDrawer}
+              onBook={b.openDrawerForService}
             />
           ))}
         </div>
@@ -80,6 +84,7 @@ export default function BookAppointmentPage() {
         selectedDate={b.selectedDate}
         selectedTime={b.selectedTime}
         selectedStartAt={b.selectedStartAt}
+        services={services}
         slots={b.slots}
         slotsLoading={b.slotsLoading}
         slotsError={b.slotsError}

@@ -1,17 +1,17 @@
 import { ChevronRight } from 'lucide-react'
 import type { Service } from '../../../types/booking'
-import { SERVICES } from '../../../data/booking'
 
 interface DrawerStep1Props {
+  services: Service[]
   onSelectService: (service: Service) => void
 }
 
-export default function DrawerStep1({ onSelectService }: DrawerStep1Props) {
+export default function DrawerStep1({ services, onSelectService }: DrawerStep1Props) {
   return (
     <div>
       <p className="text-sm text-[#6b5f58] mb-5">Which service are you booking today?</p>
       <div className="space-y-3">
-        {SERVICES.map((service) => (
+        {services.map((service) => (
           <button
             key={service.id}
             onClick={() => onSelectService(service)}
