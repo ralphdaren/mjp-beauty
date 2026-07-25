@@ -122,7 +122,7 @@ function servicesDevPlugin(env: Record<string, string>): Plugin {
                 'Square-Version': '2024-01-18',
               },
             })
-            const data = await upstream.json()
+            const data = (await upstream.json()) as { objects?: any[] }
             const variations = []
             for (const item of data.objects ?? []) {
               const itemData = item.item_data
