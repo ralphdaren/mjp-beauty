@@ -2,16 +2,18 @@ import { useEffect, useMemo, useState, useCallback } from 'react'
 import { ChevronLeft, ChevronRight, Star, X } from 'lucide-react'
 import { getAllPublishedReviews, submitReview } from '@/lib/judgeme'
 import type { JudgeMeReview } from '@/lib/judgeme'
-import type { ShopifyProduct } from '@/lib/shopify'
 
 const REVIEWS_PER_PAGE = 3
 
-// Only the two full-course products carry reviews for this page — single
-// modules have their own product pages.
-const COURSES = [
-  { label: 'Independent Artist', handle: import.meta.env.VITE_SHOPIFY_HANDLE_INDEPENDENT as string },
-  { label: 'VIP Mentorship', handle: import.meta.env.VITE_SHOPIFY_HANDLE_VIP as string },
-]
+export type ReviewOption = {
+  // Shown on the filter row and in the modal's course picker.
+  label: string
+  // Judge.me groups reviews by Shopify product handle — this is what the filter matches on.
+  handle: string
+  // Numeric Shopify product id a new review gets attached to. Null while the
+  // product is still loading (or failed to load), which disables submission.
+  productId: string | null
+}
 
 type SortOption = 'recent' | 'highest' | 'lowest'
 
@@ -52,10 +54,20 @@ const inputClass =
 const emptyForm = { name: '', email: '', title: '', body: '', rating: 0, honeypot: '' }
 
 export default function CourseReviewsSection({
-  products,
+  options,
+  eyebrow = 'Client Reviews',
+  heading = 'What Beauty Artists Are Saying.',
+  optionQuestion = 'Which training did you take?',
+  emptyMessage = 'Be the first to share your experience.',
 }: {
-  // Index-aligned with COURSES — supplies the Judge.me product id when writing a review.
-  products: (ShopifyProduct | null)[]
+  // The courses this section covers — drives both the filter row and the
+  // modal's picker. Reviews for anything outside this list are ignored.
+  options: ReviewOption[]
+  eyebrow?: string
+  heading?: string
+  optionQuestion?: string
+  // Shown in place of the rating summary until the first review is published.
+  emptyMessage?: string
 }) {
   const [reviews, setReviews] = useState<JudgeMeReview[]>([])
   const [filter, setFilter] = useState<'all' | string>('all')
@@ -70,12 +82,17 @@ export default function CourseReviewsSection({
   const [submitting, setSubmitting] = useState(false)
   const [submitResult, setSubmitResult] = useState<{ ok: boolean; message: string } | null>(null)
 
+  // Joined rather than the array itself so a parent re-render passing a fresh
+  // array literal doesn't refetch.
+  const handleKey = options.map(o => o.handle).filter(Boolean).join(',')
+
   useEffect(() => {
-    const handles = COURSES.map(c => c.handle)
+    const handles = handleKey.split(',').filter(Boolean)
+    if (handles.length === 0) return
     getAllPublishedReviews().then(all =>
       setReviews(all.filter(r => handles.includes(r.product_handle)))
     )
-  }, [])
+  }, [handleKey])
 
   // The summary always reflects every course review; only the list below reacts
   // to the filter.
@@ -113,11 +130,11 @@ export default function CourseReviewsSection({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const product = products[courseIndex]
-    if (!product || form.rating === 0) return
+    const productId = options[courseIndex]?.productId
+    if (!productId || form.rating === 0) return
     setSubmitting(true)
     const result = await submitReview({
-      productId: product.id,
+      productId,
       name: form.name,
       email: form.email,
       rating: form.rating,
@@ -130,7 +147,7 @@ export default function CourseReviewsSection({
     if (result.ok) setForm(emptyForm)
   }
 
-  if (reviews.length === 0) return null
+  const hasReviews = reviews.length > 0
 
   return (
     <section className="bg-[#f6f2ec] py-20 px-6 md:px-8">
@@ -141,18 +158,41 @@ export default function CourseReviewsSection({
             the reviews have loaded. */}
         <div>
           <p className="text-[0.72rem] uppercase tracking-[0.3em] text-[#b07b5a] mb-4">
-            Client Reviews
+            {eyebrow}
           </p>
           <h2
             className="about-heading leading-tight text-[#3d3028]"
             style={{ fontSize: 'clamp(1.9rem, 3.2vw, 3rem)' }}
           >
-            What Beauty Artists Are Saying.
+            {heading}
           </h2>
         </div>
 
         <div className="h-px bg-[#d8d0c8] mt-10" />
 
+        {/* Before the first review lands, the average and the star breakdown
+            would read as 0.0 out of five empty bars — worse than saying nothing.
+            Show an invitation instead. */}
+        {!hasReviews && (
+          <div className="py-16 flex flex-col items-center text-center gap-5">
+            <Stars rating={0} size={18} />
+            <p className="about-subheading text-xl sm:text-2xl text-[#3d3028]">
+              No reviews yet.
+            </p>
+            <p className="text-sm text-[#5a5047] max-w-md leading-relaxed">
+              {emptyMessage}
+            </p>
+            <button
+              onClick={() => setShowModal(true)}
+              className="mt-2 px-9 py-4 bg-[#3d3028] text-white text-[0.72rem] uppercase tracking-[0.2em] font-medium hover:bg-[#2a1a0e] transition-colors duration-200"
+            >
+              Write a Review
+            </button>
+          </div>
+        )}
+
+        {hasReviews && (
+        <>
         {/* Rating summary */}
         <div className="grid gap-10 py-12 items-center md:grid-cols-[minmax(150px,auto)_1fr] lg:grid-cols-[minmax(150px,auto)_1fr_auto]">
 
@@ -206,7 +246,7 @@ export default function CourseReviewsSection({
             {/* Filter */}
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
               <span className="text-[0.68rem] uppercase tracking-[0.22em] text-[#b07b5a]">Filter</span>
-              {[{ label: 'All', value: 'all' }, ...COURSES.map(c => ({ label: c.label, value: c.handle }))].map(opt => (
+              {[{ label: 'All', value: 'all' }, ...options.map(o => ({ label: o.label, value: o.handle }))].map(opt => (
                 <button
                   key={opt.value}
                   onClick={() => applyFilter(opt.value)}
@@ -304,6 +344,8 @@ export default function CourseReviewsSection({
             </button>
           </div>
         )}
+        </>
+        )}
       </div>
 
       {/* Write a Review modal */}
@@ -390,10 +432,10 @@ export default function CourseReviewsSection({
                   {/* Which course */}
                   <div>
                     <label className="text-xs font-medium text-[#6b5f58] tracking-wide block mb-2">
-                      Which training did you take? <span className="text-red-400">*</span>
+                      {optionQuestion} <span className="text-red-400">*</span>
                     </label>
                     <div className="flex gap-2">
-                      {COURSES.map((course, i) => (
+                      {options.map((course, i) => (
                         <button
                           type="button"
                           key={course.handle}
@@ -507,7 +549,7 @@ export default function CourseReviewsSection({
                   <div className="flex gap-3 pt-1">
                     <button
                       type="submit"
-                      disabled={submitting || form.rating === 0 || !products[courseIndex]}
+                      disabled={submitting || form.rating === 0 || !options[courseIndex]?.productId}
                       className="flex-1 py-3 rounded-lg bg-[#3d3028] text-white text-xs tracking-[0.2em] uppercase font-medium hover:bg-[#2a1a0e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {submitting ? 'Submitting…' : 'Submit Review'}

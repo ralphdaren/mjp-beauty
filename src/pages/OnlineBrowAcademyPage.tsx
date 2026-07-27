@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useState, useCallback, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { HelpCircle } from 'lucide-react'
@@ -6,6 +6,7 @@ import { useScrollAnimation } from '@/hooks/useScrollAnimation'
 import BackToTop from '@/components/BackToTop'
 import Accordion from '@/components/Accordion'
 import CourseReviewsSection from '@/components/CourseReviewsSection'
+import type { ReviewOption } from '@/components/CourseReviewsSection'
 import InstagramReels from '@/components/InstagramReels'
 import { getProductByHandle, createCheckoutUrl, formatPrice } from '@/lib/shopify'
 import type { ShopifyProduct } from '@/lib/shopify'
@@ -396,6 +397,21 @@ export default function OnlineBrowAcademyPage() {
       .then(setShopifyProducts)
       .catch(() => {})
   }, [])
+
+  // Only the two full-course products carry reviews on this page — single
+  // modules have their own product pages.
+  const reviewOptions = useMemo<ReviewOption[]>(() => [
+    {
+      label: 'Independent Artist',
+      handle: import.meta.env.VITE_SHOPIFY_HANDLE_INDEPENDENT as string,
+      productId: shopifyProducts[0]?.id ?? null,
+    },
+    {
+      label: 'VIP Mentorship',
+      handle: import.meta.env.VITE_SHOPIFY_HANDLE_VIP as string,
+      productId: shopifyProducts[1]?.id ?? null,
+    },
+  ], [shopifyProducts])
 
   useEffect(() => {
     const handles = [
@@ -924,7 +940,7 @@ export default function OnlineBrowAcademyPage() {
 
       <InstagramReels reels={REELS} />
 
-      <CourseReviewsSection products={shopifyProducts} />
+      <CourseReviewsSection options={reviewOptions} />
 
       <OnlineFaqSection />
 

@@ -9,6 +9,8 @@ import HowItWorks from '@/components/training/sections/HowItWorks'
 import ChooseYourPath from '@/components/training/sections/ChooseYourPath'
 import StudentPerks from '@/components/training/sections/StudentPerks'
 import InstagramReels from '@/components/InstagramReels'
+import CourseReviewsSection from '@/components/CourseReviewsSection'
+import type { ReviewOption } from '@/components/CourseReviewsSection'
 import TrainingInfoTabs, { type TrainingTabId } from '@/components/training/TrainingInfoTabs'
 import BrowGuidePopup from '@/components/training/BrowGuidePopup'
 import { useScrollPopupTrigger } from '@/hooks/useScrollPopupTrigger'
@@ -27,15 +29,36 @@ const REELS = [
   'v1785127450/ip-reel-08_poq8xj',
 ]
 
+// In-person training is booked through Square, not Shopify, so these two
+// products exist in Shopify purely as Judge.me review containers — they're off
+// every sales channel and nothing on the site links to them. Hardcoded rather
+// than read from .env because the values never differ per environment, and a
+// missing Vercel var would silently hide the section in production.
+const REVIEW_OPTIONS: ReviewOption[] = [
+  {
+    label: 'Small Group',
+    handle: 'in-person-small-group-training',
+    productId: '8676185505964',
+  },
+  {
+    label: 'Private 1-on-1',
+    handle: 'in-person-private-1-on-1-training',
+    productId: '8676186194092',
+  },
+]
+
 export default function InPersonTrainingPage() {
   const [datesModalOpen, setDatesModalOpen] = useState(false)
   const [infoTab, setInfoTab] = useState<TrainingTabId>('enroll')
   const infoTabsRef = useRef<HTMLElement>(null)
+  const perksEndRef = useRef<HTMLDivElement>(null)
 
   useScrollAnimation()
   const training = useTrainingBookingState()
   const { groups: dateGroups, loading: datesLoading } = useTrainingDateGroups()
-  const guidePopup = useScrollPopupTrigger('mjp-training-guide-popup-dismissed')
+  // The freebie offer follows the perks pitch, so it opens as the reader
+  // finishes that section rather than at an arbitrary scroll depth.
+  const guidePopup = useScrollPopupTrigger('mjp-training-guide-popup-dismissed', perksEndRef)
 
   const handleHowToEnroll = useCallback(() => {
     setInfoTab('enroll')
@@ -63,6 +86,15 @@ export default function InPersonTrainingPage() {
       <InstagramReels reels={REELS} />
 
       <StudentPerks />
+      <div ref={perksEndRef} aria-hidden="true" />
+
+      <CourseReviewsSection
+        options={REVIEW_OPTIONS}
+        eyebrow="Student Reviews"
+        heading="What Students Are Saying."
+        optionQuestion="Which training did you attend?"
+        emptyMessage="Trained with Micah in person? Share how it went — you'll be the first."
+      />
 
       <TrainingInfoTabs sectionRef={infoTabsRef} active={infoTab} onChange={setInfoTab} />
 
