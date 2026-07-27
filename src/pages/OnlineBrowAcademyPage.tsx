@@ -6,12 +6,24 @@ import { useScrollAnimation } from '@/hooks/useScrollAnimation'
 import BackToTop from '@/components/BackToTop'
 import Accordion from '@/components/Accordion'
 import CourseReviewsSection from '@/components/CourseReviewsSection'
+import InstagramReels from '@/components/InstagramReels'
 import { getProductByHandle, createCheckoutUrl, formatPrice } from '@/lib/shopify'
 import type { ShopifyProduct } from '@/lib/shopify'
 const olHeadImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_1600/v1783027948/ol-head_xivqpl.jpg'
 const optImg01 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_600/v1783027940/opt-img-01_ufhoau.jpg'
 const optImg02 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_600/v1783027944/opt-img-02_l9ncxq.jpg'
 const curriculumImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_900/v1783027938/curriculum-img_frtvcf.jpg'
+
+const REELS = [
+  'v1785127684/ol-reel-01_e1wqcz',
+  'v1785127685/ol-reel-02_sq7wyq',
+  'v1785127679/ol-reel-03_svndl5',
+  'v1785127684/ol-reel-04_rz1rzg',
+  'v1785127688/ol-reel-05_adnomw',
+  'v1785127676/ol-reel-06_vt1bc7',
+  'v1785127677/ol-reel-07_fowhyb',
+  'v1785127686/ol-reel-08_tppgqd',
+]
 
 const youWillItems = [
   'Master the technique of knowing exactly when to remove the perm solution — no more relying on your timers. No more under- or over-processing of the brows. Just beautifully lifted, natural-looking lamination results every time.',
@@ -909,6 +921,8 @@ export default function OnlineBrowAcademyPage() {
           </div>
         </div>
       </section>
+
+      <InstagramReels reels={REELS} />
 
       <CourseReviewsSection products={shopifyProducts} />
 

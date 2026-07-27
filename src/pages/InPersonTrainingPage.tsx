@@ -8,12 +8,24 @@ import TrainingIntro from '@/components/training/sections/TrainingIntro'
 import HowItWorks from '@/components/training/sections/HowItWorks'
 import ChooseYourPath from '@/components/training/sections/ChooseYourPath'
 import StudentPerks from '@/components/training/sections/StudentPerks'
+import InstagramReels from '@/components/InstagramReels'
 import TrainingInfoTabs, { type TrainingTabId } from '@/components/training/TrainingInfoTabs'
 import BrowGuidePopup from '@/components/training/BrowGuidePopup'
 import { useScrollPopupTrigger } from '@/hooks/useScrollPopupTrigger'
 import TrainingDrawer from '@/components/training/TrainingDrawer'
 import TrainingDatesModal from '@/components/training/TrainingDatesModal'
 import type { TrainingOptionCard } from '@/types/training'
+
+const REELS = [
+  'v1785127450/ip-reel-01_ajf1jb',
+  'v1785127489/ip-reel-02_gmdlew',
+  'v1785127484/ip-reel-03_bvpjpx',
+  'v1785127490/ip-reel-04_mga7co',
+  'v1785127488/ip-reel-05_ia8c5p',
+  'v1785127489/ip-reel-06_hl3uqh',
+  'v1785127485/ip-reel-07_vehqzm',
+  'v1785127450/ip-reel-08_poq8xj',
+]
 
 export default function InPersonTrainingPage() {
   const [datesModalOpen, setDatesModalOpen] = useState(false)
@@ -47,6 +59,8 @@ export default function InPersonTrainingPage() {
         onHowToEnroll={handleHowToEnroll}
         onBookNow={handleBookNow}
       />
+
+      <InstagramReels reels={REELS} />
 
       <StudentPerks />
 
