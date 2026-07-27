@@ -4,21 +4,6 @@ import { Volume2, VolumeX } from 'lucide-react'
 
 const BASE = 'https://res.cloudinary.com/dr9nm40gf/video/upload'
 
-// Cloudinary public IDs only — the transform belongs to the delivery helper
-// below so the video and its poster can never drift apart.
-const REELS = [
-  'v1785121052/b-reel-01_cx8hqx',
-  'v1785121053/b-reel-02_kkjldv',
-  'v1785121051/b-reel-03_w912vr',
-  'v1785121051/b-reel-04_jv2fkk',
-  'v1785121057/b-reel-05_vjqijw',
-  'v1785121054/b-reel-06_whwosd',
-  'v1785121055/b-reel-07_epzmkz',
-  'v1785121055/b-reel-08_mnolkx',
-]
-
-const N = REELS.length
-
 // c_limit only ever shrinks. Plain w_600 would upscale a master narrower than
 // 600px and hand back a bigger file than the one we asked it to trim.
 const srcFor = (id: string) => `${BASE}/q_auto:eco,f_auto,w_600,c_limit/${id}.mp4`
@@ -52,9 +37,9 @@ function getDims(vw: number) {
   return { cw, ch, s1, s2, x1, x2, park: x2 + s2 }
 }
 
-function getDiff(i: number, active: number): number {
-  const raw = ((i - active) % N + N) % N
-  return raw > N / 2 ? raw - N : raw
+function getDiff(i: number, active: number, n: number): number {
+  const raw = ((i - active) % n + n) % n
+  return raw > n / 2 ? raw - n : raw
 }
 
 function getSlot(diff: number, d: ReturnType<typeof getDims>) {
@@ -69,7 +54,10 @@ function getSlot(diff: number, d: ReturnType<typeof getDims>) {
   }
 }
 
-export default function InstagramReels() {
+// `reels` holds Cloudinary public IDs only — the transform belongs to the
+// delivery helpers above so a video and its poster can never drift apart.
+export default function InstagramReels({ reels }: { reels: string[] }) {
+  const N = reels.length
   const [active, setActive] = useState(0)
   const [inView, setInView] = useState(false)
   const [isMuted, setIsMuted] = useState(true)
@@ -167,8 +155,8 @@ export default function InstagramReels() {
         onTouchEnd={handleTouchEnd}
       >
         <div className="absolute inset-0 flex items-center justify-center">
-          {REELS.map((id, i) => {
-            const diff = getDiff(i, active)
+          {reels.map((id, i) => {
+            const diff = getDiff(i, active, N)
             const abs  = Math.abs(diff)
             const visible = abs <= 2
             const s = getSlot(diff, dims)
@@ -240,7 +228,7 @@ export default function InstagramReels() {
 
       {/* Dot indicators */}
       <div className="flex justify-center gap-2 mt-5">
-        {REELS.map((_, i) => (
+        {reels.map((_, i) => (
           <button
             key={i}
             onClick={() => goTo(i)}

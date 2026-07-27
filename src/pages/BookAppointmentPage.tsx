@@ -8,9 +8,20 @@ import ClientEmailPopup from '../components/booking/ClientEmailPopup'
 import ServiceRow from '../components/booking/ServiceRow'
 import VideoModal from '../components/booking/VideoModal'
 import InfoTabs from '../components/booking/InfoTabs'
-import InstagramReels from '../components/booking/InstagramReels'
+import InstagramReels from '../components/InstagramReels'
 import StudioLocation from '../components/booking/StudioLocation'
 import BookingDrawer from '../components/booking/BookingDrawer'
+
+const REELS = [
+  'v1785121052/b-reel-01_cx8hqx',
+  'v1785121053/b-reel-02_kkjldv',
+  'v1785121051/b-reel-03_w912vr',
+  'v1785121051/b-reel-04_jv2fkk',
+  'v1785121057/b-reel-05_vjqijw',
+  'v1785121054/b-reel-06_whwosd',
+  'v1785121055/b-reel-07_epzmkz',
+  'v1785121055/b-reel-08_mnolkx',
+]
 
 export default function BookAppointmentPage() {
   useScrollAnimation()
@@ -69,7 +80,7 @@ export default function BookAppointmentPage() {
         </div>
       </main>
 
-      <InstagramReels />
+      <InstagramReels reels={REELS} />
 
       <StudioLocation />
 

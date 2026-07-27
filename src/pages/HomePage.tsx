@@ -8,6 +8,18 @@ import { CircleCheck } from 'lucide-react'
 import { useScrollAnimation } from '@/hooks/useScrollAnimation'
 import BackToTop from '@/components/BackToTop'
 import TestimonialsSection from '@/components/TestimonialsSection'
+import InstagramReels from '@/components/InstagramReels'
+
+const REELS = [
+  'v1785126609/home-reel-01_aswz81',
+  'v1785126685/home-reel-02_tvjjnp',
+  'v1785126635/home-reel-03_ycpalr',
+  'v1785126614/home-reel-04_jauuas',
+  'v1785126613/home-reel-05_xwec5h',
+  'v1785126685/home-reel-06_xx6ise',
+  'v1785126709/home-reel-07_f2z21l',
+  'v1785126707/home-reel-08_fj9jp0',
+]
 
 export default function Home() {
   const location = useLocation()
@@ -227,6 +239,10 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Instagram Reels Section */}
+      <InstagramReels reels={REELS} />
+
       {/* Student Testimonials Section */}
       <TestimonialsSection />
 
