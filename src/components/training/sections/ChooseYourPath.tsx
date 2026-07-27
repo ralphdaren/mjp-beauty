@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import { CircleAlert } from 'lucide-react'
+import { CircleAlert, Mail } from 'lucide-react'
 import SectionHeading from './SectionHeading'
 import TrainingDatesCard from '../TrainingDatesCard'
 import { OPTION_CARDS } from '@/data/training'
 import type { TrainingDateGroup, TrainingOptionCard } from '@/types/training'
+
+/** Flodesk form for students who want to hear about future training dates. */
+const TRAINING_INQUIRIES_URL = 'https://mjpbeauty.myflodesk.com/traininginquiries'
 
 type ChooseYourPathProps = {
   dateGroups: TrainingDateGroup[]
@@ -260,6 +263,33 @@ export default function ChooseYourPath({
             </p>
           </div>
 
+        </div>
+      </div>
+
+      {/* Dates don't work? — capture the lead for future sessions */}
+      <div className="anim-fade-up mx-auto max-w-[1300px] mt-10" style={{ transitionDelay: '0.4s' }}>
+        <div className="rounded-2xl border border-[#e3e2de] bg-white/70 px-7 py-7 sm:px-9 sm:py-6 flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-8">
+          <span className="hidden sm:flex w-11 h-11 shrink-0 items-center justify-center rounded-full bg-[#f6f2ec] text-[#827064]">
+            <Mail size={18} />
+          </span>
+
+          <div className="flex-1 text-center sm:text-left">
+            <p className="text-[#3d3028] text-base sm:text-lg font-semibold leading-snug mb-1.5">
+              None of these dates work for you?
+            </p>
+            <p className="text-[#5a5047] text-[0.8rem] sm:text-sm leading-relaxed">
+              Join the list and I&apos;ll reach out as soon as new training dates open up.
+            </p>
+          </div>
+
+          <a
+            href={TRAINING_INQUIRIES_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full sm:w-auto shrink-0 text-center py-3.5 sm:py-3 px-8 rounded-xl border border-[#3d3028] text-[#3d3028] text-[0.7rem] uppercase tracking-[0.18em] font-medium hover:bg-[#3d3028] hover:text-white transition-colors duration-200"
+          >
+            Keep Me Posted
+          </a>
         </div>
       </div>
     </section>
