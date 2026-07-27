@@ -1,23 +1,31 @@
 import { useState, useRef, useEffect } from 'react'
 import { SiInstagram } from '@icons-pack/react-simple-icons'
+import { Volume2, VolumeX } from 'lucide-react'
 
+const BASE = 'https://res.cloudinary.com/dr9nm40gf/video/upload'
+
+// Cloudinary public IDs only — the transform belongs to the delivery helper
+// below so the video and its poster can never drift apart.
 const REELS = [
-  'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1782541924/reel-01_hkcyzp.mp4',
-  'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1782542116/reel-08_ww5dyh.mp4',
-  'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1782542089/reel-05_eefxyq.mp4',
-  'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1782542140/reel-06_jh8q0f.mp4',
-  'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1782542105/reel-07_p7kqwg.mp4',
-  'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1782542048/reel-03_qm8qzc.mp4',
-  'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1782542075/reel-04_f692i6.mp4',
-  'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1782541936/reel-02_z3kxis.mp4',
+  'v1785121052/b-reel-01_cx8hqx',
+  'v1785121053/b-reel-02_kkjldv',
+  'v1785121051/b-reel-03_w912vr',
+  'v1785121051/b-reel-04_jv2fkk',
+  'v1785121057/b-reel-05_vjqijw',
+  'v1785121054/b-reel-06_whwosd',
+  'v1785121055/b-reel-07_epzmkz',
+  'v1785121055/b-reel-08_mnolkx',
 ]
 
 const N = REELS.length
 
+// c_limit only ever shrinks. Plain w_600 would upscale a master narrower than
+// 600px and hand back a bigger file than the one we asked it to trim.
+const srcFor = (id: string) => `${BASE}/q_auto:eco,f_auto,w_600,c_limit/${id}.mp4`
+
 // Cloudinary renders a still from the video itself, so the queued side cards
 // have something to show before their <video> has decoded a frame.
-const posterFor = (url: string) =>
-  url.replace('/video/upload/', '/video/upload/so_0,w_400/').replace(/\.mp4$/, '.jpg')
+const posterFor = (id: string) => `${BASE}/so_0,w_400,c_limit/${id}.jpg`
 
 // Center card: tall portrait rectangle
 // Side ±1: square matching center width
@@ -64,9 +72,15 @@ function getSlot(diff: number, d: ReturnType<typeof getDims>) {
 export default function InstagramReels() {
   const [active, setActive] = useState(0)
   const [inView, setInView] = useState(false)
+  const [isMuted, setIsMuted] = useState(true)
+  // Grows only. A card that has come into range keeps its src so stepping back
+  // through the carousel replays from buffer instead of refetching.
+  const [loaded, setLoaded] = useState<Set<number>>(() => new Set())
   const [vw, setVw] = useState(() => (typeof window === 'undefined' ? 1280 : window.innerWidth))
   const sectionRef = useRef<HTMLElement | null>(null)
   const videoRefs = useRef<(HTMLVideoElement | null)[]>(new Array(N).fill(null))
+  // Lets the observer seed the right window without re-subscribing on every step.
+  const activeRef = useRef(0)
 
   const dims = getDims(vw)
 
@@ -76,6 +90,21 @@ export default function InstagramReels() {
     return () => window.removeEventListener('resize', onResize)
   }, [])
 
+  // Only the centre card and its immediate neighbours fetch video; the ±2 cards
+  // sit on their poster until they are one step away from being watched.
+  const markLoaded = (centre: number) =>
+    setLoaded(prev => {
+      const next = new Set(prev)
+      for (let d = -1; d <= 1; d++) next.add(((centre + d) % N + N) % N)
+      return next.size === prev.size ? prev : next
+    })
+
+  const goTo = (i: number) => {
+    activeRef.current = i
+    setActive(i)
+    markLoaded(i)
+  }
+
   useEffect(() => {
     const el = sectionRef.current
     if (!el) return
@@ -83,6 +112,7 @@ export default function InstagramReels() {
       ([entry]) => {
         if (entry.isIntersecting) {
           setInView(true)
+          markLoaded(activeRef.current)
           observer.disconnect()
         }
       },
@@ -101,9 +131,9 @@ export default function InstagramReels() {
         v.pause()
       }
     })
-  }, [active, inView])
+  }, [active, inView, loaded])
 
-  const step = (dir: 1 | -1) => setActive(i => (i + dir + N) % N)
+  const step = (dir: 1 | -1) => goTo((active + dir + N) % N)
 
   // Track the finger so a horizontal drag advances the carousel. Nothing is
   // preventDefault-ed, so a mostly-vertical drag still scrolls the page.
@@ -137,7 +167,7 @@ export default function InstagramReels() {
         onTouchEnd={handleTouchEnd}
       >
         <div className="absolute inset-0 flex items-center justify-center">
-          {REELS.map((url, i) => {
+          {REELS.map((id, i) => {
             const diff = getDiff(i, active)
             const abs  = Math.abs(diff)
             const visible = abs <= 2
@@ -167,18 +197,20 @@ export default function InstagramReels() {
                   // A swipe ends with a click on whichever card was under the
                   // finger; ignore it so the swipe target wins.
                   if (swiped.current) return
-                  if (abs > 0 && visible) setActive(i)
+                  if (abs > 0 && visible) goTo(i)
                 }}
               >
                 {inView ? (
                   <video
                     ref={el => { videoRefs.current[i] = el }}
-                    src={url}
-                    poster={posterFor(url)}
+                    src={loaded.has(i) ? srcFor(id) : undefined}
+                    poster={posterFor(id)}
                     loop
-                    muted
+                    // Autoplay is only permitted while muted, so a card can
+                    // carry sound solely when it is the one being watched.
+                    muted={isMuted || i !== active}
                     playsInline
-                    preload="metadata"
+                    preload={diff === 0 ? 'auto' : 'metadata'}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -191,6 +223,19 @@ export default function InstagramReels() {
             )
           })}
         </div>
+
+        {/* Sound toggle, pinned to the top-right corner of the centre card.
+            The cards are centred in a container 60px taller than the tall one,
+            so the centre card starts 30px down. */}
+        <button
+          onClick={() => setIsMuted(m => !m)}
+          aria-label={isMuted ? 'Unmute reel' : 'Mute reel'}
+          aria-pressed={!isMuted}
+          className="absolute z-10 grid place-items-center w-9 h-9 rounded-full bg-[#1a1410]/55 text-white backdrop-blur-sm hover:bg-[#1a1410]/75 transition-colors duration-300"
+          style={{ top: 42, left: '50%', transform: `translateX(${dims.cw / 2 - 46}px)` }}
+        >
+          {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+        </button>
       </div>
 
       {/* Dot indicators */}
@@ -198,7 +243,7 @@ export default function InstagramReels() {
         {REELS.map((_, i) => (
           <button
             key={i}
-            onClick={() => setActive(i)}
+            onClick={() => goTo(i)}
             aria-label={`Go to reel ${i + 1}`}
             className="rounded-full transition-all duration-300"
             style={{
