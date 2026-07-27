@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react'
 
-const GUIDE_POPUP_SESSION_KEY = 'mjp-training-guide-popup-dismissed'
-
 /**
- * Shows the brow guide popup once per session, after the visitor has read
- * roughly 72% of the page. Dismissing it remembers the choice for the session.
+ * Shows a popup once per session, after the visitor has read roughly 72% of the
+ * page. Dismissing it remembers the choice for the session under `sessionKey`,
+ * so each popup needs its own key.
  */
-export function useGuidePopupTrigger() {
+export function useScrollPopupTrigger(sessionKey: string) {
   const [show, setShow] = useState(false)
 
   useEffect(() => {
-    if (sessionStorage.getItem(GUIDE_POPUP_SESSION_KEY)) return
+    if (sessionStorage.getItem(sessionKey)) return
 
     function handleScroll() {
       const scrolled = window.scrollY + window.innerHeight
@@ -23,11 +22,11 @@ export function useGuidePopupTrigger() {
 
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  }, [sessionKey])
 
   function dismiss() {
     setShow(false)
-    sessionStorage.setItem(GUIDE_POPUP_SESSION_KEY, '1')
+    sessionStorage.setItem(sessionKey, '1')
   }
 
   return { show, dismiss }

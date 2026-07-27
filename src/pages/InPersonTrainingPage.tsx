@@ -10,7 +10,7 @@ import ChooseYourPath from '@/components/training/sections/ChooseYourPath'
 import StudentPerks from '@/components/training/sections/StudentPerks'
 import TrainingInfoTabs, { type TrainingTabId } from '@/components/training/TrainingInfoTabs'
 import BrowGuidePopup from '@/components/training/BrowGuidePopup'
-import { useGuidePopupTrigger } from '@/hooks/useGuidePopupTrigger'
+import { useScrollPopupTrigger } from '@/hooks/useScrollPopupTrigger'
 import TrainingDrawer from '@/components/training/TrainingDrawer'
 import TrainingDatesModal from '@/components/training/TrainingDatesModal'
 import type { TrainingOptionCard } from '@/types/training'
@@ -23,7 +23,7 @@ export default function InPersonTrainingPage() {
   useScrollAnimation()
   const training = useTrainingBookingState()
   const { groups: dateGroups, loading: datesLoading } = useTrainingDateGroups()
-  const guidePopup = useGuidePopupTrigger()
+  const guidePopup = useScrollPopupTrigger('mjp-training-guide-popup-dismissed')
 
   const handleHowToEnroll = useCallback(() => {
     setInfoTab('enroll')

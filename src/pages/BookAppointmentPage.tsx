@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useScrollAnimation } from '../hooks/useScrollAnimation'
+import { useScrollPopupTrigger } from '../hooks/useScrollPopupTrigger'
 import { useBookingState } from '../hooks/useBookingState'
 import { useServices } from '../hooks/useServices'
+import ClientEmailPopup from '../components/booking/ClientEmailPopup'
 import ServiceRow from '../components/booking/ServiceRow'
 import VideoModal from '../components/booking/VideoModal'
 import InfoTabs from '../components/booking/InfoTabs'
@@ -16,14 +18,8 @@ export default function BookAppointmentPage() {
   const { services, ready } = useServices()
   const [searchParams] = useSearchParams()
   const appliedReschedule = useRef(false)
+  const clientEmailPopup = useScrollPopupTrigger('mjp-booking-client-email-popup-dismissed')
 
-  // Coming from a "Reschedule" link on the manage-booking page: pre-select the
-  // same services and jump straight to date & time selection. One `tier` param
-  // per booked service, in order, each optionally paired with the Square
-  // variation id it was booked under — the id is matched first, so a service
-  // renamed since the original booking still resolves. Waits for `ready` so the
-  // tiers carry Square's current names and prices, not the booking.ts fallbacks
-  // the page first rendered with.
   useEffect(() => {
     if (appliedReschedule.current || !ready) return
     const tierLabels = searchParams.getAll('tier')
@@ -81,6 +77,11 @@ export default function BookAppointmentPage() {
 
       {b.videoSrc && (
         <VideoModal src={b.videoSrc} onClose={() => b.setVideoSrc(null)} />
+      )}
+
+      {/* Held back while the drawer or a video is open — both sit at z-50 too */}
+      {clientEmailPopup.show && !b.drawerOpen && !b.videoSrc && (
+        <ClientEmailPopup onClose={clientEmailPopup.dismiss} />
       )}
 
       <BookingDrawer
