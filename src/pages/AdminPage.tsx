@@ -18,7 +18,6 @@ interface BookingRequest {
   items: Array<{ serviceName: string; tierLabel: string }> | null
   duration_minutes: number | null
   start_at: string
-  square_booking_id: string | null
   reviewed_at: string | null
 }
 
@@ -537,12 +536,6 @@ export default function AdminPage() {
                   <span className="text-[#a0948a] uppercase tracking-[0.1em]">Submitted</span>
                   <span className="text-[#a0948a] text-right">{formatSubmitted(r.created_at)}</span>
                 </div>
-                {r.square_booking_id && (
-                  <div className="flex justify-between">
-                    <span className="text-[#a0948a] uppercase tracking-[0.1em]">Square ID</span>
-                    <span className="text-[#a0948a] font-mono text-right">{r.square_booking_id}</span>
-                  </div>
-                )}
               </div>
 
               {/* Actions — pending only */}
