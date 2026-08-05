@@ -29,11 +29,6 @@ const REELS = [
   'v1785127450/ip-reel-08_poq8xj',
 ]
 
-// In-person training is booked through Square, not Shopify, so these two
-// products exist in Shopify purely as Judge.me review containers — they're off
-// every sales channel and nothing on the site links to them. Hardcoded rather
-// than read from .env because the values never differ per environment, and a
-// missing Vercel var would silently hide the section in production.
 const REVIEW_OPTIONS: ReviewOption[] = [
   {
     label: 'Small Group',
@@ -56,8 +51,6 @@ export default function InPersonTrainingPage() {
   useScrollAnimation()
   const training = useTrainingBookingState()
   const { groups: dateGroups, loading: datesLoading } = useTrainingDateGroups()
-  // The freebie offer follows the perks pitch, so it opens as the reader
-  // finishes that section rather than at an arbitrary scroll depth.
   const guidePopup = useScrollPopupTrigger('mjp-training-guide-popup-dismissed', perksEndRef)
 
   const handleHowToEnroll = useCallback(() => {
