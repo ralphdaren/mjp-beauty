@@ -1,7 +1,12 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { LogOut, RefreshCw, Search, SlidersHorizontal, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { Menu, RefreshCw, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
 import TrainingBookingsPanel from '../components/admin/TrainingBookingsPanel'
 import TrainingDatesPanel from '../components/admin/TrainingDatesPanel'
+import MentorshipPanel from '../components/admin/MentorshipPanel'
+import AdminSidebar from '../components/admin/AdminSidebar'
+import StatusTabs from '../components/admin/StatusTabs'
+import SearchFilterBar from '../components/admin/SearchFilterBar'
+import { CATEGORY_LABEL, type AdminCategory, type TrainingView, type PanelRefresh } from '../components/admin/adminShell'
 
 interface BookingRequest {
   id: string
@@ -13,66 +18,48 @@ interface BookingRequest {
   phone: string | null
   service_name: string
   tier_label: string
-  // Every service on the request, for appointments that booked more than one.
-  // Null on requests taken before multi-service booking existed.
   items: Array<{ serviceName: string; tierLabel: string }> | null
   duration_minutes: number | null
   start_at: string
   reviewed_at: string | null
 }
-
-/** Falls back to the single-service columns for pre-multi-service rows. */
 function requestServices(r: BookingRequest): Array<{ serviceName: string; tierLabel: string }> {
   return r.items?.length ? r.items : [{ serviceName: r.service_name, tierLabel: r.tier_label }]
 }
 
 type Tab = 'pending' | 'accepted' | 'declined' | 'cancelled'
-type Category = 'services' | 'training'
-type TrainingView = 'bookings' | 'dates'
 
 const PAGE_SIZE = 10
 
-function RequestCardSkeleton() {
+function RequestRowSkeleton({ columns }: { columns: number }) {
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <div className="space-y-2">
-          <div className="h-3.5 w-32 bg-[#ece7e0] rounded-full animate-pulse" />
-          <div className="h-3 w-40 bg-[#ece7e0] rounded-full animate-pulse" />
-        </div>
-        <div className="h-3 w-14 bg-[#ece7e0] rounded-full animate-pulse shrink-0" />
-      </div>
-      <div className="bg-[#f6f2ec] rounded-xl p-4 space-y-3 mb-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex justify-between">
-            <div className="h-2.5 w-16 bg-[#e3ded5] rounded-full animate-pulse" />
-            <div className="h-2.5 w-24 bg-[#e3ded5] rounded-full animate-pulse" />
-          </div>
-        ))}
-      </div>
-      <div className="flex gap-2">
-        <div className="flex-1 h-9 bg-[#f6f2ec] rounded-full animate-pulse" />
-        <div className="flex-1 h-9 bg-[#f6f2ec] rounded-full animate-pulse" />
+    <tr className="border-b border-[#f1ece5] last:border-0">
+      {Array.from({ length: columns }).map((_, i) => (
+        <td key={i} className="px-5 py-4">
+          <div className="h-3 w-24 bg-[#ece7e0] rounded-full animate-pulse" />
+        </td>
+      ))}
+    </tr>
+  )
+}
+
+function RequestRowSkeletonMobile() {
+  return (
+    <div className="flex items-center gap-3 px-4 py-3.5">
+      <div className="w-1.5 h-1.5 rounded-full bg-[#ece7e0] shrink-0" />
+      <div className="flex-1 space-y-2">
+        <div className="h-3 w-28 bg-[#ece7e0] rounded-full animate-pulse" />
+        <div className="h-2.5 w-40 bg-[#f1ece5] rounded-full animate-pulse" />
       </div>
     </div>
   )
 }
 
-const STATUS_STYLES: Record<BookingRequest['status'], { bg: string; text: string; dot: string }> = {
-  pending:  { bg: 'bg-amber-50',  text: 'text-amber-600', dot: 'bg-amber-500' },
-  accepted: { bg: 'bg-[#eaf5ee]', text: 'text-[#4a9d6f]', dot: 'bg-[#4a9d6f]' },
-  declined: { bg: 'bg-red-50',    text: 'text-red-500',   dot: 'bg-red-400' },
-  cancelled: { bg: 'bg-[#f3f0ec]', text: 'text-[#8a8078]', dot: 'bg-[#a0948a]' },
-}
-
-function StatusBadge({ status }: { status: BookingRequest['status'] }) {
-  const s = STATUS_STYLES[status]
-  return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-[0.08em] shrink-0 ${s.bg} ${s.text}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
-      {status}
-    </span>
-  )
+const STATUS_STYLES: Record<BookingRequest['status'], { dot: string }> = {
+  pending: { dot: 'bg-amber-500' },
+  accepted: { dot: 'bg-[#4a9d6f]' },
+  declined: { dot: 'bg-red-400' },
+  cancelled: { dot: 'bg-[#a0948a]' },
 }
 
 const TIMEZONE = 'America/Winnipeg'
@@ -104,8 +91,13 @@ export default function AdminPage() {
   const [loginError, setLoginError] = useState('')
   const [loginLoading, setLoginLoading] = useState(false)
 
-  const [category, setCategory] = useState<Category>('services')
+  const [category, setCategory] = useState<AdminCategory>('services')
   const [trainingView, setTrainingView] = useState<TrainingView>('bookings')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [trainingHolds, setTrainingHolds] = useState(0)
+  // The header's refresh button drives whichever panel is on screen; panels that
+  // load data register their fetcher here and clear it on unmount.
+  const [panelRefresh, setPanelRefresh] = useState<PanelRefresh | null>(null)
 
   const [requests, setRequests] = useState<BookingRequest[]>([])
   const [fetchLoading, setFetchLoading] = useState(false)
@@ -114,13 +106,12 @@ export default function AdminPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   const [search, setSearch] = useState('')
-  const [filterOpen, setFilterOpen] = useState(false)
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [serviceFilter, setServiceFilter] = useState('')
   const [optionFilter, setOptionFilter] = useState('')
   const [page, setPage] = useState(1)
-  const filterPanelRef = useRef<HTMLDivElement>(null)
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
 
   const authHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
 
@@ -144,29 +135,37 @@ export default function AdminPage() {
     }
   }, [])
 
-  // Auto-login if token already in sessionStorage
-  useEffect(() => {
-    if (token) {
-      fetchRequests(token).then(() => setAuthenticated(true))
+  const fetchTrainingHolds = useCallback(async (t: string) => {
+    try {
+      const res = await fetch('/api/admin?resource=training-bookings', { headers: { Authorization: `Bearer ${t}` } })
+      if (!res.ok) return
+      const data = await res.json()
+      const bookings: Array<{ effective_status: string }> = data.bookings ?? []
+      setTrainingHolds(bookings.filter((b) => b.effective_status === 'hold').length)
+    } catch {
     }
   }, [])
 
-  // Close the filter panel on outside click
   useEffect(() => {
-    if (!filterOpen) return
-    function handleClick(e: MouseEvent) {
-      if (filterPanelRef.current && !filterPanelRef.current.contains(e.target as Node)) {
-        setFilterOpen(false)
-      }
+    if (token) {
+      fetchRequests(token).then(() => setAuthenticated(true))
+      fetchTrainingHolds(token)
     }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [filterOpen])
+  }, [])
 
-  // Reset to page 1 whenever the visible result set could change shape
   useEffect(() => {
     setPage(1)
+    setExpanded(new Set())
   }, [tab, search, dateFrom, dateTo, serviceFilter, optionFilter])
+
+  function toggleExpanded(id: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -185,6 +184,7 @@ export default function AdminPage() {
       sessionStorage.setItem(TOKEN_KEY, passwordInput)
       setToken(passwordInput)
       setAuthenticated(true)
+      fetchTrainingHolds(passwordInput)
     } catch {
       setLoginError('Could not connect. Try again.')
     } finally {
@@ -198,6 +198,8 @@ export default function AdminPage() {
     setAuthenticated(false)
     setPasswordInput('')
     setRequests([])
+    setTrainingHolds(0)
+    setSidebarOpen(false)
   }
 
   async function handleAction(requestId: string, action: 'accept' | 'decline') {
@@ -234,7 +236,6 @@ export default function AdminPage() {
       })
     : tabFiltered
 
-  // A multi-service request matches if any of its services matches the filter.
   const filtered = searched.filter((r) => {
     const services = requestServices(r)
     if (serviceFilter && !services.some((i) => i.serviceName === serviceFilter)) return false
@@ -289,192 +290,104 @@ export default function AdminPage() {
   // ── Dashboard ───────────────────────────────────────────────────────────────
   const tabCount = (t: Tab) => requests.filter((r) => r.status === t).length
 
+  // Services is rendered by this component, so it wires its own fetcher; the rest
+  // arrive from whichever panel is mounted. Mentorship has no data, hence null.
+  const refresh: PanelRefresh | null =
+    category === 'services' ? { run: () => fetchRequests(token), loading: fetchLoading } : panelRefresh
+
   return (
     <div className="min-h-screen bg-[#f6f2ec]">
-      <div className="sticky top-0 z-30 bg-[#f6f2ec]">
-      {/* Header */}
-      <div className="bg-white border-b border-[#e3e2de] px-6 py-4 flex items-center justify-between">
-        <div>
-          <p className="text-[10px] tracking-[0.2em] uppercase text-[#a0948a]">MJP Beauty</p>
-          <h1 className="text-base font-semibold text-[#3d3530]">
-            {category === 'services' ? 'Booking Requests' : 'In-Person Training'}
-          </h1>
-        </div>
-        <div className="flex items-center gap-3">
-          {category === 'services' && (
-            <div className="group relative">
-              <button
-                onClick={() => fetchRequests(token)}
-                disabled={fetchLoading}
-                className="p-2.5 border border-[#e3e2de] rounded-full text-[#6b5f58] hover:border-[#3d3530] hover:text-[#3d3530] transition-colors disabled:opacity-50"
-                title="Refresh"
-              >
-                <RefreshCw size={16} className={fetchLoading ? 'animate-spin' : ''} />
-              </button>
-              <span className="pointer-events-none absolute -bottom-9 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#3d3530] text-white text-[10px] px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                Refresh
-              </span>
-            </div>
-          )}
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-1.5 border border-[#e3e2de] rounded-full px-4 py-2 text-xs font-medium text-[#6b5f58] hover:border-[#3d3530] hover:text-[#3d3530] transition-colors"
-          >
-            <LogOut size={14} />
-            Sign out
-          </button>
-        </div>
-      </div>
+      {/* Selecting a panel deliberately leaves the mobile drawer open — admins
+          dismiss it themselves, via the close icon or the backdrop. */}
+      <AdminSidebar
+        category={category}
+        onSelect={setCategory}
+        counts={{ services: tabCount('pending'), training: trainingHolds, mentorship: 0 }}
+        trainingView={trainingView}
+        onTrainingViewSelect={setTrainingView}
+        onSignOut={handleLogout}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
 
-      {/* Category switch */}
-      <div className="px-6 pt-4 max-w-5xl mx-auto">
-        <div className="inline-flex bg-white rounded-full p-1 border border-[#e3e2de]">
-          {([['services', 'Brow Services'], ['training', 'In-Person Training']] as const).map(([c, label]) => (
-            <button
-              key={c}
-              onClick={() => setCategory(c)}
-              className={`px-4 py-2 rounded-full text-xs font-medium transition-colors ${
-                category === c ? 'bg-[#3d3530] text-white' : 'text-[#6b5f58] hover:text-[#3d3530]'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+      <div className="lg:pl-72">
+      <div className="sticky top-0 z-30 bg-[#f6f2ec]">
+      {/* Header bar. Below lg the sidebar is a drawer, so it also carries the
+          hamburger and the branding the sidebar would otherwise show. */}
+      <div className="flex items-center gap-3 bg-white px-4 py-4 lg:px-6">
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="text-[#6b5f58] transition-colors hover:text-[#3d3530] lg:hidden"
+          aria-label="Open menu"
+        >
+          <Menu size={20} />
+        </button>
+        <p className="text-[10px] uppercase tracking-[0.25em] text-[#a0948a] lg:hidden">MJP Beauty Dashboard</p>
+        <p className="hidden text-[10px] uppercase tracking-[0.25em] text-[#a0948a] lg:block">
+          {CATEGORY_LABEL[category]}
+        </p>
+        {refresh && (
+          <button
+            onClick={refresh.run}
+            disabled={refresh.loading}
+            className="ml-auto shrink-0 rounded-xl border border-[#e3e2de] bg-white p-2.5 text-[#6b5f58] transition-colors hover:border-[#3d3530] hover:text-[#3d3530] disabled:opacity-50"
+            title="Refresh"
+            aria-label="Refresh"
+          >
+            <RefreshCw size={15} className={refresh.loading ? 'animate-spin' : ''} />
+          </button>
+        )}
       </div>
 
       {category === 'services' && (<>
       {/* Search + Filter */}
-      <div className="px-6 pt-5 flex items-center gap-3 max-w-5xl mx-auto">
-        <div className="relative flex-1">
-          <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#a0948a]" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name or email..."
-            className="w-full bg-white border border-[#e3e2de] rounded-xl pl-10 pr-4 py-2.5 text-sm text-[#3d3530] focus:outline-none focus:border-[#3d3530] transition-colors"
-          />
-        </div>
-        <div className="relative" ref={filterPanelRef}>
-          <button
-            onClick={() => setFilterOpen((o) => !o)}
-            className={`flex items-center gap-2 border rounded-xl px-4 py-2.5 text-xs font-medium transition-colors ${
-              filterOpen || hasActiveFilters
-                ? 'border-[#3d3530] text-[#3d3530]'
-                : 'border-[#e3e2de] text-[#6b5f58] hover:border-[#3d3530] hover:text-[#3d3530]'
-            }`}
-          >
-            <SlidersHorizontal size={14} />
-            Filter
-          </button>
-          {filterOpen && (
-            <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl shadow-lg border border-[#e3e2de] p-5 z-20 space-y-4">
-              <div>
-                <label className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] block mb-1.5">From</label>
-                <input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                  className="w-full border border-[#e3e2de] rounded-xl px-3 py-2.5 text-sm text-[#3d3530] focus:outline-none focus:border-[#3d3530]"
-                />
-              </div>
-              <div>
-                <label className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] block mb-1.5">To</label>
-                <input
-                  type="date"
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                  className="w-full border border-[#e3e2de] rounded-xl px-3 py-2.5 text-sm text-[#3d3530] focus:outline-none focus:border-[#3d3530]"
-                />
-              </div>
-
-              <div className="border-t border-[#e3e2de]" />
-
-              <div>
-                <label className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] block mb-1.5">Service</label>
-                <div className="relative">
-                  <select
-                    value={serviceFilter}
-                    onChange={(e) => setServiceFilter(e.target.value)}
-                    className="w-full appearance-none border border-[#e3e2de] rounded-xl pl-3 pr-9 py-2.5 text-sm text-[#3d3530] focus:outline-none focus:border-[#3d3530] bg-white"
-                  >
-                    <option value="">All services</option>
-                    {serviceOptions.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                  <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#a0948a]" />
-                </div>
-              </div>
-              <div>
-                <label className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] block mb-1.5">Option</label>
-                <div className="relative">
-                  <select
-                    value={optionFilter}
-                    onChange={(e) => setOptionFilter(e.target.value)}
-                    className="w-full appearance-none border border-[#e3e2de] rounded-xl pl-3 pr-9 py-2.5 text-sm text-[#3d3530] focus:outline-none focus:border-[#3d3530] bg-white"
-                  >
-                    <option value="">All options</option>
-                    {optionOptions.map((o) => (
-                      <option key={o} value={o}>{o}</option>
-                    ))}
-                  </select>
-                  <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#a0948a]" />
-                </div>
-              </div>
-
-              <button
-                onClick={clearFilters}
-                className="w-full py-2.5 border border-[#e3e2de] rounded-full text-xs font-medium text-[#6b5f58] hover:border-[#3d3530] hover:text-[#3d3530] transition-colors"
-              >
-                Clear filters
-              </button>
-            </div>
-          )}
-        </div>
+      <div className="px-6 pt-5 max-w-5xl mx-auto">
+        <SearchFilterBar
+          search={search}
+          onSearchChange={setSearch}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          onDateFromChange={setDateFrom}
+          onDateToChange={setDateTo}
+          selects={[
+            { label: 'Service', allLabel: 'All services', value: serviceFilter, options: serviceOptions, onChange: setServiceFilter },
+            { label: 'Option', allLabel: 'All options', value: optionFilter, options: optionOptions, onChange: setOptionFilter },
+          ]}
+          hasActiveFilters={hasActiveFilters}
+          onClear={clearFilters}
+        />
       </div>
 
       {/* Tabs */}
-      <div className="px-3 sm:px-6 pt-5 pb-3 flex gap-1 max-w-5xl mx-auto">
-        {(['pending', 'accepted', 'declined', 'cancelled'] as Tab[]).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`px-2 sm:px-4 py-2 rounded-full text-[11px] sm:text-xs font-medium transition-colors capitalize flex items-center gap-1 sm:gap-1.5 whitespace-nowrap ${
-              tab === t
-                ? 'bg-[#3d3530] text-white'
-                : 'bg-white text-[#6b5f58] hover:bg-[#ede9e3]'
-            }`}
-          >
-            {t}
-            <span className={`text-[9px] sm:text-[10px] px-[3px] sm:px-1.5 py-0.5 rounded-full ${tab === t ? 'bg-white/20' : 'bg-[#f6f2ec]'}`}>
-              {tabCount(t)}
-            </span>
-          </button>
-        ))}
+      <div className="px-6 pt-5 pb-3 max-w-5xl mx-auto">
+        <StatusTabs<Tab>
+          value={tab}
+          onChange={setTab}
+          tabs={[
+            { id: 'pending', label: 'Pending', count: tabCount('pending') },
+            { id: 'accepted', label: 'Accepted', count: tabCount('accepted') },
+          ]}
+          more={[
+            { id: 'declined', label: 'Declined', count: tabCount('declined') },
+            { id: 'cancelled', label: 'Cancelled', count: tabCount('cancelled') },
+          ]}
+        />
       </div>
       </>)}
 
-      {category === 'training' && (
-        <div className="px-6 pt-5 pb-3 flex gap-1 max-w-5xl mx-auto">
-          {([['bookings', 'Bookings'], ['dates', 'Manage Dates']] as const).map(([v, label]) => (
-            <button
-              key={v}
-              onClick={() => setTrainingView(v)}
-              className={`px-4 py-2 rounded-full text-xs font-medium transition-colors ${
-                trainingView === v ? 'bg-[#3d3530] text-white' : 'bg-white text-[#6b5f58] hover:bg-[#ede9e3]'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      )}
       </div>
 
-      {category === 'training' && trainingView === 'bookings' && <TrainingBookingsPanel token={token} />}
-      {category === 'training' && trainingView === 'dates' && <TrainingDatesPanel token={token} />}
+      {category === 'training' && trainingView === 'bookings' && (
+        <TrainingBookingsPanel
+          token={token}
+          onHoldCountChange={setTrainingHolds}
+          onRefreshChange={setPanelRefresh}
+        />
+      )}
+      {category === 'training' && trainingView === 'dates' && (
+        <TrainingDatesPanel token={token} onRefreshChange={setPanelRefresh} />
+      )}
+      {category === 'mentorship' && <MentorshipPanel />}
 
       {/* Content */}
       {category === 'services' && (
@@ -483,83 +396,181 @@ export default function AdminPage() {
           <p className="text-sm text-red-500 mb-4">{fetchError}</p>
         )}
 
-        {!fetchLoading && filtered.length === 0 && (
+        {!fetchLoading && filtered.length === 0 ? (
           <div className="text-center py-16 text-[#a0948a] text-sm">
             No {tab} requests{search.trim() || hasActiveFilters ? ' match your search.' : '.'}
           </div>
-        )}
-
-        {fetchLoading && filtered.length === 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <RequestCardSkeleton key={i} />
-            ))}
+        ) : (
+        <>
+        <div className="hidden md:block bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-[#ece7e0]">
+                  <th className="w-[28%] px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#a0948a]">Client</th>
+                  <th className="w-[26%] px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#a0948a]">Service</th>
+                  <th className="w-[18%] px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#a0948a]">Appointment</th>
+                  <th className="w-[14%] px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#a0948a]">Submitted</th>
+                  {tab === 'pending' && (
+                    <th className="w-[1%] px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#a0948a] text-right whitespace-nowrap">Actions</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {fetchLoading && filtered.length === 0
+                  ? Array.from({ length: 5 }).map((_, i) => (
+                      <RequestRowSkeleton key={i} columns={tab === 'pending' ? 5 : 4} />
+                    ))
+                  : pageItems.map((r) => (
+                      <tr
+                        key={r.id}
+                        className="border-b border-[#f1ece5] last:border-0 align-top hover:bg-[#faf8f5] transition-colors"
+                      >
+                        <td className="px-5 py-4">
+                          <p className="text-xs font-semibold text-[#3d3530]">
+                            {r.first_name} {r.last_name}
+                          </p>
+                          <p className="text-xs text-[#6b5f58] break-all">{r.email}</p>
+                          {r.phone && <p className="text-xs text-[#a0948a]">{r.phone}</p>}
+                        </td>
+                        <td className="px-5 py-4 space-y-1.5">
+                          {requestServices(r).map((item, index) => (
+                            <div key={`${item.tierLabel}-${index}`}>
+                              <p className="text-xs font-medium text-[#3d3530]">{item.serviceName}</p>
+                              <p className="text-xs text-[#6b5f58]">{item.tierLabel}</p>
+                            </div>
+                          ))}
+                        </td>
+                        <td className="px-5 py-4 text-xs text-[#3d3530] whitespace-nowrap">
+                          {formatDate(r.start_at)}
+                          {r.duration_minutes ? (
+                            <span className="block text-[#a0948a]">{r.duration_minutes} min</span>
+                          ) : null}
+                        </td>
+                        <td className="px-5 py-4 text-xs text-[#a0948a] whitespace-nowrap">
+                          {formatSubmitted(r.created_at)}
+                        </td>
+                        {tab === 'pending' && (
+                          <td className="px-5 py-4 whitespace-nowrap">
+                            <div className="flex justify-end gap-2">
+                              <button
+                                onClick={() => handleAction(r.id, 'decline')}
+                                disabled={actionLoading === r.id}
+                                className="px-4 py-1.5 bg-white border border-red-300 text-red-500 text-[11px] tracking-[0.1em] uppercase rounded-full disabled:opacity-50 hover:enabled:bg-red-500 hover:enabled:border-red-500 hover:enabled:text-white transition-colors"
+                              >
+                                {actionLoading === r.id ? '…' : 'Decline'}
+                              </button>
+                              <button
+                                onClick={() => handleAction(r.id, 'accept')}
+                                disabled={actionLoading === r.id}
+                                className="px-4 py-1.5 bg-[#3d3530] text-white text-[11px] tracking-[0.1em] uppercase rounded-full disabled:opacity-50 hover:enabled:bg-[#2a2320] transition-colors"
+                              >
+                                {actionLoading === r.id ? '…' : 'Accept'}
+                              </button>
+                            </div>
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+              </tbody>
+            </table>
           </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {pageItems.map((r) => (
-            <div key={r.id} className="bg-white rounded-2xl p-5 shadow-sm">
-              {/* Customer */}
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-[#3d3530]">
-                    {r.first_name} {r.last_name}
-                  </p>
-                  <p className="text-xs text-[#6b5f58]">{r.email}</p>
-                  {r.phone && <p className="text-xs text-[#a0948a]">{r.phone}</p>}
-                </div>
-                <StatusBadge status={r.status} />
-              </div>
-
-              {/* Booking details */}
-              <div className="bg-[#f6f2ec] rounded-xl p-4 space-y-2 mb-4 text-xs">
-                {requestServices(r).map((item, index) => (
-                  <div key={`${item.tierLabel}-${index}`} className="flex justify-between gap-3">
-                    <span className="text-[#a0948a] uppercase tracking-[0.1em] shrink-0">
-                      {requestServices(r).length > 1 ? `Service ${index + 1}` : 'Service'}
-                    </span>
-                    <span className="text-right">
-                      <span className="text-[#3d3530] font-medium block">{item.serviceName}</span>
-                      <span className="text-[#6b5f58] block">{item.tierLabel}</span>
-                    </span>
-                  </div>
-                ))}
-                <div className="flex justify-between">
-                  <span className="text-[#a0948a] uppercase tracking-[0.1em]">Appointment</span>
-                  <span className="text-[#3d3530] text-right">
-                    {formatDate(r.start_at)}
-                    {r.duration_minutes ? ` · ${r.duration_minutes} min` : ''}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#a0948a] uppercase tracking-[0.1em]">Submitted</span>
-                  <span className="text-[#a0948a] text-right">{formatSubmitted(r.created_at)}</span>
-                </div>
-              </div>
-
-              {/* Actions — pending only */}
-              {r.status === 'pending' && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleAction(r.id, 'decline')}
-                    disabled={actionLoading === r.id}
-                    className="flex-1 py-2.5 bg-white border border-red-300 text-red-500 text-xs tracking-[0.1em] uppercase rounded-full disabled:opacity-50 hover:enabled:bg-red-500 hover:enabled:border-red-500 hover:enabled:text-white transition-colors"
-                  >
-                    {actionLoading === r.id ? '…' : 'Decline'}
-                  </button>
-                  <button
-                    onClick={() => handleAction(r.id, 'accept')}
-                    disabled={actionLoading === r.id}
-                    className="flex-1 py-2.5 bg-[#3d3530] text-white text-xs tracking-[0.1em] uppercase rounded-full disabled:opacity-50 hover:enabled:bg-[#2a2320] transition-colors"
-                  >
-                    {actionLoading === r.id ? '…' : 'Accept'}
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
         </div>
+
+        <div className="md:hidden bg-white rounded-2xl shadow-sm overflow-hidden divide-y divide-[#f1ece5]">
+          {fetchLoading && filtered.length === 0
+            ? Array.from({ length: 5 }).map((_, i) => <RequestRowSkeletonMobile key={i} />)
+            : pageItems.map((r) => {
+                const services = requestServices(r)
+                const isOpen = expanded.has(r.id)
+                return (
+                  <div key={r.id}>
+                    <button
+                      onClick={() => toggleExpanded(r.id)}
+                      aria-expanded={isOpen}
+                      className="w-full flex items-center gap-3 px-4 py-3.5 text-left"
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${STATUS_STYLES[r.status].dot}`} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-xs font-semibold text-[#3d3530] truncate">
+                          {r.first_name} {r.last_name}
+                        </span>
+                        <span className="block text-[11px] text-[#6b5f58] truncate">
+                          {services[0].serviceName}
+                          {services.length > 1 ? ` +${services.length - 1}` : ''} · {formatSubmitted(r.start_at)}
+                        </span>
+                      </span>
+                      <ChevronDown
+                        size={15}
+                        className={`shrink-0 text-[#a0948a] transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                      />
+                    </button>
+
+                    {isOpen && (
+                      <div className="px-4 pb-4 space-y-3">
+                        <div className="bg-[#f6f2ec] rounded-xl p-4 space-y-2 text-xs">
+                          <div className="flex justify-between gap-3">
+                            <span className="text-[#a0948a] uppercase tracking-[0.1em] shrink-0">Email</span>
+                            <span className="text-[#3d3530] text-right break-all">{r.email}</span>
+                          </div>
+                          {r.phone && (
+                            <div className="flex justify-between gap-3">
+                              <span className="text-[#a0948a] uppercase tracking-[0.1em] shrink-0">Phone</span>
+                              <span className="text-[#3d3530] text-right">{r.phone}</span>
+                            </div>
+                          )}
+                          {services.map((item, index) => (
+                            <div key={`${item.tierLabel}-${index}`} className="flex justify-between gap-3">
+                              <span className="text-[#a0948a] uppercase tracking-[0.1em] shrink-0">
+                                {services.length > 1 ? `Service ${index + 1}` : 'Service'}
+                              </span>
+                              <span className="text-right">
+                                <span className="text-[#3d3530] font-medium block">{item.serviceName}</span>
+                                <span className="text-[#6b5f58] block">{item.tierLabel}</span>
+                              </span>
+                            </div>
+                          ))}
+                          <div className="flex justify-between gap-3">
+                            <span className="text-[#a0948a] uppercase tracking-[0.1em] shrink-0">Appointment</span>
+                            <span className="text-[#3d3530] text-right">
+                              {formatDate(r.start_at)}
+                              {r.duration_minutes ? (
+                                <span className="block text-[#a0948a]">{r.duration_minutes} min</span>
+                              ) : null}
+                            </span>
+                          </div>
+                          <div className="flex justify-between gap-3">
+                            <span className="text-[#a0948a] uppercase tracking-[0.1em] shrink-0">Submitted</span>
+                            <span className="text-[#a0948a] text-right">{formatSubmitted(r.created_at)}</span>
+                          </div>
+                        </div>
+
+                        {r.status === 'pending' && (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleAction(r.id, 'decline')}
+                              disabled={actionLoading === r.id}
+                              className="flex-1 py-2.5 bg-white border border-red-300 text-red-500 text-xs tracking-[0.1em] uppercase rounded-full disabled:opacity-50 hover:enabled:bg-red-500 hover:enabled:border-red-500 hover:enabled:text-white transition-colors"
+                            >
+                              {actionLoading === r.id ? '…' : 'Decline'}
+                            </button>
+                            <button
+                              onClick={() => handleAction(r.id, 'accept')}
+                              disabled={actionLoading === r.id}
+                              className="flex-1 py-2.5 bg-[#3d3530] text-white text-xs tracking-[0.1em] uppercase rounded-full disabled:opacity-50 hover:enabled:bg-[#2a2320] transition-colors"
+                            >
+                              {actionLoading === r.id ? '…' : 'Accept'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+        </div>
+        </>
+        )}
 
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-4 mt-6">
@@ -582,6 +593,7 @@ export default function AdminPage() {
         )}
       </div>
       )}
+      </div>
     </div>
   )
 }

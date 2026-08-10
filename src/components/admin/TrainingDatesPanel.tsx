@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { RefreshCw, Plus, Pencil, Trash2, X, ChevronDown } from 'lucide-react'
+import { Plus, Pencil, Trash2, X, ChevronDown } from 'lucide-react'
+import type { OnPanelRefreshChange } from './adminShell'
 
 interface TrainingDateRow {
   id: string
@@ -40,7 +41,13 @@ function isoToLocalInput(iso: string) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
-export default function TrainingDatesPanel({ token }: { token: string }) {
+export default function TrainingDatesPanel({
+  token,
+  onRefreshChange,
+}: {
+  token: string
+  onRefreshChange?: OnPanelRefreshChange
+}) {
   const [dates, setDates] = useState<TrainingDateRow[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -70,6 +77,11 @@ export default function TrainingDatesPanel({ token }: { token: string }) {
   }, [token])
 
   useEffect(() => { fetchDates() }, [fetchDates])
+
+  useEffect(() => {
+    onRefreshChange?.({ run: fetchDates, loading })
+    return () => onRefreshChange?.(null)
+  }, [onRefreshChange, fetchDates, loading])
 
   function openCreate() {
     setEditingId(null)
@@ -144,17 +156,7 @@ export default function TrainingDatesPanel({ token }: { token: string }) {
   return (
     <div className="px-6 py-5 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={fetchDates}
-            disabled={loading}
-            className="p-2.5 border border-[#e3e2de] rounded-full text-[#6b5f58] hover:border-[#3d3530] hover:text-[#3d3530] transition-colors disabled:opacity-50 bg-white"
-            title="Refresh"
-          >
-            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-          </button>
-          <p className="text-sm text-[#6b5f58]">{dates.length} date{dates.length === 1 ? '' : 's'}</p>
-        </div>
+        <p className="text-sm text-[#6b5f58]">{dates.length} date{dates.length === 1 ? '' : 's'}</p>
         <button
           onClick={openCreate}
           className="flex items-center gap-1.5 bg-[#3d3530] text-white text-xs tracking-[0.1em] uppercase rounded-full px-4 py-2.5 hover:bg-[#2a2320] transition-colors"
@@ -220,9 +222,9 @@ export default function TrainingDatesPanel({ token }: { token: string }) {
 
       {/* Create / edit modal */}
       {formOpen && (
-        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50" onClick={() => !saving && setFormOpen(false)} />
-          <div className="relative bg-white rounded-2xl w-full max-w-[420px] shadow-2xl">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50 modal-backdrop-in" onClick={() => !saving && setFormOpen(false)} />
+          <div className="relative bg-white rounded-2xl w-full max-w-[420px] shadow-2xl max-h-[calc(100dvh-2rem)] overflow-y-auto modal-pop-in">
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#e3e2de]">
               <h3 className="text-sm font-semibold text-[#3d3530]">{editingId ? 'Edit Training Date' : 'Add Training Date'}</h3>
               <button onClick={() => !saving && setFormOpen(false)} className="p-1 rounded-full hover:bg-[#f0ece6] transition-colors" aria-label="Close">
