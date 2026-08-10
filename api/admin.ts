@@ -1,4 +1,6 @@
 // GET  /api/admin                                        → { requests }
+// GET  /api/admin?resource=auth                          → { ok: true }
+// GET  /api/admin?resource=dashboard                     → { requests, bookings, dates }
 // POST /api/admin { action: 'accept', requestId }       → { squareBookingId }
 // POST /api/admin { action: 'decline', requestId }      → { ok: true }
 // All routes require: Authorization: Bearer <ADMIN_SECRET>
@@ -50,6 +52,41 @@ function requestedItems(request: any): RequestedItem[] {
   }]
 }
 
+// ── Reads, shared by the single-resource routes and the dashboard bootstrap ──
+
+function listBookingRequests(status?: string) {
+  let query = supabase
+    .from('booking_requests')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(100)
+
+  if (status && VALID_STATUSES.includes(status)) query = query.eq('status', status)
+  return query
+}
+
+function listTrainingDates() {
+  return supabase.from('training_availability').select('*').order('starts_at', { ascending: true })
+}
+
+async function listTrainingBookings() {
+  const { data, error } = await supabase
+    .from('training_bookings')
+    .select('*, training_dates(option, starts_at, location)')
+    .order('created_at', { ascending: false })
+    .limit(200)
+  if (error) return { data: null, error }
+
+  // Holds past their expiry read as expired without a write having happened yet.
+  const now = Date.now()
+  const bookings = (data ?? []).map((b: any) => ({
+    ...b,
+    effective_status:
+      b.status === 'hold' && new Date(b.expires_at).getTime() <= now ? 'expired' : b.status,
+  }))
+  return { data: bookings, error: null }
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCorsHeaders(req, res)
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
@@ -57,6 +94,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!(await enforceRateLimit(req, res, adminLimiter))) return
 
   if (!isAuthorized(req)) return res.status(401).json({ error: 'Unauthorized' })
+
+  // ── Password check only, no data ───────────────────────────────────────────
+  // Reaching this line means the password is good, so the dashboard can sign in
+  // and paint its skeletons without waiting on any query.
+  if (req.method === 'GET' && req.query.resource === 'auth') {
+    return res.status(200).json({ ok: true })
+  }
+
+  // ── Everything the dashboard shows, in one round trip ──────────────────────
+  // Fetching the three lists separately cost three rate-limit slots per page
+  // load, so a few browser reloads was enough to trip the limiter.
+  if (req.method === 'GET' && req.query.resource === 'dashboard') {
+    const [requests, bookings, dates] = await Promise.all([
+      listBookingRequests(),
+      listTrainingBookings(),
+      listTrainingDates(),
+    ])
+    const failed = requests.error ?? bookings.error ?? dates.error
+    if (failed) return res.status(500).json({ error: failed.message })
+    return res.status(200).json({
+      requests: requests.data,
+      bookings: bookings.data,
+      dates: dates.data,
+    })
+  }
 
   // ── Training resources (dates CRUD + booking actions) ──────────────────────
   const resource = req.method === 'GET' ? req.query.resource : req.body?.resource
@@ -67,17 +129,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // ── GET: list booking requests ─────────────────────────────────────────────
   if (req.method === 'GET') {
     const { status } = req.query
-    let query = supabase
-      .from('booking_requests')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(100)
-
-    if (status && typeof status === 'string' && VALID_STATUSES.includes(status)) {
-      query = query.eq('status', status)
-    }
-
-    const { data, error } = await query
+    const { data, error } = await listBookingRequests(typeof status === 'string' ? status : undefined)
     if (error) return res.status(500).json({ error: error.message })
     return res.status(200).json({ requests: data })
   }
@@ -197,29 +249,14 @@ async function handleTraining(
   // ── GET ────────────────────────────────────────────────────────────────────
   if (req.method === 'GET') {
     if (resource === 'training-dates') {
-      const { data, error } = await supabase
-        .from('training_availability')
-        .select('*')
-        .order('starts_at', { ascending: true })
+      const { data, error } = await listTrainingDates()
       if (error) return res.status(500).json({ error: error.message })
       return res.status(200).json({ dates: data })
     }
 
-    // training-bookings: return all, deriving an effective status for expired holds
-    const { data, error } = await supabase
-      .from('training_bookings')
-      .select('*, training_dates(option, starts_at, location)')
-      .order('created_at', { ascending: false })
-      .limit(200)
+    const { data, error } = await listTrainingBookings()
     if (error) return res.status(500).json({ error: error.message })
-
-    const now = Date.now()
-    const bookings = (data ?? []).map((b: any) => ({
-      ...b,
-      effective_status:
-        b.status === 'hold' && new Date(b.expires_at).getTime() <= now ? 'expired' : b.status,
-    }))
-    return res.status(200).json({ bookings })
+    return res.status(200).json({ bookings: data })
   }
 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })

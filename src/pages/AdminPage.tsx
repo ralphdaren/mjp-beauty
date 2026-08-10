@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Menu, RefreshCw, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
-import TrainingBookingsPanel from '../components/admin/TrainingBookingsPanel'
-import TrainingDatesPanel from '../components/admin/TrainingDatesPanel'
+import TrainingBookingsPanel, { type TrainingBooking } from '../components/admin/TrainingBookingsPanel'
+import TrainingDatesPanel, { type TrainingDateRow } from '../components/admin/TrainingDatesPanel'
 import MentorshipPanel from '../components/admin/MentorshipPanel'
 import AdminSidebar from '../components/admin/AdminSidebar'
 import StatusTabs from '../components/admin/StatusTabs'
@@ -84,6 +84,55 @@ function formatSubmitted(iso: string) {
   })
 }
 
+/** `silent` skips the skeleton — see loadResource. */
+interface FetchOpts {
+  silent?: boolean
+}
+
+/**
+ * Shared GET for the dashboard's three datasets.
+ *
+ * `silent` suppresses the loading flag, so a reload that follows an action does
+ * not blank the table the admin just clicked in — the row's own button already
+ * shows "…". A visible skeleton is therefore reserved for the two moments it
+ * actually means something: signing in, and the header's refresh button.
+ */
+async function loadResource<T>({
+  url,
+  token,
+  silent,
+  pick,
+  apply,
+  setLoading,
+  setError,
+  onUnauthorized,
+  fallbackError,
+}: {
+  url: string
+  token: string
+  silent?: boolean
+  pick: (data: Record<string, unknown>) => T
+  apply: (value: T) => void
+  setLoading: (v: boolean) => void
+  setError: (v: string) => void
+  onUnauthorized: () => void
+  fallbackError: string
+}) {
+  if (!silent) setLoading(true)
+  setError('')
+  try {
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+    if (res.status === 401) return onUnauthorized()
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error ?? fallbackError)
+    apply(pick(data))
+  } catch (err) {
+    setError(String(err))
+  } finally {
+    setLoading(false)
+  }
+}
+
 export default function AdminPage() {
   const [token, setToken] = useState(() => sessionStorage.getItem(TOKEN_KEY) ?? '')
   const [passwordInput, setPasswordInput] = useState('')
@@ -94,14 +143,29 @@ export default function AdminPage() {
   const [category, setCategory] = useState<AdminCategory>('services')
   const [trainingView, setTrainingView] = useState<TrainingView>('bookings')
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [trainingHolds, setTrainingHolds] = useState(0)
-  // The header's refresh button drives whichever panel is on screen; panels that
-  // load data register their fetcher here and clear it on unmount.
-  const [panelRefresh, setPanelRefresh] = useState<PanelRefresh | null>(null)
 
+  // Every dataset lives here rather than in the panels. Panels mount and unmount
+  // as the admin moves around the sidebar, and state that lived in them was lost
+  // and refetched on each visit — so switching panels flashed a skeleton every
+  // time. Held up here, the rows survive, and a skeleton only means a real load:
+  // signing in, or the header's refresh button.
+  //
+  // A restored session starts out loading, so the first paint is already the
+  // skeleton. Starting at false renders one frame of "No pending requests."
+  // before the effect below fires.
+  const restoring = !!token
   const [requests, setRequests] = useState<BookingRequest[]>([])
-  const [fetchLoading, setFetchLoading] = useState(false)
+  const [fetchLoading, setFetchLoading] = useState(restoring)
   const [fetchError, setFetchError] = useState('')
+
+  const [trainingBookings, setTrainingBookings] = useState<TrainingBooking[]>([])
+  const [bookingsLoading, setBookingsLoading] = useState(restoring)
+  const [bookingsError, setBookingsError] = useState('')
+
+  const [trainingDates, setTrainingDates] = useState<TrainingDateRow[]>([])
+  const [datesLoading, setDatesLoading] = useState(restoring)
+  const [datesError, setDatesError] = useState('')
+
   const [tab, setTab] = useState<Tab>('pending')
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
@@ -115,42 +179,111 @@ export default function AdminPage() {
 
   const authHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
 
-  const fetchRequests = useCallback(async (t: string) => {
-    setFetchLoading(true)
-    setFetchError('')
-    try {
-      const res = await fetch('/api/admin', { headers: { Authorization: `Bearer ${t}` } })
-      if (res.status === 401) {
-        setAuthenticated(false)
-        sessionStorage.removeItem(TOKEN_KEY)
-        return
+  const signOutUnauthorized = useCallback(() => {
+    setAuthenticated(false)
+    sessionStorage.removeItem(TOKEN_KEY)
+  }, [])
+
+  const fetchRequests = useCallback(
+    (t: string, opts?: FetchOpts) =>
+      loadResource<BookingRequest[]>({
+        url: '/api/admin',
+        token: t,
+        silent: opts?.silent,
+        pick: (d) => (d.requests as BookingRequest[]) ?? [],
+        apply: setRequests,
+        setLoading: setFetchLoading,
+        setError: setFetchError,
+        onUnauthorized: signOutUnauthorized,
+        fallbackError: 'Failed to load requests',
+      }),
+    [signOutUnauthorized],
+  )
+
+  const fetchTrainingBookings = useCallback(
+    (t: string, opts?: FetchOpts) =>
+      loadResource<TrainingBooking[]>({
+        url: '/api/admin?resource=training-bookings',
+        token: t,
+        silent: opts?.silent,
+        pick: (d) => (d.bookings as TrainingBooking[]) ?? [],
+        apply: setTrainingBookings,
+        setLoading: setBookingsLoading,
+        setError: setBookingsError,
+        onUnauthorized: signOutUnauthorized,
+        fallbackError: 'Failed to load bookings',
+      }),
+    [signOutUnauthorized],
+  )
+
+  const fetchTrainingDates = useCallback(
+    (t: string, opts?: FetchOpts) =>
+      loadResource<TrainingDateRow[]>({
+        url: '/api/admin?resource=training-dates',
+        token: t,
+        silent: opts?.silent,
+        pick: (d) => (d.dates as TrainingDateRow[]) ?? [],
+        apply: setTrainingDates,
+        setLoading: setDatesLoading,
+        setError: setDatesError,
+        onUnauthorized: signOutUnauthorized,
+        fallbackError: 'Failed to load dates',
+      }),
+    [signOutUnauthorized],
+  )
+
+  /**
+   * Loads all three panels in one request. Kicked off once per sign-in and
+   * never awaited: the dashboard is already on screen showing skeletons.
+   *
+   * Deliberately not three parallel fetches — every request spends a slot of
+   * the admin rate limit (20/min per IP, which also guards the password), so
+   * three-per-load meant a handful of browser reloads returned 429.
+   */
+  const loadAll = useCallback(
+    async (t: string) => {
+      setFetchLoading(true)
+      setBookingsLoading(true)
+      setDatesLoading(true)
+      setFetchError('')
+      setBookingsError('')
+      setDatesError('')
+      try {
+        const res = await fetch('/api/admin?resource=dashboard', {
+          headers: { Authorization: `Bearer ${t}` },
+        })
+        if (res.status === 401) return signOutUnauthorized()
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error ?? 'Failed to load dashboard')
+        setRequests(data.requests ?? [])
+        setTrainingBookings(data.bookings ?? [])
+        setTrainingDates(data.dates ?? [])
+      } catch (err) {
+        // One request backs all three panels, so a failure blanks all three.
+        setFetchError(String(err))
+        setBookingsError(String(err))
+        setDatesError(String(err))
+      } finally {
+        setFetchLoading(false)
+        setBookingsLoading(false)
+        setDatesLoading(false)
       }
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Failed to load requests')
-      setRequests(data.requests ?? [])
-    } catch (err) {
-      setFetchError(String(err))
-    } finally {
-      setFetchLoading(false)
-    }
-  }, [])
+    },
+    [signOutUnauthorized],
+  )
 
-  const fetchTrainingHolds = useCallback(async (t: string) => {
-    try {
-      const res = await fetch('/api/admin?resource=training-bookings', { headers: { Authorization: `Bearer ${t}` } })
-      if (!res.ok) return
-      const data = await res.json()
-      const bookings: Array<{ effective_status: string }> = data.bookings ?? []
-      setTrainingHolds(bookings.filter((b) => b.effective_status === 'hold').length)
-    } catch {
-    }
-  }, [])
-
+  // A stored token is trusted on sight so the dashboard paints immediately; if
+  // it turns out to be stale, the 401 on the fetch drops back to the login.
+  //
+  // The ref makes this a true once-per-mount bootstrap: StrictMode double-invokes
+  // effects in dev, which doubled every reload's cost against the admin rate
+  // limit and had local reloads returning 429 after a handful of refreshes.
+  const bootstrapped = useRef(false)
   useEffect(() => {
-    if (token) {
-      fetchRequests(token).then(() => setAuthenticated(true))
-      fetchTrainingHolds(token)
-    }
+    if (!token || bootstrapped.current) return
+    bootstrapped.current = true
+    setAuthenticated(true)
+    loadAll(token)
   }, [])
 
   useEffect(() => {
@@ -172,19 +305,21 @@ export default function AdminPage() {
     setLoginLoading(true)
     setLoginError('')
     try {
-      const res = await fetch('/api/admin', {
+      // Checks the password and nothing else, so sign-in costs one quick round
+      // trip. The data then loads behind the dashboard, under its skeletons,
+      // instead of holding the admin on this button.
+      const res = await fetch('/api/admin?resource=auth', {
         headers: { Authorization: `Bearer ${passwordInput}` },
       })
       if (res.status === 401) {
         setLoginError('Incorrect password.')
         return
       }
-      const data = await res.json()
-      setRequests(data.requests ?? [])
+      if (!res.ok) throw new Error('Sign-in failed')
       sessionStorage.setItem(TOKEN_KEY, passwordInput)
       setToken(passwordInput)
       setAuthenticated(true)
-      fetchTrainingHolds(passwordInput)
+      loadAll(passwordInput)
     } catch {
       setLoginError('Could not connect. Try again.')
     } finally {
@@ -198,7 +333,8 @@ export default function AdminPage() {
     setAuthenticated(false)
     setPasswordInput('')
     setRequests([])
-    setTrainingHolds(0)
+    setTrainingBookings([])
+    setTrainingDates([])
     setSidebarOpen(false)
   }
 
@@ -212,7 +348,7 @@ export default function AdminPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? `Failed to ${action}`)
-      await fetchRequests(token)
+      await fetchRequests(token, { silent: true })
     } catch (err) {
       alert(String(err))
     } finally {
@@ -290,10 +426,16 @@ export default function AdminPage() {
   // ── Dashboard ───────────────────────────────────────────────────────────────
   const tabCount = (t: Tab) => requests.filter((r) => r.status === t).length
 
-  // Services is rendered by this component, so it wires its own fetcher; the rest
-  // arrive from whichever panel is mounted. Mentorship has no data, hence null.
+  // The header's refresh button reloads every dataset, not just the visible
+  // panel — it is the same single request the page load uses, so refreshing the
+  // whole dashboard costs no more than refreshing one panel, and it keeps the
+  // sidebar's counts honest. Mentorship has no data, hence null.
   const refresh: PanelRefresh | null =
-    category === 'services' ? { run: () => fetchRequests(token), loading: fetchLoading } : panelRefresh
+    category === 'mentorship'
+      ? null
+      : { run: () => loadAll(token), loading: fetchLoading || bookingsLoading || datesLoading }
+
+  const holdCount = trainingBookings.filter((b) => b.effective_status === 'hold').length
 
   return (
     <div className="min-h-screen bg-[#f6f2ec]">
@@ -302,7 +444,7 @@ export default function AdminPage() {
       <AdminSidebar
         category={category}
         onSelect={setCategory}
-        counts={{ services: tabCount('pending'), training: trainingHolds, mentorship: 0 }}
+        counts={{ services: tabCount('pending'), training: holdCount, mentorship: 0 }}
         trainingView={trainingView}
         onTrainingViewSelect={setTrainingView}
         onSignOut={handleLogout}
@@ -380,12 +522,20 @@ export default function AdminPage() {
       {category === 'training' && trainingView === 'bookings' && (
         <TrainingBookingsPanel
           token={token}
-          onHoldCountChange={setTrainingHolds}
-          onRefreshChange={setPanelRefresh}
+          bookings={trainingBookings}
+          loading={bookingsLoading}
+          error={bookingsError}
+          onRefetch={(opts) => fetchTrainingBookings(token, opts)}
         />
       )}
       {category === 'training' && trainingView === 'dates' && (
-        <TrainingDatesPanel token={token} onRefreshChange={setPanelRefresh} />
+        <TrainingDatesPanel
+          token={token}
+          dates={trainingDates}
+          loading={datesLoading}
+          error={datesError}
+          onRefetch={(opts) => fetchTrainingDates(token, opts)}
+        />
       )}
       {category === 'mentorship' && <MentorshipPanel />}
 
@@ -417,7 +567,7 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {fetchLoading && filtered.length === 0
+                {fetchLoading
                   ? Array.from({ length: 5 }).map((_, i) => (
                       <RequestRowSkeleton key={i} columns={tab === 'pending' ? 5 : 4} />
                     ))
@@ -478,7 +628,7 @@ export default function AdminPage() {
         </div>
 
         <div className="md:hidden bg-white rounded-2xl shadow-sm overflow-hidden divide-y divide-[#f1ece5]">
-          {fetchLoading && filtered.length === 0
+          {fetchLoading
             ? Array.from({ length: 5 }).map((_, i) => <RequestRowSkeletonMobile key={i} />)
             : pageItems.map((r) => {
                 const services = requestServices(r)

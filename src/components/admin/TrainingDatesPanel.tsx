@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { Plus, Pencil, Trash2, X, ChevronDown } from 'lucide-react'
-import type { OnPanelRefreshChange } from './adminShell'
+import type { Refetch } from './adminShell'
 
-interface TrainingDateRow {
+export interface TrainingDateRow {
   id: string
   option: 'group' | 'private'
   starts_at: string
@@ -26,6 +26,20 @@ const EMPTY_FORM: FormState = { option: 'group', datetime: '', location: '', spo
 
 const OPTION_LABEL: Record<'group' | 'private', string> = { group: 'Small Group', private: 'Private 1-on-1' }
 
+function DateCardSkeleton() {
+  return (
+    <div className="bg-white rounded-2xl p-5 shadow-sm">
+      <div className="h-3.5 w-40 bg-[#ece7e0] rounded-full animate-pulse mb-2" />
+      <div className="h-3 w-28 bg-[#f1ece5] rounded-full animate-pulse mb-4" />
+      <div className="bg-[#f6f2ec] rounded-xl p-4 mb-4">
+        <div className="h-2.5 w-12 bg-[#ece7e0] rounded-full animate-pulse mb-2" />
+        <div className="h-3 w-32 bg-[#ece7e0] rounded-full animate-pulse" />
+      </div>
+      <div className="h-9 bg-[#f1ece5] rounded-full animate-pulse" />
+    </div>
+  )
+}
+
 function formatDateTime(iso: string) {
   return new Date(iso).toLocaleString('en-CA', {
     timeZone: TIMEZONE,
@@ -43,15 +57,18 @@ function isoToLocalInput(iso: string) {
 
 export default function TrainingDatesPanel({
   token,
-  onRefreshChange,
+  dates,
+  loading,
+  error,
+  onRefetch,
 }: {
   token: string
-  onRefreshChange?: OnPanelRefreshChange
+  /** Owned by AdminPage so it survives this panel unmounting on a sidebar switch. */
+  dates: TrainingDateRow[]
+  loading: boolean
+  error: string
+  onRefetch: Refetch
 }) {
-  const [dates, setDates] = useState<TrainingDateRow[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-
   const [formOpen, setFormOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
@@ -60,28 +77,6 @@ export default function TrainingDatesPanel({
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const authHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
-
-  const fetchDates = useCallback(async () => {
-    setLoading(true)
-    setError('')
-    try {
-      const res = await fetch('/api/admin?resource=training-dates', { headers: { Authorization: `Bearer ${token}` } })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Failed to load dates')
-      setDates(data.dates ?? [])
-    } catch (err) {
-      setError(String(err))
-    } finally {
-      setLoading(false)
-    }
-  }, [token])
-
-  useEffect(() => { fetchDates() }, [fetchDates])
-
-  useEffect(() => {
-    onRefreshChange?.({ run: fetchDates, loading })
-    return () => onRefreshChange?.(null)
-  }, [onRefreshChange, fetchDates, loading])
 
   function openCreate() {
     setEditingId(null)
@@ -126,7 +121,7 @@ export default function TrainingDatesPanel({
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Failed to save')
       setFormOpen(false)
-      await fetchDates()
+      await onRefetch({ silent: true })
     } catch (err) {
       setFormError(String(err).replace('Error: ', ''))
     } finally {
@@ -145,7 +140,7 @@ export default function TrainingDatesPanel({
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Failed to delete')
-      await fetchDates()
+      await onRefetch({ silent: true })
     } catch (err) {
       alert(String(err))
     } finally {
@@ -156,7 +151,9 @@ export default function TrainingDatesPanel({
   return (
     <div className="px-6 py-5 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-5">
-        <p className="text-sm text-[#6b5f58]">{dates.length} date{dates.length === 1 ? '' : 's'}</p>
+        <p className="text-sm text-[#6b5f58]">
+          {loading ? ' ' : `${dates.length} date${dates.length === 1 ? '' : 's'}`}
+        </p>
         <button
           onClick={openCreate}
           className="flex items-center gap-1.5 bg-[#3d3530] text-white text-xs tracking-[0.1em] uppercase rounded-full px-4 py-2.5 hover:bg-[#2a2320] transition-colors"
@@ -173,7 +170,9 @@ export default function TrainingDatesPanel({
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {dates.map((d) => (
+        {loading
+          ? Array.from({ length: 4 }).map((_, i) => <DateCardSkeleton key={i} />)
+          : dates.map((d) => (
           <div key={d.id} className="bg-white rounded-2xl p-5 shadow-sm">
             <div className="flex items-start justify-between gap-3 mb-3">
               <div className="min-w-0">

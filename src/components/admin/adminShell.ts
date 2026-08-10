@@ -10,12 +10,14 @@ export const CATEGORY_LABEL: Record<AdminCategory, string> = {
 }
 
 /**
- * Refresh lives in the header, but the fetchers live in the panels — so a panel
- * hands its fetcher and loading flag up, and clears them when it unmounts.
+ * AdminPage owns every dataset and hands panels their rows, so the header's
+ * refresh button reloads all of them in one request rather than tracking
+ * whichever panel happens to be on screen.
  */
 export interface PanelRefresh {
   run: () => void
   loading: boolean
 }
 
-export type OnPanelRefreshChange = (state: PanelRefresh | null) => void
+/** Refetch a panel's rows. `silent` skips the skeleton — for post-action reloads. */
+export type Refetch = (opts?: { silent?: boolean }) => Promise<void>

@@ -1,12 +1,12 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { MapPin, ChevronDown } from 'lucide-react'
 import StatusTabs from './StatusTabs'
 import SearchFilterBar from './SearchFilterBar'
-import type { OnPanelRefreshChange } from './adminShell'
+import type { Refetch } from './adminShell'
 
 type EffectiveStatus = 'hold' | 'confirmed' | 'cancelled' | 'expired'
 
-interface TrainingBooking {
+export interface TrainingBooking {
   id: string
   status: 'hold' | 'confirmed' | 'cancelled' | 'expired'
   effective_status: EffectiveStatus
@@ -78,14 +78,14 @@ function timeLeft(expiresAt: string): string {
 
 interface TrainingBookingsPanelProps {
   token: string
-  onHoldCountChange?: (count: number) => void
-  onRefreshChange?: OnPanelRefreshChange
+  /** Owned by AdminPage so it survives this panel unmounting on a sidebar switch. */
+  bookings: TrainingBooking[]
+  loading: boolean
+  error: string
+  onRefetch: Refetch
 }
 
-export default function TrainingBookingsPanel({ token, onHoldCountChange, onRefreshChange }: TrainingBookingsPanelProps) {
-  const [bookings, setBookings] = useState<TrainingBooking[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+export default function TrainingBookingsPanel({ token, bookings, loading, error, onRefetch }: TrainingBookingsPanelProps) {
   const [tab, setTab] = useState<EffectiveStatus>('hold')
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
@@ -98,35 +98,9 @@ export default function TrainingBookingsPanel({ token, onHoldCountChange, onRefr
 
   const authHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
 
-  const fetchBookings = useCallback(async () => {
-    setLoading(true)
-    setError('')
-    try {
-      const res = await fetch('/api/admin?resource=training-bookings', { headers: { Authorization: `Bearer ${token}` } })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Failed to load bookings')
-      setBookings(data.bookings ?? [])
-    } catch (err) {
-      setError(String(err))
-    } finally {
-      setLoading(false)
-    }
-  }, [token])
-
-  useEffect(() => { fetchBookings() }, [fetchBookings])
-
-  useEffect(() => {
-    onHoldCountChange?.(bookings.filter((b) => b.effective_status === 'hold').length)
-  }, [bookings, onHoldCountChange])
-
   useEffect(() => {
     setExpanded(new Set())
   }, [tab, search, dateFrom, dateTo, optionFilter, locationFilter])
-
-  useEffect(() => {
-    onRefreshChange?.({ run: fetchBookings, loading })
-    return () => onRefreshChange?.(null)
-  }, [onRefreshChange, fetchBookings, loading])
 
   function toggleExpanded(id: string) {
     setExpanded((prev) => {
@@ -148,7 +122,7 @@ export default function TrainingBookingsPanel({ token, onHoldCountChange, onRefr
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? `Failed to ${action}`)
-      await fetchBookings()
+      await onRefetch({ silent: true })
     } catch (err) {
       alert(String(err))
     } finally {
@@ -249,7 +223,7 @@ export default function TrainingBookingsPanel({ token, onHoldCountChange, onRefr
               </tr>
             </thead>
             <tbody>
-              {loading && bookings.length === 0
+              {loading
                 ? Array.from({ length: 5 }).map((_, i) => (
                     <BookingRowSkeleton key={i} columns={tab === 'hold' ? 6 : 5} />
                   ))
@@ -322,7 +296,7 @@ export default function TrainingBookingsPanel({ token, onHoldCountChange, onRefr
       </div>
 
       <div className="lg:hidden bg-white rounded-2xl shadow-sm overflow-hidden divide-y divide-[#f1ece5]">
-        {loading && bookings.length === 0
+        {loading
           ? Array.from({ length: 5 }).map((_, i) => <BookingRowSkeletonMobile key={i} />)
           : visible.map((b) => {
               const isOpen = expanded.has(b.id)
