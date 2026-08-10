@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Plus, Pencil, Trash2, X, ChevronDown } from 'lucide-react'
+import { formatDateTime } from './adminFormat'
 import type { Refetch } from './adminShell'
 
 export interface TrainingDateRow {
@@ -15,13 +16,12 @@ export interface TrainingDateRow {
 
 interface FormState {
   option: 'group' | 'private'
-  datetime: string // datetime-local value
+  datetime: string
   location: string
   spotsTotal: string
   isPublished: boolean
 }
 
-const TIMEZONE = 'America/Winnipeg'
 const EMPTY_FORM: FormState = { option: 'group', datetime: '', location: '', spotsTotal: '5', isPublished: true }
 
 const OPTION_LABEL: Record<'group' | 'private', string> = { group: 'Small Group', private: 'Private 1-on-1' }
@@ -38,14 +38,6 @@ function DateCardSkeleton() {
       <div className="h-9 bg-[#f1ece5] rounded-full animate-pulse" />
     </div>
   )
-}
-
-function formatDateTime(iso: string) {
-  return new Date(iso).toLocaleString('en-CA', {
-    timeZone: TIMEZONE,
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
 }
 
 // ISO → 'YYYY-MM-DDTHH:mm' in the browser's local time, for the datetime-local input.

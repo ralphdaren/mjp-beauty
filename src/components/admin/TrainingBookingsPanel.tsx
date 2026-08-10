@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { MapPin, ChevronDown } from 'lucide-react'
 import StatusTabs from './StatusTabs'
 import SearchFilterBar from './SearchFilterBar'
+import { MobileRowSkeleton, TableRowSkeleton } from './RowSkeleton'
+import { formatDateTime, formatSubmitted } from './adminFormat'
 import type { Refetch } from './adminShell'
 
 type EffectiveStatus = 'hold' | 'confirmed' | 'cancelled' | 'expired'
@@ -22,7 +24,6 @@ export interface TrainingBooking {
   training_dates: { option: 'group' | 'private'; starts_at: string; location: string } | null
 }
 
-const TIMEZONE = 'America/Winnipeg'
 const OPTION_LABEL: Record<'group' | 'private', string> = { group: 'Small Group', private: 'Private 1-on-1' }
 const PAYMENT_LABEL: Record<'e-transfer' | 'credit-card', string> = { 'e-transfer': 'E-Transfer', 'credit-card': 'Credit Card' }
 
@@ -31,40 +32,6 @@ const STATUS_STYLES: Record<EffectiveStatus, { dot: string }> = {
   confirmed: { dot: 'bg-[#4a9d6f]' },
   cancelled: { dot: 'bg-red-400' },
   expired: { dot: 'bg-[#a0948a]' },
-}
-
-function BookingRowSkeleton({ columns }: { columns: number }) {
-  return (
-    <tr className="border-b border-[#f1ece5] last:border-0">
-      {Array.from({ length: columns }).map((_, i) => (
-        <td key={i} className="px-5 py-4">
-          <div className="h-3 w-24 bg-[#ece7e0] rounded-full animate-pulse" />
-        </td>
-      ))}
-    </tr>
-  )
-}
-
-function BookingRowSkeletonMobile() {
-  return (
-    <div className="flex items-center gap-3 px-4 py-3.5">
-      <div className="w-1.5 h-1.5 rounded-full bg-[#ece7e0] shrink-0" />
-      <div className="flex-1 space-y-2">
-        <div className="h-3 w-28 bg-[#ece7e0] rounded-full animate-pulse" />
-        <div className="h-2.5 w-40 bg-[#f1ece5] rounded-full animate-pulse" />
-      </div>
-    </div>
-  )
-}
-
-function formatDateTime(iso: string) {
-  return new Date(iso).toLocaleString('en-CA', { timeZone: TIMEZONE, dateStyle: 'medium', timeStyle: 'short' })
-}
-
-function formatSubmitted(iso: string) {
-  return new Date(iso).toLocaleString('en-CA', {
-    timeZone: TIMEZONE, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true,
-  })
 }
 
 function timeLeft(expiresAt: string): string {
@@ -78,7 +45,6 @@ function timeLeft(expiresAt: string): string {
 
 interface TrainingBookingsPanelProps {
   token: string
-  /** Owned by AdminPage so it survives this panel unmounting on a sidebar switch. */
   bookings: TrainingBooking[]
   loading: boolean
   error: string
@@ -145,8 +111,6 @@ export default function TrainingBookingsPanel({ token, bookings, loading, error,
     if (q && !`${b.first_name} ${b.last_name}`.toLowerCase().includes(q) && !b.email.toLowerCase().includes(q)) {
       return false
     }
-    // A booking whose training date was deleted has nothing left to match on, so
-    // any filter drawn from that date excludes it.
     const date = b.training_dates
     if (!date) return !optionFilter && !locationFilter && !dateFrom && !dateTo
     if (optionFilter && OPTION_LABEL[date.option] !== optionFilter) return false
@@ -225,7 +189,7 @@ export default function TrainingBookingsPanel({ token, bookings, loading, error,
             <tbody>
               {loading
                 ? Array.from({ length: 5 }).map((_, i) => (
-                    <BookingRowSkeleton key={i} columns={tab === 'hold' ? 6 : 5} />
+                    <TableRowSkeleton key={i} columns={tab === 'hold' ? 6 : 5} />
                   ))
                 : visible.map((b) => (
                     <tr
@@ -297,7 +261,7 @@ export default function TrainingBookingsPanel({ token, bookings, loading, error,
 
       <div className="lg:hidden bg-white rounded-2xl shadow-sm overflow-hidden divide-y divide-[#f1ece5]">
         {loading
-          ? Array.from({ length: 5 }).map((_, i) => <BookingRowSkeletonMobile key={i} />)
+          ? Array.from({ length: 5 }).map((_, i) => <MobileRowSkeleton key={i} />)
           : visible.map((b) => {
               const isOpen = expanded.has(b.id)
               return (
