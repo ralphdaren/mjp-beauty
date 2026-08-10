@@ -3,7 +3,6 @@ import { Search, SlidersHorizontal, ChevronDown } from 'lucide-react'
 
 export interface SelectFilter {
   label: string
-  /** Shown when nothing is picked, e.g. "All services". */
   allLabel: string
   value: string
   options: string[]
@@ -14,18 +13,44 @@ interface SearchFilterBarProps {
   search: string
   onSearchChange: (value: string) => void
   placeholder?: string
-  /** Date-range bounds, as yyyy-mm-dd. */
   dateFrom: string
   dateTo: string
   onDateFromChange: (value: string) => void
   onDateToChange: (value: string) => void
-  /** Dropdowns below the date range — whatever the panel can be sliced by. */
   selects: SelectFilter[]
   hasActiveFilters: boolean
   onClear: () => void
 }
 
-/** Search input plus a Filter popover, shared by the bookings panels. */
+function DateField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+}) {
+  return (
+    <div>
+      <label className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] block mb-1.5">{label}</label>
+      <div className="relative">
+        <input
+          type="date"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full min-w-0 appearance-none bg-white border border-[#e3e2de] rounded-xl px-3 py-2.5 text-sm text-[#3d3530] focus:outline-none focus:border-[#3d3530]"
+        />
+        {!value && (
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#a0948a]">
+            Any date
+          </span>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function SearchFilterBar({
   search,
   onSearchChange,
@@ -78,24 +103,8 @@ export default function SearchFilterBar({
 
         {open && (
           <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl shadow-lg border border-[#e3e2de] p-5 z-20 space-y-4">
-            <div>
-              <label className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] block mb-1.5">From</label>
-              <input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => onDateFromChange(e.target.value)}
-                className="w-full border border-[#e3e2de] rounded-xl px-3 py-2.5 text-sm text-[#3d3530] focus:outline-none focus:border-[#3d3530]"
-              />
-            </div>
-            <div>
-              <label className="text-[10px] uppercase tracking-[0.15em] text-[#a0948a] block mb-1.5">To</label>
-              <input
-                type="date"
-                value={dateTo}
-                onChange={(e) => onDateToChange(e.target.value)}
-                className="w-full border border-[#e3e2de] rounded-xl px-3 py-2.5 text-sm text-[#3d3530] focus:outline-none focus:border-[#3d3530]"
-              />
-            </div>
+            <DateField label="From" value={dateFrom} onChange={onDateFromChange} />
+            <DateField label="To" value={dateTo} onChange={onDateToChange} />
 
             <div className="border-t border-[#e3e2de]" />
 
