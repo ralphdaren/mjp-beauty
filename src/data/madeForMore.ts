@@ -19,5 +19,14 @@ export const MFM_EVENT = {
   ticketCta: 'Save $50 — Early Bird',
 } as const
 
+export const MFM_INTRO = {
+  openers: ['You built the business.', 'You mastered your craft.', 'You found the clients.'],
+  transition: 'But lately, you’ve been wondering…',
+  question: 'What’s next for me?',
+  body: 'Maybe taking clients back-to-back doesn’t excite you the way it used to. Maybe you know you’re capable of more — but you’re not sure what that “more” looks like yet.',
+  statementLead: 'MADE FOR MORE',
+  statementRest: 'is for the beauty business owner who’s ready to stop playing small.',
+} as const
+
 // swap for the live ticket checkout link once the client provides it.
 export const MFM_TICKETS_URL = '#tickets'

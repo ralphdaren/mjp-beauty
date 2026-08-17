@@ -5,10 +5,6 @@
   width: 100%;
   min-height: 100svh;
   overflow: hidden;
-
-  /* The artwork's bottom 9% is where the three cut-outs stop lining up, so the
-     band has to be at least that tall to hide it. Under `cover` the artwork
-     renders at least as tall as the viewport, hence the vh floor. */
   --mfm-band-h: max(4.5rem, 9.5vh);
 }
 
@@ -29,8 +25,6 @@
   object-position: center;
 }
 
-/* Edge washes only — the title sits over the sky up top and the card over the
-   water below, so the middle band stays clear of the three presenters. */
 .mfm-hero-scrim {
   position: absolute;
   inset: 0;
@@ -39,39 +33,20 @@
     linear-gradient(to top, rgb(0 0 0 / 0.5) 0%, rgb(0 0 0 / 0.14) 24%, rgb(0 0 0 / 0) 46%);
 }
 
-/* Phones bottomed out on the wordmark's clamp floor (2.25rem), which left it
-   sitting in ~75% of the column it had. This tracks the column instead — the
-   nowrap wordmark runs ~7.03× its font size, so 11.6vw is the largest ratio
-   that still clears the 20px gutters at 320px. The 3.4rem ceiling is where it
-   rejoins the shared 8.6vw curve, so nothing jumps at the `sm` boundary. */
 @media (max-width: 639px) {
   .mfm-wordmark {
     font-size: min(11.6vw, 3.4rem);
   }
 }
 
-/* The presenters occupy x 8%–43% of the artwork, so a portrait-ish `cover`
-   window (which is only ~40–56% of the width) has to sit hard left to hold all
-   three — anything past ~10% starts shearing the left presenter. */
 @media (max-aspect-ratio: 1 / 1) {
   .mfm-hero-img {
     object-position: 8% center;
   }
 }
 
-/* ─── Phones — Painted Sky + Bottom-Anchored Artwork ────────────────
-   The artwork is 16:9 and the three presenters span 35% of its width, so once
-   the viewport is taller than ~10:7 no full-height `cover` crop can hold all
-   three — it always cuts the outer two. Below that ratio the hero switches
-   treatment: it takes the portrait crop (MFM_HERO_IMG_MOBILE) at its natural
-   ratio, pinned to the bottom edge so the presenters read full-width, and
-   paints the leftover height above it with the crop's own top-edge colours.
-   The stops below are sampled straight from that row, so the join between
-   paint and photo is seamless. */
 @media (max-aspect-ratio: 7 / 10) and (max-width: 1023px) {
   .mfm-hero {
-    /* Here the artwork is only ~102vw tall rather than viewport-height, so the
-       band shrinks to match — 9% of that, floored at a legible bar height. */
     --mfm-band-h: max(2.5rem, 10vw);
 
     background-image: linear-gradient(
@@ -94,8 +69,6 @@
     object-position: bottom center;
   }
 
-  /* Top wash only — the bottom wash would sit right on the presenters, and the
-     card is frosted glass, so it carries its own contrast. */
   .mfm-hero-scrim {
     background: linear-gradient(
       to bottom,
@@ -105,14 +78,11 @@
     );
   }
 
-  /* The crop is 102vw tall and the heads start ~44% down it, so the card has to
-     stop about 57vw shy of the bottom edge to leave all three faces clear. */
   .mfm-card {
     margin-bottom: 60vw;
   }
 }
 
-/* Desktop lifts the absolutely-positioned card clear of the band. */
 @media (min-width: 1024px) {
   .mfm-card {
     bottom: calc(var(--mfm-band-h) + 2rem);
@@ -144,10 +114,6 @@
   text-wrap: balance;
 }
 
-/* Desktop holds the whole sentence on one line. It's ~210 characters, so the
-   type has to be sized off the viewport rather than set outright — 0.93vw is
-   the largest ratio that still clears the padding at 1024px, which is where
-   this kicks in. It caps at 1.1rem so wide screens gain slack, not size. */
 @media (min-width: 1024px) {
   .mfm-band-static {
     max-width: none;
@@ -158,7 +124,6 @@
   }
 }
 
-/* Phones scroll the sentence instead of wrapping it into a six-line slab. */
 .mfm-band-marquee {
   display: none;
   width: 100%;
@@ -191,7 +156,6 @@
   }
 }
 
-/* No motion means no marquee, so fall back to the wrapping paragraph. */
 @media (prefers-reduced-motion: reduce) {
   .mfm-band-static {
     display: block;
@@ -200,6 +164,68 @@
   .mfm-band-marquee {
     display: none;
   }
+}
+
+/* ─── Intro / "What's next for me?" ─────────────────────────────── */
+
+.mfm-intro {
+  background-color: #f6f2ec;
+  padding: clamp(4.5rem, 9vw, 8.5rem) 1.5rem clamp(4rem, 8vw, 7.5rem);
+  text-align: center;
+}
+
+.mfm-intro-inner {
+  max-width: 52rem;
+  margin-inline: auto;
+}
+
+.mfm-intro-opener,
+.mfm-intro-transition {
+  color: #827064;
+  font-size: clamp(1.3rem, 1.85vw, 2rem);
+  line-height: 1.55;
+  text-wrap: balance;
+}
+
+.mfm-intro-transition {
+  margin-top: clamp(1.1rem, 2vw, 1.75rem);
+}
+
+.mfm-intro-question {
+  margin-top: clamp(0.75rem, 1.6vw, 1.4rem);
+  color: #a0948a;
+  font-size: clamp(2.4rem, 3.6vw, 4.4rem);
+  line-height: 1.2;
+}
+
+.mfm-intro-body {
+  max-width: 46rem;
+  margin: clamp(1.6rem, 3vw, 2.75rem) auto 0;
+  color: #6b5f58;
+  font-size: clamp(0.95rem, 1.15vw, 1.25rem);
+  font-weight: 300;
+  line-height: 1.85;
+  text-wrap: balance;
+}
+
+.mfm-intro-statement {
+  max-width: 62rem;
+  margin: clamp(3rem, 6vw, 5.5rem) auto 0;
+  padding-block: clamp(2.75rem, 5.5vw, 5rem);
+  border-block: 1px solid #e3e2de;
+}
+
+.mfm-intro-statement p {
+  color: #3d3028;
+  font-size: clamp(1.65rem, 2.6vw, 3.2rem);
+  line-height: 1.3;
+  text-wrap: balance;
+}
+
+/* Wordmark is the only italic in the statement line. */
+.mfm-intro-statement-lead {
+  font-style: italic;
+  letter-spacing: 0.015em;
 }
 
 /* ─── Frosted Glass Surfaces ────────────────────────────────────── */
@@ -221,7 +247,6 @@
 
 /* ─── Entrance ──────────────────────────────────────────────────── */
 
-/* Lands just after .hero-tagline, reusing the shared hero keyframe. */
 .mfm-card {
   opacity: 0;
   animation: hero-fade-up 0.8s ease forwards;
