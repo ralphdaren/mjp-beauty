@@ -1,0 +1,236 @@
+/* ─── Made For More — Full-Bleed Event Hero ─────────────────────── */
+
+.mfm-hero {
+  position: relative;
+  width: 100%;
+  min-height: 100svh;
+  overflow: hidden;
+
+  /* The artwork's bottom 9% is where the three cut-outs stop lining up, so the
+     band has to be at least that tall to hide it. Under `cover` the artwork
+     renders at least as tall as the viewport, hence the vh floor. */
+  --mfm-band-h: max(4.5rem, 9.5vh);
+}
+
+.mfm-hero-content {
+  padding-bottom: calc(var(--mfm-band-h) + 1.5rem);
+}
+
+.mfm-hero picture {
+  display: contents;
+}
+
+.mfm-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Edge washes only — the title sits over the sky up top and the card over the
+   water below, so the middle band stays clear of the three presenters. */
+.mfm-hero-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgb(0 0 0 / 0.42) 0%, rgb(0 0 0 / 0.2) 30%, rgb(0 0 0 / 0) 52%),
+    linear-gradient(to top, rgb(0 0 0 / 0.5) 0%, rgb(0 0 0 / 0.14) 24%, rgb(0 0 0 / 0) 46%);
+}
+
+/* Phones bottomed out on the wordmark's clamp floor (2.25rem), which left it
+   sitting in ~75% of the column it had. This tracks the column instead — the
+   nowrap wordmark runs ~7.03× its font size, so 11.6vw is the largest ratio
+   that still clears the 20px gutters at 320px. The 3.4rem ceiling is where it
+   rejoins the shared 8.6vw curve, so nothing jumps at the `sm` boundary. */
+@media (max-width: 639px) {
+  .mfm-wordmark {
+    font-size: min(11.6vw, 3.4rem);
+  }
+}
+
+/* The presenters occupy x 8%–43% of the artwork, so a portrait-ish `cover`
+   window (which is only ~40–56% of the width) has to sit hard left to hold all
+   three — anything past ~10% starts shearing the left presenter. */
+@media (max-aspect-ratio: 1 / 1) {
+  .mfm-hero-img {
+    object-position: 8% center;
+  }
+}
+
+/* ─── Phones — Painted Sky + Bottom-Anchored Artwork ────────────────
+   The artwork is 16:9 and the three presenters span 35% of its width, so once
+   the viewport is taller than ~10:7 no full-height `cover` crop can hold all
+   three — it always cuts the outer two. Below that ratio the hero switches
+   treatment: it takes the portrait crop (MFM_HERO_IMG_MOBILE) at its natural
+   ratio, pinned to the bottom edge so the presenters read full-width, and
+   paints the leftover height above it with the crop's own top-edge colours.
+   The stops below are sampled straight from that row, so the join between
+   paint and photo is seamless. */
+@media (max-aspect-ratio: 7 / 10) and (max-width: 1023px) {
+  .mfm-hero {
+    /* Here the artwork is only ~102vw tall rather than viewport-height, so the
+       band shrinks to match — 9% of that, floored at a legible bar height. */
+    --mfm-band-h: max(2.5rem, 10vw);
+
+    background-image: linear-gradient(
+      to right,
+      #668389 0%,
+      #708d90 13%,
+      #799698 27%,
+      #7f9c9d 41%,
+      #84a0a1 55%,
+      #89a3a3 69%,
+      #8ba5a4 84%,
+      #8ba6a4 100%
+    );
+  }
+
+  .mfm-hero-img {
+    inset: auto 0 0 0;
+    height: auto;
+    object-fit: contain;
+    object-position: bottom center;
+  }
+
+  /* Top wash only — the bottom wash would sit right on the presenters, and the
+     card is frosted glass, so it carries its own contrast. */
+  .mfm-hero-scrim {
+    background: linear-gradient(
+      to bottom,
+      rgb(0 0 0 / 0.42) 0%,
+      rgb(0 0 0 / 0.22) 34%,
+      rgb(0 0 0 / 0) 62%
+    );
+  }
+
+  /* The crop is 102vw tall and the heads start ~44% down it, so the card has to
+     stop about 57vw shy of the bottom edge to leave all three faces clear. */
+  .mfm-card {
+    margin-bottom: 60vw;
+  }
+}
+
+/* Desktop lifts the absolutely-positioned card clear of the band. */
+@media (min-width: 1024px) {
+  .mfm-card {
+    bottom: calc(var(--mfm-band-h) + 2rem);
+  }
+}
+
+/* ─── Foot Band ─────────────────────────────────────────────────── */
+
+.mfm-band {
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--mfm-band-h);
+  overflow: hidden;
+  background-color: #3d3028;
+}
+
+.mfm-band-static {
+  max-width: 68rem;
+  padding: 0.9rem 1.5rem;
+  color: rgb(255 255 255 / 0.92);
+  font-size: clamp(0.8rem, 1.15vw, 1rem);
+  font-weight: 300;
+  line-height: 1.65;
+  text-align: center;
+  text-wrap: balance;
+}
+
+/* Desktop holds the whole sentence on one line. It's ~210 characters, so the
+   type has to be sized off the viewport rather than set outright — 0.93vw is
+   the largest ratio that still clears the padding at 1024px, which is where
+   this kicks in. It caps at 1.1rem so wide screens gain slack, not size. */
+@media (min-width: 1024px) {
+  .mfm-band-static {
+    max-width: none;
+    padding-inline: 2rem;
+    font-size: min(1.1rem, 0.95vw);
+    white-space: nowrap;
+    text-wrap: nowrap;
+  }
+}
+
+/* Phones scroll the sentence instead of wrapping it into a six-line slab. */
+.mfm-band-marquee {
+  display: none;
+  width: 100%;
+}
+
+.mfm-band-track {
+  display: flex;
+  width: max-content;
+  animation: announcement-scroll 32s linear infinite;
+  will-change: transform;
+}
+
+.mfm-band-track > span {
+  flex-shrink: 0;
+  padding-inline: 1.75rem;
+  color: rgb(255 255 255 / 0.92);
+  font-size: 0.78rem;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+@media (max-width: 639px) {
+  .mfm-band-static {
+    display: none;
+  }
+
+  .mfm-band-marquee {
+    display: block;
+  }
+}
+
+/* No motion means no marquee, so fall back to the wrapping paragraph. */
+@media (prefers-reduced-motion: reduce) {
+  .mfm-band-static {
+    display: block;
+  }
+
+  .mfm-band-marquee {
+    display: none;
+  }
+}
+
+/* ─── Frosted Glass Surfaces ────────────────────────────────────── */
+
+.mfm-glass {
+  background-color: rgb(255 255 255 / 0.07);
+  border: 1px solid rgb(255 255 255 / 0.22);
+  backdrop-filter: blur(7px) saturate(60%) brightness(0.82);
+  -webkit-backdrop-filter: blur(7px) saturate(60%) brightness(0.82);
+  box-shadow: 0 8px 40px rgb(0 0 0 / 0.25);
+}
+
+.mfm-nav-glass {
+  background-color: rgb(0 0 0 / 0.28);
+  border-bottom: 1px solid rgb(255 255 255 / 0.14);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+}
+
+/* ─── Entrance ──────────────────────────────────────────────────── */
+
+/* Lands just after .hero-tagline, reusing the shared hero keyframe. */
+.mfm-card {
+  opacity: 0;
+  animation: hero-fade-up 0.8s ease forwards;
+  animation-delay: 1.1s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mfm-card {
+    opacity: 1;
+    animation: none;
+  }
+}

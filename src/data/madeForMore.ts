@@ -1,0 +1,23 @@
+/** Shared details for the Made For More event page and its standalone navbar. */
+
+export const MFM_HERO_IMG =
+  'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_2000/v1786941451/full-bleed-mfm_ohghyy.png'
+
+export const MFM_HERO_IMG_MOBILE =
+  'https://res.cloudinary.com/dr9nm40gf/image/upload/c_crop,w_0.55,h_1.0,x_0,y_0/q_auto/f_auto/w_1000/v1786941451/full-bleed-mfm_ohghyy.png'
+
+export const MFM_EVENT = {
+  title: 'Made For More',
+  tagline: 'Step into the next level of your beauty business',
+  presenters: 'MJP Beauty | Standout Beauty | Miss NC Studio',
+  intro:
+    'A one-day beauty business networking experience for established beauty entrepreneurs ready to think bigger, show up differently, and step into what’s next — hosted by three Canadian beauty industry leaders.',
+  date: 'October 18, 2026',
+  time: '10am – 3pm',
+  venue: 'Offsite YYC',
+  address: '221 10 Ave SE #110, Calgary, AB',
+  ticketCta: 'Save $50 — Early Bird',
+} as const
+
+// swap for the live ticket checkout link once the client provides it.
+export const MFM_TICKETS_URL = '#tickets'

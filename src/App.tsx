@@ -11,18 +11,21 @@ import PrivacyPolicyPage from '@/pages/PrivacyPolicyPage'
 import TermsOfUsePage from '@/pages/TermsOfUsePage'
 import AdminPage from '@/pages/AdminPage'
 import ManageBookingPage from '@/pages/ManageBookingPage'
+import MadeForMorePage from '@/pages/MadeForMorePage'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import ScrollToTop from '@/components/ScrollToTop'
 
 function AppContent() {
   const { pathname } = useLocation()
-  const isAdmin = pathname === '/admin'
+  // Both pages bring their own chrome — admin its sidebar shell, Made For More
+  // its standalone event header.
+  const isBareLayout = pathname === '/admin' || pathname === '/made-for-more'
 
   return (
     <>
       <ScrollToTop />
-      {!isAdmin && <Navbar />}
+      {!isBareLayout && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/book-appointment" element={<BookAppointmentPage />} />
@@ -32,12 +35,13 @@ function AppContent() {
         <Route path="/online-modules/:handle" element={<ProductDetailPage />} />
         <Route path="/freebies" element={<FreebiesPage />} />
         <Route path="/biz-mentorship" element={<BizMentorshipPage />} />
+        <Route path="/made-for-more" element={<MadeForMorePage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsOfUsePage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/manage-booking" element={<ManageBookingPage />} />
       </Routes>
-      {!isAdmin && <Footer />}
+      {!isBareLayout && <Footer />}
     </>
   )
 }

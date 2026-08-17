@@ -279,6 +279,10 @@ export default function Navbar() {
               <NavLink to="/biz-mentorship" className={navLinkClass}>
                 BIZ Mentorship
               </NavLink>
+
+              <NavLink to="/made-for-more" className={navLinkClass}>
+                Made For More
+              </NavLink>
             </div>
           </div>
 
@@ -645,6 +649,7 @@ export default function Navbar() {
           {[
             { label: 'Freebies', to: '/freebies', end: false },
             { label: 'BIZ Mentorship', to: '/biz-mentorship', end: false },
+            { label: 'Made For More', to: '/made-for-more', end: false },
           ].map(({ label, to, end }) => (
             <NavLink
               key={to}

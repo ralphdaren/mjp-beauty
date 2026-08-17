@@ -1,0 +1,48 @@
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
+import { MFM_TICKETS_URL } from '@/data/madeForMore'
+
+export default function MadeForMoreNavbar() {
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 8)
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  return (
+    <header
+      className={[
+        'fixed top-0 left-0 w-full z-50 transition-colors duration-300',
+        scrolled ? 'mfm-nav-glass' : 'bg-transparent',
+      ].join(' ')}
+    >
+      <nav className="max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-16 h-16 sm:h-20 flex items-center justify-between gap-4">
+        <Link
+          to="/"
+          aria-label="Back to MJP Beauty"
+          className="group inline-flex items-center gap-2 text-white/85 hover:text-white transition-colors duration-200"
+        >
+          <ArrowLeft
+            size={18}
+            className="shrink-0 transition-transform duration-200 group-hover:-translate-x-0.5"
+          />
+          <span className="text-[0.7rem] sm:text-[0.75rem] uppercase tracking-[0.18em] whitespace-nowrap">
+            <span className="hidden sm:inline">Back to MJP Beauty</span>
+            <span className="sm:hidden">Back</span>
+          </span>
+        </Link>
+
+        <a
+          href={MFM_TICKETS_URL}
+          className="shrink-0 inline-flex items-center h-10 sm:h-11 px-5 sm:px-7 rounded-full bg-white text-[#3d3028] text-[0.68rem] sm:text-[0.72rem] uppercase tracking-[0.18em] font-medium hover:bg-white/90 active:scale-[0.99] transition-all duration-200 whitespace-nowrap"
+        >
+          Get Tickets
+        </a>
+      </nav>
+    </header>
+  )
+}
