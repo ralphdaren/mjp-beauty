@@ -44,6 +44,17 @@ export const MFM_INVITATION = {
   closingFinal: 'One room full of women ready for more.',
 } as const
 
+export const MFM_QUALIFIER = {
+  eyebrow: 'Is This You?',
+  heading: 'This room is for you if…',
+  items: [
+    'You’ve built something you’re proud of, but you know you haven’t reached your full potential yet.',
+    'You’re craving new opportunities.',
+    'You want to think bigger about what your beauty business could become.',
+  ],
+  closingLead: 'And most importantly…',
+  closingRest: 'you’re ready to stop waiting for permission to enter your next era.',
+} as const
 
 const portrait = (id: string) =>
   `https://res.cloudinary.com/dr9nm40gf/image/upload/c_fill,g_face,w_640,h_640/q_auto/f_auto/v1786948140/${id}.jpg`

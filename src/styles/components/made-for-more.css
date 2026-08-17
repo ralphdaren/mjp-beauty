@@ -394,6 +394,70 @@
   text-wrap: pretty;
 }
 
+/* ─── Is This You? ──────────────────────────────────────────────── */
+
+.mfm-qualifier {
+  background-color: #f6f2ec;
+  padding: clamp(4.5rem, 9vw, 8.5rem) 1.5rem clamp(5rem, 10vw, 9rem);
+  text-align: center;
+}
+
+.mfm-qualifier-head {
+  max-width: 54rem;
+  margin-inline: auto;
+}
+
+.mfm-qualifier-list {
+  max-width: 52rem;
+  margin: clamp(2.75rem, 5.5vw, 5rem) auto 0;
+  text-align: left;
+}
+
+.mfm-qualifier-item {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(1rem, 2.2vw, 2rem);
+  padding-block: clamp(1.5rem, 2.8vw, 2.4rem);
+  border-bottom: 1px solid #e3e2de;
+}
+
+.mfm-qualifier-item:first-child {
+  padding-top: 0;
+}
+
+.mfm-qualifier-check {
+  flex-shrink: 0;
+  margin-top: 0.3em;
+  color: #a0948a;
+  stroke-width: 1.25;
+}
+
+.mfm-qualifier-text {
+  color: #6b5f58;
+  font-size: clamp(1rem, 1.3vw, 1.35rem);
+  font-weight: 300;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+/* Locked to two lines at every width. The measure is in em, not rem, so it
+   scales with the type and the wrap point never moves: the full sentence is
+   ~40.3em on one line and its evenest two-line split is ~20.3em, so a 22em
+   measure always breaks it into exactly two. The vw term then keeps 22em
+   inside the padded column down to a 320px viewport. */
+.mfm-qualifier-closing {
+  max-width: 22em;
+  margin: clamp(2.75rem, 5.5vw, 5rem) auto 0;
+  color: #a0948a;
+  font-size: min(3.85vw, 2.9rem);
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.mfm-qualifier-closing-lead {
+  color: #3d3028;
+}
+
 /* ─── Frosted Glass Surfaces ────────────────────────────────────── */
 
 .mfm-glass {

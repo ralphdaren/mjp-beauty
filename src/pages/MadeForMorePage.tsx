@@ -1,5 +1,5 @@
 import { Fragment } from 'react'
-import { CalendarDays, MapPin } from 'lucide-react'
+import { CalendarDays, Check, MapPin } from 'lucide-react'
 import MadeForMoreNavbar from '@/components/MadeForMoreNavbar'
 import { useScrollAnimation } from '@/hooks/useScrollAnimation'
 import {
@@ -9,6 +9,7 @@ import {
   MFM_INTRO,
   MFM_INVITATION,
   MFM_PILLARS,
+  MFM_QUALIFIER,
   MFM_TICKETS_URL,
 } from '@/data/madeForMore'
 
@@ -86,6 +87,8 @@ export default function MadeForMorePage() {
       <MadeForMoreInvitation />
 
       <MadeForMorePillars />
+
+      <MadeForMoreQualifier />
     </main>
   )
 }
@@ -193,6 +196,32 @@ function MadeForMorePillars() {
           </article>
         ))}
       </div>
+    </section>
+  )
+}
+
+function MadeForMoreQualifier() {
+  return (
+    <section className="mfm-qualifier">
+      <div className="mfm-qualifier-head anim-fade-up">
+        <p className="font-sans mfm-eyebrow">{MFM_QUALIFIER.eyebrow}</p>
+
+        <h2 className="about-subheading mfm-heading">{MFM_QUALIFIER.heading}</h2>
+      </div>
+
+      <ul className="mfm-qualifier-list anim-fade-up">
+        {MFM_QUALIFIER.items.map((item) => (
+          <li key={item} className="mfm-qualifier-item">
+            <Check size={18} className="mfm-qualifier-check" aria-hidden="true" />
+            <p className="font-sans mfm-qualifier-text">{item}</p>
+          </li>
+        ))}
+      </ul>
+
+      <p className="about-subheading mfm-qualifier-closing anim-fade-up">
+        <span className="mfm-qualifier-closing-lead">{MFM_QUALIFIER.closingLead}</span>{' '}
+        {MFM_QUALIFIER.closingRest}
+      </p>
     </section>
   )
 }
