@@ -458,6 +458,118 @@
   color: #3d3028;
 }
 
+/* ─── Closing CTA ───────────────────────────────────────────────── */
+
+.mfm-closing {
+  background-color: #3d3028;
+  padding: clamp(5rem, 10vw, 9.5rem) 1.5rem clamp(5rem, 9vw, 8rem);
+  text-align: center;
+}
+
+.mfm-closing-inner {
+  max-width: 46rem;
+  margin-inline: auto;
+}
+
+/* Two lines at every width: the sentence is ~15.6em uppercase, so a 9.5em
+   measure always splits it after "MADE", and the vw term keeps that measure
+   inside the padded column on the narrowest phones. */
+.mfm-closing-heading {
+  max-width: 9.5em;
+  margin-inline: auto;
+  color: #f6f2ec;
+  font-size: min(8.6vw, 4.6rem);
+  letter-spacing: 0.005em;
+  line-height: 1.14;
+  text-transform: uppercase;
+}
+
+/* The wordmark is one of only two italics in this section. */
+.mfm-closing-accent {
+  color: #e6d8cb;
+  font-style: italic;
+}
+
+.mfm-closing-lines {
+  margin-top: clamp(2.25rem, 4.5vw, 3.75rem);
+}
+
+.mfm-closing-line {
+  color: rgb(255 255 255 / 0.72);
+  font-size: clamp(1.05rem, 1.55vw, 1.6rem);
+  line-height: 1.85;
+  text-wrap: balance;
+}
+
+.mfm-closing-rule {
+  width: clamp(7rem, 12vw, 11rem);
+  margin: clamp(2.5rem, 5vw, 4.25rem) auto 0;
+  border: 0;
+  border-top: 1px solid rgb(255 255 255 / 0.22);
+}
+
+.mfm-closing-eyebrow {
+  margin-top: clamp(2.25rem, 4.5vw, 3.5rem);
+  color: rgb(255 255 255 / 0.8);
+  letter-spacing: 0.32em;
+}
+
+.mfm-closing-where {
+  margin-top: clamp(0.9rem, 1.8vw, 1.5rem);
+  color: #f6f2ec;
+  font-size: clamp(1.15rem, 1.75vw, 1.85rem);
+  line-height: 1.4;
+  text-wrap: balance;
+}
+
+.mfm-closing-details {
+  margin-top: 0.5rem;
+  color: rgb(255 255 255 / 0.58);
+  font-size: clamp(0.85rem, 1.05vw, 1.05rem);
+  font-weight: 300;
+  line-height: 1.7;
+  text-wrap: balance;
+}
+
+.mfm-closing-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 3.75rem;
+  margin: clamp(2.25rem, 4.5vw, 3.5rem) auto 0;
+  /* Block padding keeps the label off the pill edges when it wraps to two
+     lines on narrow phones, where the copy is too long for a single line. */
+  padding: 1.1rem clamp(1.75rem, 4vw, 3.25rem);
+  border-radius: 9999px;
+  background-color: #f6f2ec;
+  color: #3d3028;
+  font-size: clamp(0.7rem, 0.95vw, 0.85rem);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  text-wrap: balance;
+  transition: background-color 200ms ease, transform 200ms ease;
+}
+
+.mfm-closing-btn:hover {
+  background-color: #fff;
+}
+
+.mfm-closing-btn:active {
+  transform: scale(0.99);
+}
+
+.mfm-closing-note {
+  margin-top: clamp(1.5rem, 2.8vw, 2.25rem);
+  color: rgb(255 255 255 / 0.45);
+  font-size: clamp(0.85rem, 1vw, 1rem);
+  font-style: italic;
+  line-height: 1.6;
+}
+
 /* ─── Frosted Glass Surfaces ────────────────────────────────────── */
 
 .mfm-glass {

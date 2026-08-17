@@ -3,6 +3,7 @@ import { CalendarDays, Check, MapPin } from 'lucide-react'
 import MadeForMoreNavbar from '@/components/MadeForMoreNavbar'
 import { useScrollAnimation } from '@/hooks/useScrollAnimation'
 import {
+  MFM_CTA,
   MFM_EVENT,
   MFM_HERO_IMG,
   MFM_HERO_IMG_MOBILE,
@@ -89,6 +90,8 @@ export default function MadeForMorePage() {
       <MadeForMorePillars />
 
       <MadeForMoreQualifier />
+
+      <MadeForMoreClosing />
     </main>
   )
 }
@@ -222,6 +225,45 @@ function MadeForMoreQualifier() {
         <span className="mfm-qualifier-closing-lead">{MFM_QUALIFIER.closingLead}</span>{' '}
         {MFM_QUALIFIER.closingRest}
       </p>
+    </section>
+  )
+}
+
+function MadeForMoreClosing() {
+  return (
+    <section className="mfm-closing">
+      <div className="mfm-closing-inner anim-fade-up">
+        <h2 className="about-subheading mfm-closing-heading">
+          {MFM_CTA.headingLead} {MFM_CTA.headingTail}{' '}
+          <em className="mfm-closing-accent">{MFM_CTA.headingAccent}</em>.
+        </h2>
+
+        <div className="mfm-closing-lines">
+          {MFM_CTA.lines.map((line) => (
+            <p key={line} className="about-subheading mfm-closing-line">
+              {line}
+            </p>
+          ))}
+        </div>
+
+        <hr className="mfm-closing-rule" />
+
+        <p className="font-sans mfm-eyebrow mfm-closing-eyebrow">{MFM_CTA.eyebrow}</p>
+
+        <p className="about-subheading mfm-closing-where">
+          {MFM_EVENT.date} · {MFM_CTA.where}
+        </p>
+
+        <p className="font-sans mfm-closing-details">
+          {MFM_EVENT.time} · {MFM_EVENT.addressFull}
+        </p>
+
+        <a href={MFM_TICKETS_URL} className="font-sans mfm-closing-btn">
+          {MFM_CTA.cta}
+        </a>
+
+        <p className="about-subheading mfm-closing-note">{MFM_CTA.note}</p>
+      </div>
     </section>
   )
 }

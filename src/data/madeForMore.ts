@@ -16,6 +16,7 @@ export const MFM_EVENT = {
   time: '10am – 3pm',
   venue: 'Offsite YYC',
   address: '221 10 Ave SE #110, Calgary, AB',
+  addressFull: '221 10 Ave SE #110, Calgary, AB T2G 0V9',
   ticketCta: 'Save $50 — Early Bird',
 } as const
 
@@ -91,5 +92,21 @@ export const MFM_PILLARS = {
   ],
 } as const
 
+export const MFM_CTA = {
+  headingLead: 'You were made',
+  headingTail: 'for',
+  headingAccent: 'more',
+  lines: [
+    'Come for the conversations.',
+    'Come for the connections.',
+    'Leave with the confidence to make your next move.',
+  ],
+  eyebrow: 'Made For More',
+  where: `${MFM_EVENT.venue}, Calgary, Alberta`,
+  // Non-breaking hyphen (U+2011) so "Early-Bird" never splits across button lines.
+  cta: 'Get Your Early‑Bird Ticket — Save $50',
+  note: 'Limited tickets available.',
+} as const
+
 // swap for the live ticket checkout link once the client provides it.
-export const MFM_TICKETS_URL = '#tickets'
+export const MFM_TICKETS_URL = 'https://mjpbeauty.myflodesk.com/made-for-more-beauty-biz-event'
