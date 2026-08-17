@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { CalendarDays, MapPin } from 'lucide-react'
 import MadeForMoreNavbar from '@/components/MadeForMoreNavbar'
 import { useScrollAnimation } from '@/hooks/useScrollAnimation'
@@ -6,6 +7,7 @@ import {
   MFM_HERO_IMG,
   MFM_HERO_IMG_MOBILE,
   MFM_INTRO,
+  MFM_INVITATION,
   MFM_TICKETS_URL,
 } from '@/data/madeForMore'
 
@@ -79,6 +81,8 @@ export default function MadeForMorePage() {
       </section>
 
       <MadeForMoreIntro />
+
+      <MadeForMoreInvitation />
     </main>
   )
 }
@@ -105,6 +109,48 @@ function MadeForMoreIntro() {
           <span className="mfm-intro-statement-lead">{MFM_INTRO.statementLead}</span>{' '}
           {MFM_INTRO.statementRest}
         </p>
+      </div>
+    </section>
+  )
+}
+
+function MadeForMoreInvitation() {
+  const { hosts } = MFM_INVITATION
+  const separatorFor = (i: number) =>
+    i === hosts.length - 1 ? '' : i === hosts.length - 2 ? ', and ' : ', '
+
+  return (
+    <section className="mfm-invite">
+      <div className="mfm-invite-inner anim-fade-up">
+        <p className="font-sans mfm-invite-eyebrow">{MFM_INVITATION.eyebrow}</p>
+
+        <h2 className="about-subheading mfm-invite-heading">
+          {MFM_INVITATION.headingLead}
+          <span className="mfm-invite-heading-accent">{MFM_INVITATION.headingAccent}</span>
+        </h2>
+
+        <p className="font-sans mfm-invite-body">{MFM_INVITATION.body}</p>
+
+        <p className="font-sans mfm-invite-body">
+          {MFM_INVITATION.hostsLead}{' '}
+          {hosts.map((host, i) => (
+            <Fragment key={host.name}>
+              <strong>{host.name}</strong> of {host.brand}
+              {separatorFor(i)}
+            </Fragment>
+          ))}{' '}
+          {MFM_INVITATION.hostsTail}
+        </p>
+      </div>
+
+      <div className="mfm-invite-closing anim-fade-up">
+        {MFM_INVITATION.closingLines.map((line) => (
+          <p key={line} className="about-subheading mfm-invite-closing-line">
+            {line}
+          </p>
+        ))}
+
+        <p className="about-subheading mfm-invite-closing-final">{MFM_INVITATION.closingFinal}</p>
       </div>
     </section>
   )

@@ -28,5 +28,21 @@ export const MFM_INTRO = {
   statementRest: 'is for the beauty business owner who’s ready to stop playing small.',
 } as const
 
+export const MFM_INVITATION = {
+  eyebrow: 'The Invitation',
+  headingLead: 'You’re not starting over.',
+  headingAccent: 'You’re expanding.',
+  body: 'There comes a point in business where the goal isn’t just to get more clients. It’s to build the confidence to take bigger risks, create new opportunities, and step into the entrepreneur you know you’re capable of becoming.',
+  hostsLead: 'On October 18th, join',
+  hosts: [
+    { name: 'Micah', brand: 'MJP Beauty' },
+    { name: 'Mia', brand: 'Standout Beauty' },
+    { name: 'Nicole', brand: 'Miss NC Beauty' },
+  ],
+  hostsTail: 'for an intimate beauty business networking event in Calgary.',
+  closingLines: ['Three beauty entrepreneurs.', 'Three completely different journeys.'],
+  closingFinal: 'One room full of women ready for more.',
+} as const
+
 // swap for the live ticket checkout link once the client provides it.
 export const MFM_TICKETS_URL = '#tickets'
