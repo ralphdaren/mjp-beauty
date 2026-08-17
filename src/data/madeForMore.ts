@@ -44,5 +44,41 @@ export const MFM_INVITATION = {
   closingFinal: 'One room full of women ready for more.',
 } as const
 
+
+const portrait = (id: string) =>
+  `https://res.cloudinary.com/dr9nm40gf/image/upload/c_fill,g_face,w_640,h_640/q_auto/f_auto/v1786948140/${id}.jpg`
+
+export const MFM_PILLARS = {
+  eyebrow: 'The 3 Pillars',
+  headingLead: 'What the hosts will',
+  headingAccent: 'share',
+  items: [
+    {
+      number: '01',
+      topic: 'Mindset',
+      name: 'Nicole',
+      brand: 'Miss NC Beauty',
+      photo: portrait('missnc-portrait_grttw6'),
+      body: 'The mindset shifts, education, and decisions that helped her grow a fully booked Calgary salon and build her own brow training.',
+    },
+    {
+      number: '02',
+      topic: 'Visibility',
+      name: 'Mia',
+      brand: 'Standout Beauty',
+      photo: portrait('standout-portrait_parros'),
+      body: 'How showing up consistently online grew her audience — and opened doors to a product line, online academy, and salon.',
+    },
+    {
+      number: '03',
+      topic: 'Connection',
+      name: 'Micah',
+      brand: 'MJP Beauty',
+      photo: portrait('mjpbeauty-portrait_x1bmnm'),
+      body: 'How to confidently show up online, humanize your brand through storytelling, and build a personal brand that creates connection, trust, and new opportunities.',
+    },
+  ],
+} as const
+
 // swap for the live ticket checkout link once the client provides it.
 export const MFM_TICKETS_URL = '#tickets'

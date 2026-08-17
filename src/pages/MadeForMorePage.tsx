@@ -8,6 +8,7 @@ import {
   MFM_HERO_IMG_MOBILE,
   MFM_INTRO,
   MFM_INVITATION,
+  MFM_PILLARS,
   MFM_TICKETS_URL,
 } from '@/data/madeForMore'
 
@@ -83,6 +84,8 @@ export default function MadeForMorePage() {
       <MadeForMoreIntro />
 
       <MadeForMoreInvitation />
+
+      <MadeForMorePillars />
     </main>
   )
 }
@@ -122,11 +125,13 @@ function MadeForMoreInvitation() {
   return (
     <section className="mfm-invite">
       <div className="mfm-invite-inner anim-fade-up">
-        <p className="font-sans mfm-invite-eyebrow">{MFM_INVITATION.eyebrow}</p>
+        <p className="font-sans mfm-eyebrow">{MFM_INVITATION.eyebrow}</p>
 
-        <h2 className="about-subheading mfm-invite-heading">
+        <h2 className="about-subheading mfm-heading">
           {MFM_INVITATION.headingLead}
-          <span className="mfm-invite-heading-accent">{MFM_INVITATION.headingAccent}</span>
+          <span className="mfm-heading-accent mfm-heading-accent-block">
+            {MFM_INVITATION.headingAccent}
+          </span>
         </h2>
 
         <p className="font-sans mfm-invite-body">{MFM_INVITATION.body}</p>
@@ -151,6 +156,42 @@ function MadeForMoreInvitation() {
         ))}
 
         <p className="about-subheading mfm-invite-closing-final">{MFM_INVITATION.closingFinal}</p>
+      </div>
+    </section>
+  )
+}
+
+function MadeForMorePillars() {
+  return (
+    <section className="mfm-pillars">
+      <div className="mfm-pillars-head anim-fade-up">
+        <p className="font-sans mfm-eyebrow">{MFM_PILLARS.eyebrow}</p>
+
+        <h2 className="about-subheading mfm-heading">
+          {MFM_PILLARS.headingLead}{' '}
+          <span className="mfm-heading-accent">{MFM_PILLARS.headingAccent}</span>
+        </h2>
+      </div>
+
+      <div className="mfm-pillars-grid">
+        {MFM_PILLARS.items.map((item) => (
+          <article key={item.name} className="mfm-pillar anim-fade-up">
+            <img
+              className="mfm-pillar-photo"
+              src={item.photo}
+              alt={`${item.name} of ${item.brand}`}
+              loading="lazy"
+              decoding="async"
+            />
+
+            <p className="about-subheading mfm-pillar-number">{item.number}</p>
+            <p className="font-sans mfm-pillar-topic">{item.topic}</p>
+            <h3 className="about-subheading mfm-pillar-name">{item.name}</h3>
+            <p className="about-subheading mfm-pillar-brand">{item.brand}</p>
+
+            <p className="font-sans mfm-pillar-body">{item.body}</p>
+          </article>
+        ))}
       </div>
     </section>
   )
