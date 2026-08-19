@@ -1,23 +1,41 @@
 /** Shared details for the Made For More event page and its standalone navbar. */
 
-export const MFM_HERO_IMG =
-  'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_2000/v1786941451/full-bleed-mfm_ohghyy.png'
+/* Cutout of the three hosts, cropped to its alpha bounding box (x 67 → 899,
+   y 32 → 902) so no transparent canvas pads the figure box. */
+const heroPortrait = (w: number) =>
+  `https://res.cloudinary.com/dr9nm40gf/image/upload/c_crop,x_67,y_32,w_833,h_871/f_auto,q_auto,w_${w}/v1787159669/portrait-mfm_qut98y.png`
 
-export const MFM_HERO_IMG_MOBILE =
-  'https://res.cloudinary.com/dr9nm40gf/image/upload/c_crop,w_0.55,h_1.0,x_0,y_0/q_auto/f_auto/w_1000/v1786941451/full-bleed-mfm_ohghyy.png'
+export const MFM_HERO_PORTRAITS = {
+  src: heroPortrait(833),
+  srcSet: [420, 620, 833].map((w) => `${heroPortrait(w)} ${w}w`).join(', '),
+  // Mirrors the .mfm-hero-figure widths in made-for-more.css.
+  sizes: '(min-width: 1024px) 30rem, 78vw',
+} as const
+
+/* Aspect ratio of the crop above — the figure box locks to it so the name
+   labels stay pinned to the right heads at every width. */
+export const MFM_HERO_PORTRAITS_RATIO = '833 / 871'
+
+/** Labels floated around the hero cutout, keyed by their CSS position rule. */
+export const MFM_HERO_HOSTS = [
+  { key: 'micah', name: 'Micah', brand: 'MJP Beauty' },
+  { key: 'mia', name: 'Mia', brand: 'Standout Beauty' },
+  { key: 'nicole', name: 'Nicole', brand: 'Miss NC' },
+] as const
 
 export const MFM_EVENT = {
   title: 'Made For More',
-  tagline: 'Step into the next level of your beauty business',
-  presenters: 'MJP Beauty | Standout Beauty | Miss NC Studio',
-  intro:
-    'A one-day beauty business networking experience for established beauty entrepreneurs ready to think bigger, show up differently, and step into what’s next — hosted by three Canadian beauty industry leaders.',
+  eyebrow: 'An exclusive event for beauty artists',
+  tagline: 'Where artistry meets ambition',
   date: 'October 18, 2026',
-  time: '10am – 3pm',
+  time: '10am – 4pm',
+  city: 'Calgary, Alberta',
+  country: 'Canada',
+  earlyBird: 'Early bird opens September 1st',
+  earlyBirdNote: '(Available for 72 hrs only)',
   venue: 'Offsite YYC',
   address: '221 10 Ave SE #110, Calgary, AB',
   addressFull: '221 10 Ave SE #110, Calgary, AB T2G 0V9',
-  ticketCta: 'Save $50 — Early Bird',
 } as const
 
 export const MFM_INTRO = {
@@ -57,8 +75,8 @@ export const MFM_QUALIFIER = {
   closingRest: 'you’re ready to stop waiting for permission to enter your next era.',
 } as const
 
-const portrait = (id: string) =>
-  `https://res.cloudinary.com/dr9nm40gf/image/upload/c_fill,g_face,w_640,h_640/q_auto/f_auto/v1786948140/${id}.jpg`
+const portrait = (version: string, id: string) =>
+  `https://res.cloudinary.com/dr9nm40gf/image/upload/c_fill,g_face,w_640,h_640/q_auto/f_auto/${version}/${id}.jpg`
 
 export const MFM_PILLARS = {
   eyebrow: 'The 3 Pillars',
@@ -70,7 +88,7 @@ export const MFM_PILLARS = {
       topic: 'Mindset',
       name: 'Nicole',
       brand: 'Miss NC Beauty',
-      photo: portrait('missnc-portrait_grttw6'),
+      photo: portrait('v1787158235', 'missnc-portrait_iprqs0'),
       body: 'The mindset shifts, education, and decisions that helped her grow a fully booked Calgary salon and build her own brow training.',
     },
     {
@@ -78,7 +96,7 @@ export const MFM_PILLARS = {
       topic: 'Visibility',
       name: 'Mia',
       brand: 'Standout Beauty',
-      photo: portrait('standout-portrait_parros'),
+      photo: portrait('v1787160461', 'standout-portrait_ze8wge'),
       body: 'How showing up consistently online grew her audience — and opened doors to a product line, online academy, and salon.',
     },
     {
@@ -86,7 +104,7 @@ export const MFM_PILLARS = {
       topic: 'Connection',
       name: 'Micah',
       brand: 'MJP Beauty',
-      photo: portrait('mjpbeauty-portrait_x1bmnm'),
+      photo: portrait('v1786948140', 'mjpbeauty-portrait_x1bmnm'),
       body: 'How to confidently show up online, humanize your brand through storytelling, and build a personal brand that creates connection, trust, and new opportunities.',
     },
   ],
@@ -104,7 +122,7 @@ export const MFM_CTA = {
   eyebrow: 'Made For More',
   where: `${MFM_EVENT.venue}, Calgary, Alberta`,
   // Non-breaking hyphen (U+2011) so "Early-Bird" never splits across button lines.
-  cta: 'Get Your Early‑Bird Ticket — Save $50',
+  cta: 'Get First Access to Early-Bird Tickets',
   note: 'Limited tickets available.',
 } as const
 

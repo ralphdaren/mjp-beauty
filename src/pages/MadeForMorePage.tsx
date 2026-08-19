@@ -5,8 +5,9 @@ import { useScrollAnimation } from '@/hooks/useScrollAnimation'
 import {
   MFM_CTA,
   MFM_EVENT,
-  MFM_HERO_IMG,
-  MFM_HERO_IMG_MOBILE,
+  MFM_HERO_HOSTS,
+  MFM_HERO_PORTRAITS,
+  MFM_HERO_PORTRAITS_RATIO,
   MFM_INTRO,
   MFM_INVITATION,
   MFM_PILLARS,
@@ -21,63 +22,44 @@ export default function MadeForMorePage() {
     <main>
       <MadeForMoreNavbar />
 
-      {/* Full-bleed hero */}
+      {/* Event-banner hero: copy on the left, cutout of the hosts on the
+          right, event details in the foot band. Stacks on phones. */}
       <section className="mfm-hero">
-        <picture>
-          <source
-            media="(max-aspect-ratio: 7/10) and (max-width: 1023px)"
-            srcSet={MFM_HERO_IMG_MOBILE}
-          />
-          <img
-            className="mfm-hero-img"
-            src={MFM_HERO_IMG}
-            alt="The three Made For More hosts in front of the Calgary skyline and Peace Bridge at dusk"
-            fetchPriority="high"
-            decoding="async"
-          />
-        </picture>
-        <div className="mfm-hero-scrim" />
+        <div className="mfm-hero-grid">
+          <div className="mfm-hero-copy">
+            <p className="hero-eyebrow font-sans mfm-hero-eyebrow">{MFM_EVENT.eyebrow}</p>
 
-        <div className="mfm-hero-content relative z-10 flex min-h-[100svh] flex-col px-5 pt-24 sm:px-10 sm:pt-28 lg:px-16">
+            <span className="hero-eyebrow mfm-hero-rule" aria-hidden="true" />
 
-          <div className="mx-auto mb-12 max-w-5xl text-center">
-            <p className="hero-eyebrow font-sans whitespace-nowrap text-[clamp(0.44rem,2.6vw,0.72rem)] font-light uppercase leading-relaxed tracking-[0.1em] text-white/80 sm:tracking-[0.32em]">
-              {MFM_EVENT.tagline}
-            </p>
-            <h1 className="mfm-wordmark hero-heading about-subheading mt-2 whitespace-nowrap text-[clamp(2.25rem,8.6vw,6rem)] leading-[1.05] tracking-[-0.01em] text-white sm:mt-3">
-              MADE <em className="script-accent">for</em> MORE
+            <h1 className="hero-heading font-sans mfm-hero-title">
+              made for <em>more.</em>
             </h1>
-            <p className="hero-tagline font-sans mt-2 whitespace-nowrap text-[clamp(0.46rem,2.3vw,0.78rem)] font-light uppercase leading-relaxed tracking-[0.07em] text-white/80 sm:mt-3 sm:tracking-[0.2em]">
-              By: {MFM_EVENT.presenters}
-            </p>
+
+            <span className="hero-tagline mfm-hero-rule" aria-hidden="true" />
+
+            <p className="hero-tagline font-sans mfm-hero-sub">{MFM_EVENT.tagline}</p>
           </div>
 
-          <aside className="mfm-card mfm-glass font-sans mx-auto mt-auto w-full max-w-md shrink-0 rounded-2xl p-6 sm:p-7 lg:absolute lg:right-16 lg:mt-0 lg:max-w-[23rem]">
-            <ul className="flex flex-col gap-5">
-              <li className="flex items-start gap-3">
-                <CalendarDays size={16} className="mt-1 shrink-0 text-white/65" aria-hidden="true" />
-                <div>
-                  <p className="text-[0.95rem] leading-snug text-white">{MFM_EVENT.date}</p>
-                  <p className="mt-0.5 text-sm text-white/65">{MFM_EVENT.time}</p>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <MapPin size={16} className="mt-1 shrink-0 text-white/65" aria-hidden="true" />
-                <div>
-                  <p className="text-[0.95rem] leading-snug text-white">{MFM_EVENT.venue}</p>
-                  <p className="mt-0.5 text-sm text-white/65">{MFM_EVENT.address}</p>
-                </div>
-              </li>
-            </ul>
+          <div className="mfm-hero-media">
+            <div className="mfm-hero-figure" style={{ aspectRatio: MFM_HERO_PORTRAITS_RATIO }}>
+              <img
+                className="mfm-hero-portraits"
+                src={MFM_HERO_PORTRAITS.src}
+                srcSet={MFM_HERO_PORTRAITS.srcSet}
+                sizes={MFM_HERO_PORTRAITS.sizes}
+                alt="Micah of MJP Beauty, Mia of Standout Beauty, and Nicole of Miss NC"
+                fetchPriority="high"
+                decoding="async"
+              />
 
-            <a
-              href={MFM_TICKETS_URL}
-              className="mt-7 flex h-12 items-center justify-center rounded-full border border-white/45 text-[0.7rem] uppercase tracking-[0.2em] text-white hover:bg-white hover:text-[#3d3028] active:scale-[0.99] transition-all duration-200"
-            >
-              {MFM_EVENT.ticketCta}
-            </a>
-          </aside>
-
+              {MFM_HERO_HOSTS.map((host) => (
+                <p key={host.key} className={`font-sans mfm-host-tag mfm-host-tag--${host.key}`}>
+                  <span className="mfm-host-name">{host.name}</span>
+                  <span className="mfm-host-brand">{host.brand}</span>
+                </p>
+              ))}
+            </div>
+          </div>
         </div>
 
         <MadeForMoreBand />
@@ -271,16 +253,27 @@ function MadeForMoreClosing() {
 function MadeForMoreBand() {
   return (
     <div className="mfm-band">
-      <p className="mfm-band-static font-sans">{MFM_EVENT.intro}</p>
+      <div className="mfm-band-cell">
+        <CalendarDays className="mfm-band-icon" aria-hidden="true" />
+        <p className="font-sans mfm-band-text">
+          <span className="mfm-band-line">{MFM_EVENT.date}</span>
+          <span className="mfm-band-line mfm-band-line-sub">{MFM_EVENT.time}</span>
+        </p>
+      </div>
 
-      <div className="mfm-band-marquee font-sans">
-        <p className="sr-only">{MFM_EVENT.intro}</p>
+      <div className="mfm-band-cell">
+        <MapPin className="mfm-band-icon" aria-hidden="true" />
+        <p className="font-sans mfm-band-text">
+          <span className="mfm-band-line">{MFM_EVENT.city}</span>
+          <span className="mfm-band-line mfm-band-line-sub">{MFM_EVENT.country}</span>
+        </p>
+      </div>
 
-        <div className="mfm-band-track" aria-hidden="true">
-          {Array.from({ length: 2 }).map((_, half) => (
-            <span key={half}>{MFM_EVENT.intro}</span>
-          ))}
-        </div>
+      <div className="mfm-band-cell mfm-band-cell-wide">
+        <p className="font-sans mfm-band-text">
+          <span className="mfm-band-line">{MFM_EVENT.earlyBird}</span>
+          <span className="mfm-band-line mfm-band-line-sub">{MFM_EVENT.earlyBirdNote}</span>
+        </p>
       </div>
     </div>
   )

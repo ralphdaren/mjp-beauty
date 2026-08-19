@@ -24,7 +24,7 @@ export default function MadeForMoreNavbar() {
         <Link
           to="/"
           aria-label="Back to MJP Beauty"
-          className="group inline-flex items-center gap-2 text-white/85 hover:text-white transition-colors duration-200"
+          className="group inline-flex items-center gap-2 text-[#3d3028]/75 hover:text-[#3d3028] transition-colors duration-200"
         >
           <ArrowLeft
             size={18}
@@ -38,7 +38,7 @@ export default function MadeForMoreNavbar() {
 
         <a
           href={MFM_TICKETS_URL}
-          className="shrink-0 inline-flex items-center h-10 sm:h-11 px-5 sm:px-7 rounded-full bg-white text-[#3d3028] text-[0.68rem] sm:text-[0.72rem] uppercase tracking-[0.18em] font-medium hover:bg-white/90 active:scale-[0.99] transition-all duration-200 whitespace-nowrap"
+          className="shrink-0 inline-flex items-center h-10 sm:h-11 px-5 sm:px-7 rounded-full bg-[#3d3028] text-[#f6f2ec] text-[0.68rem] sm:text-[0.72rem] uppercase tracking-[0.18em] font-medium hover:bg-[#2c221c] active:scale-[0.99] transition-all duration-200 whitespace-nowrap"
         >
           Get Tickets
         </a>
