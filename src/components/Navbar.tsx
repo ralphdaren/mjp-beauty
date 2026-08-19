@@ -291,7 +291,7 @@ export default function Navbar() {
                 BIZ Mentorship
               </NavLink>
 
-              <NavLink to="/made-for-more" className={navLinkClass}>
+              <NavLink to="/made-for-more-calgary" className={navLinkClass}>
                 <span className="inline-flex items-center gap-1.5">
                   Made For More
                   {showMfmBadge && <NewBadge />}
@@ -663,7 +663,7 @@ export default function Navbar() {
           {[
             { label: 'Freebies', to: '/freebies', end: false, badge: false },
             { label: 'BIZ Mentorship', to: '/biz-mentorship', end: false, badge: false },
-            { label: 'Made For More', to: '/made-for-more', end: false, badge: showMfmBadge },
+            { label: 'Made For More', to: '/made-for-more-calgary', end: false, badge: showMfmBadge },
           ].map(({ label, to, end, badge }) => (
             <NavLink
               key={to}

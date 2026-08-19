@@ -68,7 +68,7 @@ const PAGE_ENTRIES: SearchEntry[] = [
     title: 'Made For More',
     description: 'A one-day MJP Beauty event in Calgary — October 18, 2026.',
     keywords: 'event calgary yyc tickets early bird conference summit made for more',
-    to: '/made-for-more',
+    to: '/made-for-more-calgary',
     group: 'Pages',
   },
   {

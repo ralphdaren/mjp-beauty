@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Home from '@/pages/HomePage'
 import BookAppointmentPage from '@/pages/BookAppointmentPage'
 import InPersonTrainingPage from '@/pages/InPersonTrainingPage'
@@ -20,7 +20,7 @@ function AppContent() {
   const { pathname } = useLocation()
   // Both pages bring their own chrome — admin its sidebar shell, Made For More
   // its standalone event header.
-  const isBareLayout = pathname === '/admin' || pathname === '/made-for-more'
+  const isBareLayout = pathname === '/admin' || pathname === '/made-for-more-calgary'
 
   return (
     <>
@@ -35,7 +35,8 @@ function AppContent() {
         <Route path="/online-modules/:handle" element={<ProductDetailPage />} />
         <Route path="/freebies" element={<FreebiesPage />} />
         <Route path="/biz-mentorship" element={<BizMentorshipPage />} />
-        <Route path="/made-for-more" element={<MadeForMorePage />} />
+        <Route path="/made-for-more-calgary" element={<MadeForMorePage />} />
+        <Route path="/made-for-more" element={<Navigate to="/made-for-more-calgary" replace />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsOfUsePage />} />
         <Route path="/admin" element={<AdminPage />} />
