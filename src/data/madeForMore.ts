@@ -1,22 +1,16 @@
 /** Shared details for the Made For More event page and its standalone navbar. */
 
-/* Cutout of the three hosts, cropped to its alpha bounding box (x 67 → 899,
-   y 32 → 902) so no transparent canvas pads the figure box. */
 const heroPortrait = (w: number) =>
   `https://res.cloudinary.com/dr9nm40gf/image/upload/c_crop,x_67,y_32,w_833,h_871/f_auto,q_auto,w_${w}/v1787159669/portrait-mfm_qut98y.png`
 
 export const MFM_HERO_PORTRAITS = {
   src: heroPortrait(833),
   srcSet: [420, 620, 833].map((w) => `${heroPortrait(w)} ${w}w`).join(', '),
-  // Mirrors the .mfm-hero-figure widths in made-for-more.css.
   sizes: '(min-width: 1024px) 30rem, 78vw',
 } as const
 
-/* Aspect ratio of the crop above — the figure box locks to it so the name
-   labels stay pinned to the right heads at every width. */
 export const MFM_HERO_PORTRAITS_RATIO = '833 / 871'
 
-/** Labels floated around the hero cutout, keyed by their CSS position rule. */
 export const MFM_HERO_HOSTS = [
   { key: 'micah', name: 'Micah', brand: 'MJP Beauty' },
   { key: 'mia', name: 'Mia', brand: 'Standout Beauty' },
@@ -121,10 +115,13 @@ export const MFM_CTA = {
   ],
   eyebrow: 'Made For More',
   where: `${MFM_EVENT.venue}, Calgary, Alberta`,
-  // Non-breaking hyphen (U+2011) so "Early-Bird" never splits across button lines.
   cta: 'Get First Access to Early-Bird Tickets',
   note: 'Limited tickets available.',
 } as const
+
+export const MFM_NEW_BADGE_UNTIL = '2026-10-19'
+
+export const isMadeForMoreNew = () => Date.now() < new Date(MFM_NEW_BADGE_UNTIL).getTime()
 
 // swap for the live ticket checkout link once the client provides it.
 export const MFM_TICKETS_URL = 'https://mjpbeauty.myflodesk.com/made-for-more-beauty-biz-event'

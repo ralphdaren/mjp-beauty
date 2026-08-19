@@ -4,6 +4,7 @@ import { Menu, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight, User, Cale
 import logoBrown from '@/assets/brand-kit/logo-brown.png'
 import AnnouncementBar from '@/components/AnnouncementBar'
 import SearchOverlay from '@/components/SearchOverlay'
+import { isMadeForMoreNew } from '@/data/madeForMore'
 
 const optImg01 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_500/v1783027940/opt-img-01_ufhoau.jpg'
 import { getCollectionProducts } from '@/lib/shopify'
@@ -34,6 +35,15 @@ const singleModules = [
   { num: '06', name: "Glam Up Your Grid: A Brow Artist's Social Media Guide", to: '/online-modules/glam-up-your-grid-a-brow-artists-social-media-guide' },
 ]
 
+/** Small brand pill that flags a nav item as new. */
+function NewBadge() {
+  return (
+    <span className="shrink-0 rounded-full bg-brand px-1.5 py-1 text-[0.6rem] font-medium uppercase leading-none tracking-[0.1em] text-white">
+      New
+    </span>
+  )
+}
+
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   [
     'text-base tracking-wide pb-0.5 transition-colors duration-200 whitespace-nowrap',
@@ -50,6 +60,7 @@ export default function Navbar() {
   const [isAcademyOpen, setIsAcademyOpen] = useState(false)
   const [isMobileAcademyOpen, setIsMobileAcademyOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const showMfmBadge = isMadeForMoreNew()
   const [shopifyProducts, setShopifyProducts] = useState<ShopifyProduct[]>([])
   const [currentSlide, setCurrentSlide] = useState(0)
   const [mobileSlide, setMobileSlide] = useState(0)
@@ -281,7 +292,10 @@ export default function Navbar() {
               </NavLink>
 
               <NavLink to="/made-for-more" className={navLinkClass}>
-                Made For More
+                <span className="inline-flex items-center gap-1.5">
+                  Made For More
+                  {showMfmBadge && <NewBadge />}
+                </span>
               </NavLink>
             </div>
           </div>
@@ -647,10 +661,10 @@ export default function Navbar() {
           </div>
 
           {[
-            { label: 'Freebies', to: '/freebies', end: false },
-            { label: 'BIZ Mentorship', to: '/biz-mentorship', end: false },
-            { label: 'Made For More', to: '/made-for-more', end: false },
-          ].map(({ label, to, end }) => (
+            { label: 'Freebies', to: '/freebies', end: false, badge: false },
+            { label: 'BIZ Mentorship', to: '/biz-mentorship', end: false, badge: false },
+            { label: 'Made For More', to: '/made-for-more', end: false, badge: showMfmBadge },
+          ].map(({ label, to, end, badge }) => (
             <NavLink
               key={to}
               to={to}
@@ -658,12 +672,13 @@ export default function Navbar() {
               onClick={closeDrawer}
               className={({ isActive }) =>
                 [
-                  'text-sm tracking-wide py-3 border-b border-brand-border transition-colors duration-200',
+                  'flex items-center gap-2 text-sm tracking-wide py-3 border-b border-brand-border transition-colors duration-200',
                   isActive ? 'text-brand font-medium' : 'text-[#5a5047] hover:text-brand',
                 ].join(' ')
               }
             >
               {label}
+              {badge && <NewBadge />}
             </NavLink>
           ))}
 
