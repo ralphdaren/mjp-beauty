@@ -22,8 +22,6 @@ export default function MadeForMorePage() {
     <main>
       <MadeForMoreNavbar />
 
-      {/* Event-banner hero: copy on the left, cutout of the hosts on the
-          right, event details in the foot band. Stacks on phones. */}
       <section className="mfm-hero">
         <div className="mfm-hero-grid">
           <div className="mfm-hero-copy">

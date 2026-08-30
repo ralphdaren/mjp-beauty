@@ -5,8 +5,6 @@
   display: flex;
   flex-direction: column;
   min-height: 30rem;
-  /* The host name tags hang past the cutout on purpose; clip only sideways so
-     nothing can push the page wide. */
   overflow-x: clip;
   background-image: radial-gradient(
     125% 100% at 50% 28%,
@@ -24,7 +22,6 @@
   align-items: center;
   justify-content: center;
   gap: clamp(1.5rem, 5vw, 2.5rem);
-  /* Top padding clears the fixed navbar; the cutout sits flush on the band. */
   padding: clamp(6rem, 16vw, 8rem) 1.25rem 0;
 }
 
@@ -46,7 +43,6 @@
   letter-spacing: clamp(0.16em, 0.4vw, 0.3em);
   line-height: 1.6;
   text-transform: uppercase;
-  /* Trailing letter-space would otherwise push the centred line left. */
   text-indent: clamp(0.16em, 0.4vw, 0.3em);
 }
 
@@ -60,8 +56,6 @@
 
 .mfm-hero-title {
   color: #2f2823;
-  /* Set in vw so the single nowrap line always clears the side padding on a
-     320px phone; the lg rule below takes over once the copy shares the row. */
   font-size: clamp(1.9rem, 11.5vw, 3.6rem);
   font-weight: 300;
   letter-spacing: -0.015em;
@@ -83,8 +77,6 @@
   padding-inline: clamp(1rem, 3vw, 3rem);
 }
 
-/* Locked to the artwork's aspect ratio (set inline from the data file) so the
-   name tags stay pinned to the right heads at every width. */
 .mfm-hero-figure {
   position: relative;
   width: min(78vw, 20rem);
@@ -127,8 +119,6 @@
   text-transform: uppercase;
 }
 
-/* Percentages are read off the artwork: each tag clears the hair line of the
-   host it labels. */
 .mfm-host-tag--micah {
   top: 19%;
   right: 87%;
@@ -180,8 +170,6 @@
   position: relative;
   z-index: 2;
   display: grid;
-  /* The early-bird cell carries the longest copy, so it gets the widest
-     column on phones where every line wraps. */
   grid-template-columns: 1fr 0.95fr 1.35fr;
   align-items: center;
   padding: clamp(0.9rem, 2.4vw, 1.4rem) clamp(0.25rem, 2vw, 2.5rem);
@@ -307,7 +295,6 @@
   text-wrap: balance;
 }
 
-/* Wordmark is the only italic in the statement line. */
 .mfm-intro-statement-lead {
   font-style: italic;
   letter-spacing: 0.015em;
@@ -420,7 +407,6 @@
   }
 }
 
-/* Cards arrive one after the other rather than all at once. */
 .mfm-pillar:nth-child(2) {
   transition-delay: 0.12s;
 }
@@ -461,7 +447,6 @@
   line-height: 1.2;
 }
 
-/* Brand line is the only italic in a pillar. */
 .mfm-pillar-brand {
   margin-top: 0.35rem;
   color: #a0948a;
@@ -525,11 +510,6 @@
   text-wrap: pretty;
 }
 
-/* Locked to two lines at every width. The measure is in em, not rem, so it
-   scales with the type and the wrap point never moves: the full sentence is
-   ~40.3em on one line and its evenest two-line split is ~20.3em, so a 22em
-   measure always breaks it into exactly two. The vw term then keeps 22em
-   inside the padded column down to a 320px viewport. */
 .mfm-qualifier-closing {
   max-width: 22em;
   margin: clamp(2.75rem, 5.5vw, 5rem) auto 0;
@@ -556,9 +536,6 @@
   margin-inline: auto;
 }
 
-/* Two lines at every width: the sentence is ~15.6em uppercase, so a 9.5em
-   measure always splits it after "MADE", and the vw term keeps that measure
-   inside the padded column on the narrowest phones. */
 .mfm-closing-heading {
   max-width: 9.5em;
   margin-inline: auto;
@@ -569,7 +546,6 @@
   text-transform: uppercase;
 }
 
-/* The wordmark is one of only two italics in this section. */
 .mfm-closing-accent {
   color: #e6d8cb;
   font-style: italic;
@@ -624,8 +600,6 @@
   max-width: 100%;
   min-height: 3.75rem;
   margin: clamp(2.25rem, 4.5vw, 3.5rem) auto 0;
-  /* Block padding keeps the label off the pill edges when it wraps to two
-     lines on narrow phones, where the copy is too long for a single line. */
   padding: 1.1rem clamp(1.75rem, 4vw, 3.25rem);
   border-radius: 9999px;
   background-color: #f6f2ec;
@@ -657,8 +631,6 @@
 
 /* ─── Navbar ────────────────────────────────────────────────────── */
 
-/* The page reads light from the hero down, so the scrolled navbar is a warm
-   light glass rather than the dark one it used over the old photo hero. */
 .mfm-nav-glass {
   background-color: rgb(246 242 236 / 0.82);
   border-bottom: 1px solid rgb(61 48 40 / 0.1);

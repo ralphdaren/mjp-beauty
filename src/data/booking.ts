@@ -13,12 +13,6 @@ const browLamVid = 'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_a
 const browWtVid  = 'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1781343535/brow-wt-vid-01_jladew.mp4'
 const keratinVid = 'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1781343313/keratin-lt-vid-01_cuveqw.mp4'
 
-// Service and option names, prices and durations all come from Square, joined on
-// the `squareItemId` / `squareVariationId` below — Micah renaming a service in
-// her dashboard changes the site. The names here are only what the page paints
-// with before /api/services answers, and what it falls back to if Square is
-// down, so keep them roughly in sync. Copy, photos, video and order stay local:
-// Square has no field for them.
 export const SERVICES: Service[] = [
   {
     id: 'brow-lam',
@@ -47,8 +41,7 @@ export const SERVICES: Service[] = [
       'A complete brow enhancement package — brow shaping, waxing, and tinting all in one. Brow tint lasts up to 1 week on the skin and 4+ weeks on the hairs for a defined, polished finish.',
     duration: '40 min+',
     tiers: [
-      { squareVariationId: 'I56EZ4ZJVCHX67FYG4HO4Y6Q', label: 'Returning Client', price: '$61.90', duration: '30 min' },
-      { squareVariationId: 'C5ZUZMXVN2XL7MW6R4EHGCHJ', label: 'New Client', price: '$66.67', duration: '30 min' },
+      { squareVariationId: 'I56EZ4ZJVCHX67FYG4HO4Y6Q', label: 'Returning Client', price: '$66.67', duration: '30 min' },
     ],
     images: [browStImg1, browStImg2],
     video: null,
@@ -62,8 +55,8 @@ export const SERVICES: Service[] = [
       'Give your brows life again with a quick and easy brow shaping and waxing package. Includes the option of filling in the brows with a brow pencil and highlighting the brow bone to further accentuate your new brows.',
     duration: '20 min+',
     tiers: [
-      { squareVariationId: 'A7FNDDOMO5463V545DTSJU45', label: 'Brow Shape & Wax (Returning Client)', price: '$47.62', duration: '20 min' },
-      { squareVariationId: '4X5533WAUJRRY3CNH36PHYDT', label: 'Brow Shape & Wax (New Client)', price: '$52.38', duration: '30 min' },
+      { squareVariationId: 'A7FNDDOMO5463V545DTSJU45', label: 'Returning Client', price: '$47.62', duration: '20 min' },
+      { squareVariationId: '4X5533WAUJRRY3CNH36PHYDT', label: 'New Client', price: '$52.38', duration: '30 min' },
     ],
     images: [browWtImg1, browWtImg2],
     video: browWtVid,

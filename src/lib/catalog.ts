@@ -47,42 +47,47 @@ export function basketMinutes(items: BookingItem[]): number {
   return items.reduce((total, item) => total + tierMinutes(item.tier), 0)
 }
 
-// Rebuilds SERVICES from the live catalog. Names, prices and durations are all
-// Square's — joined on the catalog ids in booking.ts, so renaming a service or
-// an option in the Square dashboard changes the site without a deploy. A tier
-// Square no longer offers — deleted, archived, or unchecked for online booking
-// — is dropped, and a service left with no bookable tiers drops out with it.
-// Copy, photos, video and display order stay local; Square has no field for them.
+/** Applies Square's live name, price and duration over a local tier. */
+function toTier(tier: PriceTier, match: CatalogVariation): PriceTier {
+  return {
+    ...tier,
+    squareVariationId: match.id,
+    label: match.name,
+    price: match.priceCents != null ? formatMoney('$', match.priceCents / 100) : tier.price,
+    duration: match.durationMs != null ? formatDuration(match.durationMs) : tier.duration,
+    ...(match.priceCents != null ? { priceCents: match.priceCents } : {}),
+    ...(match.durationMs != null ? { durationMs: match.durationMs } : {}),
+  }
+}
+
 export function mergeCatalog(services: Service[], items: CatalogItem[]): Service[] {
   const itemById = new Map(items.map((item) => [item.id, item]))
   const variationById = new Map<string, CatalogVariation>()
-  const variationByName = new Map<string, CatalogVariation>()
   for (const item of items) {
-    for (const variation of item.variations) {
-      variationById.set(variation.id, variation)
-      variationByName.set(variation.name.toLowerCase().trim(), variation)
-    }
+    for (const variation of item.variations) variationById.set(variation.id, variation)
   }
 
   const merged: Service[] = []
   for (const service of services) {
-    const tiers = service.tiers.flatMap<PriceTier>((tier) => {
-      // Name lookup only covers a tier that has no id yet; ids are what survive
-      // a rename, and two items can share an option name.
-      const match = (tier.squareVariationId && variationById.get(tier.squareVariationId))
-        || variationByName.get(tier.label.toLowerCase().trim())
-      if (!match || !match.bookable) return []
-      return [{
-        ...tier,
-        label: match.name,
-        price: match.priceCents != null ? formatMoney('$', match.priceCents / 100) : tier.price,
-        duration: match.durationMs != null ? formatDuration(match.durationMs) : tier.duration,
-        ...(match.priceCents != null ? { priceCents: match.priceCents } : {}),
-        ...(match.durationMs != null ? { durationMs: match.durationMs } : {}),
-      }]
-    })
-    if (tiers.length === 0) continue
     const item = service.squareItemId ? itemById.get(service.squareItemId) : undefined
+    const claimed = new Set<string>()
+    const tiers = service.tiers.flatMap<PriceTier>((tier) => {
+      const match = tier.squareVariationId
+        ? variationById.get(tier.squareVariationId)
+        : item?.variations.find(
+            (v) => v.name.toLowerCase().trim() === tier.label.toLowerCase().trim(),
+          )
+      if (!match || !match.bookable) return []
+      claimed.add(match.id)
+      return [toTier(tier, match)]
+    })
+    for (const variation of item?.variations ?? []) {
+      if (!variation.bookable || claimed.has(variation.id)) continue
+      if (variation.priceCents == null || variation.durationMs == null) continue
+      tiers.push(toTier({ label: variation.name, price: '' }, variation))
+    }
+
+    if (tiers.length === 0) continue
     merged.push({ ...service, name: item?.name || service.name, tiers })
   }
   return merged
