@@ -13,7 +13,7 @@
 // subscription's signing secret stored as SHOPIFY_WEBHOOK_SECRET.
 
 import { supabase } from '../_supabase.js'
-import { renderTicketEmail, ticketEmailSubject } from '../_mfm-ticket-email.js'
+import { renderTicketEmail, ticketEmailText, ticketEmailSubject } from '../_mfm-ticket-email.js'
 import { MFM_TICKETS_PRODUCT_ID, EARLY_BIRD_ENDS_AT } from '../_mfm-config.js'
 
 export const config = { runtime: 'edge' }
@@ -141,13 +141,13 @@ export default async function handler(req: Request): Promise<Response> {
   const from = process.env.RESEND_FROM_EMAIL ?? 'MJP Beauty <onboarding@resend.dev>'
   if (!apiKey) return ok({ recorded: orderId, emailed: false, reason: 'no RESEND_API_KEY' })
 
-  const html = renderTicketEmail({
+  const emailData = {
     firstName,
     items: items.map(({ tier, quantity }) => (quantity > 1 ? `${tier} × ${quantity}` : tier)),
     total: `$${parseFloat(totalRaw).toFixed(2)} ${currency}`,
     orderNumber: order.name ?? `#${orderId}`,
     showGiveaway: Date.parse(orderedAt) < Date.parse(EARLY_BIRD_ENDS_AT),
-  })
+  }
 
   const sent = await fetch(RESEND_ENDPOINT, {
     method: 'POST',
@@ -156,7 +156,8 @@ export default async function handler(req: Request): Promise<Response> {
       from,
       to: email,
       subject: ticketEmailSubject(order.name ?? `#${orderId}`),
-      html,
+      html: renderTicketEmail(emailData),
+      text: ticketEmailText(emailData),
     }),
   })
 

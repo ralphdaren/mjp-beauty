@@ -165,5 +165,42 @@ ${ticketEmailBody(data)}
 </html>`
 }
 
+export function ticketEmailText(data: TicketEmailData): string {
+  const lines = [
+    `Hi ${data.firstName},`,
+    '',
+    "You're in — this is your confirmation ticket for Made For More in Calgary.",
+    "Keep this email; it's everything you'll need on the day.",
+    '',
+    `Ticket:     ${data.items.join(', ')}`,
+    `Paid:       ${data.total}`,
+    `Order:      ${data.orderNumber}`,
+    `Date:       ${EVENT.date}`,
+    `Time:       ${EVENT.time}`,
+    `Where:      ${EVENT.venue}, ${EVENT.address}`,
+    `Dress code: ${EVENT.dressCode}`,
+    '',
+  ]
+
+  if (data.showGiveaway) {
+    lines.push(
+      'Share that you\'re coming on Instagram and tag us to be entered for a',
+      'chance to win back your investment. We\'ll announce the winner once',
+      'early-bird sales close.',
+      '',
+    )
+  }
+
+  lines.push(
+    'More updates to follow — keep an eye on your inbox closer to the date.',
+    `Any questions? DM us on Instagram at ${EVENT.instagram}.`,
+    '',
+    "We can't wait to see you there.",
+    'Micah, Mia & Nicole',
+  )
+
+  return lines.join('\n')
+}
+
 export const ticketEmailSubject = (orderNumber: string) =>
   `Your ticket to Made For More — ${orderNumber}`
