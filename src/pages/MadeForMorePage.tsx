@@ -1,6 +1,7 @@
 import { Fragment } from 'react'
 import { CalendarDays, Check, MapPin } from 'lucide-react'
 import MadeForMoreNavbar from '@/components/MadeForMoreNavbar'
+import { useMfmSaleStage } from '@/hooks/useMfmSaleStage'
 import { useScrollAnimation } from '@/hooks/useScrollAnimation'
 import {
   MFM_CTA,
@@ -12,7 +13,8 @@ import {
   MFM_INVITATION,
   MFM_PILLARS,
   MFM_QUALIFIER,
-  ticketsHref,
+  MFM_TICKETS_CTA,
+  MFM_TICKETS_HREF,
 } from '@/data/madeForMore'
 
 export default function MadeForMorePage() {
@@ -210,6 +212,8 @@ function MadeForMoreQualifier() {
 }
 
 function MadeForMoreClosing() {
+  const stage = useMfmSaleStage()
+
   return (
     <section className="mfm-closing">
       <div className="mfm-closing-inner anim-fade-up">
@@ -238,8 +242,8 @@ function MadeForMoreClosing() {
           {MFM_EVENT.time} · {MFM_EVENT.addressFull}
         </p>
 
-        <a href={ticketsHref()} className="font-sans mfm-closing-btn">
-          {MFM_CTA.cta}
+        <a href={MFM_TICKETS_HREF[stage]} className="font-sans mfm-closing-btn">
+          {MFM_TICKETS_CTA[stage]}
         </a>
 
         <p className="about-subheading mfm-closing-note">{MFM_CTA.note}</p>

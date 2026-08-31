@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Check, Loader2 } from 'lucide-react'
 import MadeForMoreNavbar from '@/components/MadeForMoreNavbar'
 import { createCheckoutUrl, getProductByHandle, type ShopifyVariant } from '@/lib/shopify'
@@ -16,6 +16,20 @@ import {
 const dollars = (amount: string) => `$${Math.round(parseFloat(amount))}`
 
 type Tier = (typeof MFM_TICKET_TIERS)[number]
+
+/** Accepts anything someone might paste — "@name", a profile URL, a bare
+ *  handle — and returns the bare handle, or null if it isn't one. Instagram
+ *  allows letters, numbers, dots and underscores, up to 30 characters. */
+function normalizeHandle(input: string): string | null {
+  const handle = input
+    .trim()
+    .replace(/^https?:\/\//i, '')
+    .replace(/^www\./i, '')
+    .replace(/^instagram\.com\//i, '')
+    .replace(/[/?#].*$/, '')
+    .replace(/^@+/, '')
+  return /^[A-Za-z0-9._]{1,30}$/.test(handle) ? handle : null
+}
 
 /** Ticks once a second while the early-bird window is open, so the countdown
  *  and the tier pricing flip together the moment it closes. */
@@ -73,11 +87,12 @@ function Countdown() {
 function TicketCard({
   tier,
   variant,
-  instagram,
+  resolveInstagram,
 }: {
   tier: Tier
   variant: ShopifyVariant | undefined
-  instagram: string
+  /** Returns the validated handle, or null after flagging the shared field. */
+  resolveInstagram: () => string | null
 }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -94,12 +109,17 @@ function TicketCard({
 
   async function handleCheckout() {
     if (!variant || busy) return
+
+    // Micah tags every attendee and uses the handle as the backup way to reach
+    // them, so checkout doesn't open without one.
+    const handle = resolveInstagram()
+    if (!handle) return
+
     setBusy(true)
     setError(null)
 
-    const handle = instagram.trim().replace(/^@+/, '')
     const url = await createCheckoutUrl(variant.id, {
-      attributes: handle ? { Instagram: `@${handle}` } : undefined,
+      attributes: { Instagram: `@${handle}` },
     })
 
     if (!url) {
@@ -173,6 +193,24 @@ export default function MadeForMoreTicketsPage() {
   const [variants, setVariants] = useState<ShopifyVariant[] | null>(null)
   const [failed, setFailed] = useState(false)
   const [instagram, setInstagram] = useState('')
+  const [instagramError, setInstagramError] = useState<string | null>(null)
+  const instagramRef = useRef<HTMLInputElement>(null)
+
+  const resolveInstagram = useCallback(() => {
+    const handle = normalizeHandle(instagram)
+    if (handle) {
+      setInstagramError(null)
+      return handle
+    }
+    setInstagramError(
+      instagram.trim()
+        ? 'That doesn’t look like an Instagram handle. Letters, numbers, dots and underscores only.'
+        : 'Please add your Instagram handle to continue.',
+    )
+    instagramRef.current?.focus()
+    instagramRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    return null
+  }, [instagram])
 
   useEffect(() => {
     let cancelled = false
@@ -213,19 +251,40 @@ export default function MadeForMoreTicketsPage() {
 
         <Countdown />
 
-          <label className="mfm-ticket-field">
-          <span className="font-sans mfm-ticket-field-label">Instagram handle</span>
+        <label className="mfm-ticket-field">
+          <span className="font-sans mfm-ticket-field-label">
+            Instagram handle <span className="mfm-ticket-field-req">(required)</span>
+          </span>
           <input
+            ref={instagramRef}
             type="text"
+            required
             autoComplete="off"
             placeholder="Your Instagram username, like @mjpbeauty"
             value={instagram}
-            onChange={(event) => setInstagram(event.target.value)}
-            className="font-sans mfm-ticket-input"
+            onChange={(event) => {
+              setInstagram(event.target.value)
+              setInstagramError(null)
+            }}
+            aria-invalid={instagramError ? true : undefined}
+            aria-describedby={instagramError ? 'mfm-instagram-error' : 'mfm-instagram-hint'}
+            className={`font-sans mfm-ticket-input${
+              instagramError ? ' mfm-ticket-input--invalid' : ''
+            }`}
           />
-          <span className="font-sans mfm-ticket-field-hint">
-            A second way to reach you, and so we can tag you when we share the day.
-          </span>
+          {instagramError ? (
+            <span
+              id="mfm-instagram-error"
+              role="alert"
+              className="font-sans mfm-ticket-field-error"
+            >
+              {instagramError}
+            </span>
+          ) : (
+            <span id="mfm-instagram-hint" className="font-sans mfm-ticket-field-hint">
+              A second way to reach you, and so we can tag you when we share the day.
+            </span>
+          )}
         </label>
 
         {failed ? (
@@ -240,7 +299,7 @@ export default function MadeForMoreTicketsPage() {
                 key={tier.variantTitle}
                 tier={tier}
                 variant={byTitle.get(tier.variantTitle)}
-                instagram={instagram}
+                resolveInstagram={resolveInstagram}
               />
             ))}
           </div>

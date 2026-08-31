@@ -22,7 +22,7 @@ export const MFM_EVENT = {
   eyebrow: 'An exclusive event for beauty artists',
   tagline: 'Where artistry meets ambition',
   date: 'October 18, 2026',
-  time: '10am – 4pm',
+  time: '10:15am – 4pm',
   city: 'Calgary, Alberta',
   country: 'Canada',
   earlyBird: 'Early bird opens September 1st',
@@ -115,7 +115,6 @@ export const MFM_CTA = {
   ],
   eyebrow: 'Made For More',
   where: `${MFM_EVENT.venue}, Calgary, Alberta`,
-  cta: 'Get First Access to Early-Bird Tickets',
   note: 'Limited tickets available.',
 } as const
 
@@ -131,13 +130,34 @@ export const MFM_EARLY_BIRD = {
   saving: 50,
 } as const
 
-export const isEarlyBird = (now: number = Date.now()) =>
-  now >= Date.parse(MFM_EARLY_BIRD.startsAt) && now < Date.parse(MFM_EARLY_BIRD.endsAt)
+/** Three stages, in order: waitlist, the 72-hour early-bird window, then
+ *  regular sale. The boundaries are Central time — noon Winnipeg, confirmed
+ *  with the client — so they read an hour earlier in Calgary. */
+export type MfmSaleStage = 'before' | 'early' | 'after'
+
+export const saleStage = (now: number = Date.now()): MfmSaleStage => {
+  if (now < Date.parse(MFM_EARLY_BIRD.startsAt)) return 'before'
+  if (now < Date.parse(MFM_EARLY_BIRD.endsAt)) return 'early'
+  return 'after'
+}
+
+export const isEarlyBird = (now: number = Date.now()) => saleStage(now) === 'early'
 
 /** Tickets go on sale when the early-bird window opens; until then the CTA
  *  still points at the Flodesk waitlist. */
-export const ticketsHref = (now: number = Date.now()) =>
-  now >= Date.parse(MFM_EARLY_BIRD.startsAt) ? MFM_TICKETS_PATH : MFM_WAITLIST_URL
+export const MFM_TICKETS_HREF: Record<MfmSaleStage, string> = {
+  before: MFM_WAITLIST_URL,
+  early: MFM_TICKETS_PATH,
+  after: MFM_TICKETS_PATH,
+}
+
+/** Button copy has to move with the link, or launch day ships a button that
+ *  promises the waitlist and lands on checkout. */
+export const MFM_TICKETS_CTA: Record<MfmSaleStage, string> = {
+  before: 'Get First Access to Early-Bird Tickets',
+  early: `Secure Your Seat — Save $${MFM_EARLY_BIRD.saving}`,
+  after: 'Secure Your Seat',
+}
 
 /** GST only, added on top at checkout — confirmed with the client 2026-08-31.
  *  Ticket prices are therefore pre-tax: $197 is charged as $206.85.

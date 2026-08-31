@@ -36,13 +36,17 @@ export interface TicketEmailData {
 
 export const EVENT = {
   name: 'Made For More',
-  date: 'Saturday, October 18, 2026',
-  time: '10:00am – 4:00pm',
+  date: 'Sunday, October 18, 2026',
+  time: '10:15am – 4:00pm',
   venue: 'Offsite YYC',
   address: '221 10 Ave SE #110, Calgary, AB T2G 0V9',
   dressCode: 'Shades of brown, business casual',
-  instagram: '@mjpbeauty',
-  instagramUrl: 'https://www.instagram.com/mjpbeauty/',
+  /** All three hosts, in the order they're signed off below. */
+  hosts: [
+    { handle: '@mjpbeauty', url: 'https://www.instagram.com/mjpbeauty/' },
+    { handle: '@standout.beautystudio', url: 'https://www.instagram.com/standout.beautystudio/' },
+    { handle: '@missnc.studio', url: 'https://www.instagram.com/missnc.studio/' },
+  ],
 } as const
 
 function detailRow(label: string, value: string, last = false) {
@@ -53,6 +57,22 @@ function detailRow(label: string, value: string, last = false) {
       <td style="padding:14px 0;${border}font-family:${SANS};font-size:15px;line-height:1.5;color:${INK};">${value}</td>
     </tr>`
 }
+
+/** "@a, @b or @c" — Oxford-less, because it reads as a sign-off, not a list. */
+function joinHandles(parts: readonly string[]) {
+  return parts.length < 2
+    ? parts.join('')
+    : `${parts.slice(0, -1).join(', ')} or ${parts[parts.length - 1]}`
+}
+
+const handleLinks = joinHandles(
+  EVENT.hosts.map(
+    (host) =>
+      `<a href="${host.url}" style="color:${INK};text-decoration:underline;">${host.handle}</a>`,
+  ),
+)
+
+const plainHandles = joinHandles(EVENT.hosts.map((host) => host.handle))
 
 /** The email's inner markup — reused as-is by the preview page. */
 export function ticketEmailBody(data: TicketEmailData): string {
@@ -71,8 +91,9 @@ export function ticketEmailBody(data: TicketEmailData): string {
             <tr>
               <td style="padding:22px 24px;font-family:${SANS};font-size:14px;line-height:1.65;color:${INK};">
                 <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:${INK_FAINT};padding-bottom:8px;">Win back your ticket</div>
-                Share that you're coming on Instagram and tag us to be entered for a chance to
-                win back your investment. We'll announce the winner once early-bird sales close.
+                Enter in a chance to win back your investment! Simply share on your Instagram
+                Story that you're coming to Made for More and be sure to tag us! We'll announce
+                the winner once our early-bird sale ends.
               </td>
             </tr>
           </table>
@@ -127,8 +148,7 @@ export function ticketEmailBody(data: TicketEmailData): string {
               More updates to follow — keep an eye on your inbox closer to the date.
             </p>
             <p style="margin:0;">
-              Any questions? DM us on Instagram at
-              <a href="${EVENT.instagramUrl}" style="color:${INK};text-decoration:underline;">${EVENT.instagram}</a>.
+              Any questions? DM us on Instagram at ${handleLinks}.
             </p>
           </td>
         </tr>
@@ -184,16 +204,17 @@ export function ticketEmailText(data: TicketEmailData): string {
 
   if (data.showGiveaway) {
     lines.push(
-      'Share that you\'re coming on Instagram and tag us to be entered for a',
-      'chance to win back your investment. We\'ll announce the winner once',
-      'early-bird sales close.',
+      "Enter in a chance to win back your investment! Simply share on your",
+      "Instagram Story that you're coming to Made for More and be sure to tag",
+      "us! We'll announce the winner once our early-bird sale ends.",
       '',
     )
   }
 
   lines.push(
     'More updates to follow — keep an eye on your inbox closer to the date.',
-    `Any questions? DM us on Instagram at ${EVENT.instagram}.`,
+    'Any questions? DM us on Instagram at',
+    `${plainHandles}.`,
     '',
     "We can't wait to see you there.",
     'Micah, Mia & Nicole',

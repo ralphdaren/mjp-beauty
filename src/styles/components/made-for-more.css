@@ -899,11 +899,29 @@
   border-color: #827064;
 }
 
-.mfm-ticket-field-hint {
+.mfm-ticket-field-req {
+  color: #a0948a;
+  letter-spacing: inherit;
+}
+
+.mfm-ticket-input--invalid {
+  border-color: #8a4b32;
+}
+
+.mfm-ticket-input--invalid:focus-visible {
+  border-color: #8a4b32;
+}
+
+.mfm-ticket-field-hint,
+.mfm-ticket-field-error {
   color: #a0948a;
   font-size: 0.72rem;
   line-height: 1.5;
   text-wrap: pretty;
+}
+
+.mfm-ticket-field-error {
+  color: #8a4b32;
 }
 
 /* ---------- Actions ---------- */
