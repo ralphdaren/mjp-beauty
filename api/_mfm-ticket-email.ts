@@ -41,8 +41,8 @@ export const EVENT = {
   venue: 'Offsite YYC',
   address: '221 10 Ave SE #110, Calgary, AB T2G 0V9',
   dressCode: 'Shades of brown, business casual',
-  instagram: '@mjpbeauty.ca',
-  instagramUrl: 'https://www.instagram.com/mjpbeauty.ca',
+  instagram: '@mjpbeauty',
+  instagramUrl: 'https://www.instagram.com/mjpbeauty/',
 } as const
 
 function detailRow(label: string, value: string, last = false) {
