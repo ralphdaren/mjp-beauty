@@ -72,7 +72,7 @@ export function ticketEmailBody(data: TicketEmailData): string {
               <td style="padding:22px 24px;font-family:${SANS};font-size:14px;line-height:1.65;color:${INK};">
                 <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:${INK_FAINT};padding-bottom:8px;">Win back your ticket</div>
                 Share that you're coming on Instagram and tag us to be entered for a chance to
-                win back what you paid. We'll announce the winner once early-bird sales close.
+                win back your investment. We'll announce the winner once early-bird sales close.
               </td>
             </tr>
           </table>
