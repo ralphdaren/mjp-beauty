@@ -19,8 +19,6 @@ import ScrollToTop from '@/components/ScrollToTop'
 
 function AppContent() {
   const { pathname } = useLocation()
-  // Both pages bring their own chrome — admin its sidebar shell, Made For More
-  // its standalone event header.
   const isBareLayout = pathname === '/admin' || pathname.startsWith('/made-for-more-calgary')
 
   return (

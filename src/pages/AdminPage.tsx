@@ -11,21 +11,12 @@ import { useServiceRequests } from '../components/admin/serviceRequests'
 import { useAdminSession } from '../components/admin/useAdminSession'
 import type { AdminCategory, PanelRefresh, TrainingView } from '../components/admin/adminShell'
 
-/**
- * Shell for the admin dashboard: sign-in, the sidebar/header chrome, and the
- * panel the sidebar currently points at.
- *
- * Data and sign-in state live in useAdminSession; each panel owns its own view
- * state. This file only composes them.
- */
 export default function AdminPage() {
   const session = useAdminSession()
   const [category, setCategory] = useState<AdminCategory>('services')
   const [trainingView, setTrainingView] = useState<TrainingView>('bookings')
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  // Held here rather than in the services components so filters and the open
-  // page survive a trip to another panel and back.
   const serviceRequests = useServiceRequests({
     token: session.token,
     requests: session.requests,
@@ -39,10 +30,6 @@ export default function AdminPage() {
 
   if (!session.authenticated) return <AdminLogin onSubmit={session.signIn} />
 
-  // The header's refresh button reloads every dataset, not just the visible
-  // panel — it is the same single request the page load uses, so refreshing the
-  // whole dashboard costs no more than refreshing one panel, and it keeps the
-  // sidebar's counts honest. Mentorship has no data, hence null.
   const refresh: PanelRefresh | null =
     category === 'mentorship' ? null : { run: session.reloadAll, loading: session.anyLoading }
 
@@ -50,8 +37,6 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f2ec]">
-      {/* Selecting a panel deliberately leaves the mobile drawer open — admins
-          dismiss it themselves, via the close icon or the backdrop. */}
       <AdminSidebar
         category={category}
         onSelect={setCategory}
@@ -66,8 +51,6 @@ export default function AdminPage() {
       <div className="lg:pl-72">
         <div className="sticky top-0 z-30 bg-[#f6f2ec]">
           <AdminHeader category={category} onOpenSidebar={() => setSidebarOpen(true)} refresh={refresh} />
-          {/* Only the services list pins its controls; the training panels keep
-              theirs inline, above their own rows. */}
           {category === 'services' && <ServiceRequestsToolbar controller={serviceRequests} />}
         </div>
 

@@ -2,8 +2,6 @@
 // POST /api/training { dateId, paymentMethod, firstName, lastName, email, phone, city, province }
 //   → { bookingId } — creates a soft hold via the create_training_hold RPC.
 //     Duration comes from that RPC's p_hold_hours default (48h), not from here.
-// Replaces the old Shopify training metaobjects. Notifies the admin on a new hold;
-// no student-facing email yet (Flodesk TBD).
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { randomUUID } from 'crypto'
@@ -33,15 +31,10 @@ const PAYMENT_LABELS: Record<string, string> = {
   'credit-card': 'Credit card',
 }
 
-// Canadian provinces and territories — mirrors src/data/provinces.ts. Kept as a
-// literal because api/ never imports from src/.
 const VALID_PROVINCES = [
   'AB', 'BC', 'MB', 'NB', 'NL', 'NS', 'NT', 'NU', 'ON', 'PE', 'QC', 'SK', 'YT',
 ]
 
-// Phone arrives as dial code + digits, e.g. "+12045550134". A floor rather than
-// real validation — the client enforces the stricter per-country rule; this just
-// rejects blank and obviously-truncated numbers from direct API calls.
 function hasEnoughDigits(phone: string): boolean {
   return phone.replace(/\D/g, '').length >= 8
 }
@@ -56,15 +49,10 @@ type HoldDetails = {
   paymentMethod: string
 }
 
-// Fire-and-forget admin notification. A hold is only good for 48h and nothing
-// else tells Micah it exists, so this is the prompt to go open the dashboard.
-// Never throws: the hold is already committed, and a mail failure shouldn't
-// turn a successful booking into a 500.
 async function notifyAdmin(dateId: string, hold: HoldDetails): Promise<void> {
   if (!ADMIN_EMAIL) return
 
   try {
-    // Read back after the RPC so spotsRemaining reflects this hold.
     const { data } = await supabase
       .from('training_availability')
       .select('option, starts_at, location, spots_remaining')
@@ -212,8 +200,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (msg.includes('DATE_NOT_FOUND')) {
         return res.status(404).json({ error: 'That training date is no longer available.' })
       }
-      // Anything else is unexpected — log the real error for Vercel, but don't
-      // hand the database's own wording back to the caller.
       console.error('create_training_hold failed:', error)
       return res.status(500).json({ error: 'Something went wrong. Please try again.' })
     }

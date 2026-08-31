@@ -26,8 +26,6 @@ export default function SearchOverlay({ isOpen, onClose }: Props) {
   const navigate = useNavigate()
 
   const trimmed = query.trim()
-
-  // Static matches are instant — no waiting on the network.
   const staticResults = useMemo<Result[]>(
     () =>
       searchStaticEntries(trimmed).map((entry) => ({
@@ -57,7 +55,6 @@ export default function SearchOverlay({ isOpen, onClose }: Props) {
 
   const results = useMemo(() => [...staticResults, ...productResults], [staticResults, productResults])
 
-  // Group results while preserving order, so headings render in one pass.
   const grouped = useMemo(() => {
     const out: { group: string; items: Result[] }[] = []
     for (const result of results) {
@@ -68,14 +65,12 @@ export default function SearchOverlay({ isOpen, onClose }: Props) {
     return out
   }, [results])
 
-  // Focus the input once the open transition has started.
   useEffect(() => {
     if (!isOpen) return
     const id = window.setTimeout(() => inputRef.current?.focus(), 80)
     return () => window.clearTimeout(id)
   }, [isOpen])
 
-  // Reset everything on close so reopening starts clean.
   useEffect(() => {
     if (isOpen) return
     setQuery('')
@@ -84,7 +79,6 @@ export default function SearchOverlay({ isOpen, onClose }: Props) {
     setActiveIndex(0)
   }, [isOpen])
 
-  // Lock background scroll while open.
   useEffect(() => {
     if (!isOpen) return
     const previous = document.body.style.overflow
@@ -92,8 +86,6 @@ export default function SearchOverlay({ isOpen, onClose }: Props) {
     return () => { document.body.style.overflow = previous }
   }, [isOpen])
 
-  // Debounced live product lookup. `cancelled` guards against a slow response
-  // from an earlier keystroke overwriting a newer one.
   useEffect(() => {
     if (!isOpen || trimmed.length < 2) {
       setProducts([])
@@ -137,7 +129,6 @@ export default function SearchOverlay({ isOpen, onClose }: Props) {
     }
   }
 
-  // Keep the keyboard-selected row inside the scroll viewport.
   useEffect(() => {
     listRef.current
       ?.querySelector<HTMLElement>('[data-active="true"]')
@@ -156,14 +147,12 @@ export default function SearchOverlay({ isOpen, onClose }: Props) {
       ].join(' ')}
       aria-hidden={!isOpen}
     >
-      {/* Backdrop */}
       <div
         onClick={onClose}
         className="absolute inset-0 bg-[#3d3028]/40 backdrop-blur-sm transition-opacity duration-300"
         style={{ opacity: isOpen ? 1 : 0 }}
       />
 
-      {/* Panel — full-screen sheet on mobile, floating card on desktop */}
       <div
         role="dialog"
         aria-modal="true"
@@ -265,7 +254,6 @@ export default function SearchOverlay({ isOpen, onClose }: Props) {
           ))}
         </div>
 
-        {/* Keyboard hint — desktop only, where a keyboard actually exists */}
         {results.length > 0 && (
           <div className="hidden lg:flex items-center gap-4 px-6 h-10 border-t border-brand-border text-[0.65rem] text-[#a0948a] flex-none">
             <span>↑↓ to navigate</span>

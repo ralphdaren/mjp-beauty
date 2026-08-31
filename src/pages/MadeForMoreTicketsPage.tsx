@@ -12,14 +12,10 @@ import {
   isEarlyBird,
 } from '@/data/madeForMore'
 
-/** Shopify returns "247.0" — tickets are always whole dollars. */
 const dollars = (amount: string) => `$${Math.round(parseFloat(amount))}`
 
 type Tier = (typeof MFM_TICKET_TIERS)[number]
 
-/** Accepts anything someone might paste — "@name", a profile URL, a bare
- *  handle — and returns the bare handle, or null if it isn't one. Instagram
- *  allows letters, numbers, dots and underscores, up to 30 characters. */
 function normalizeHandle(input: string): string | null {
   const handle = input
     .trim()
@@ -31,8 +27,6 @@ function normalizeHandle(input: string): string | null {
   return /^[A-Za-z0-9._]{1,30}$/.test(handle) ? handle : null
 }
 
-/** Ticks once a second while the early-bird window is open, so the countdown
- *  and the tier pricing flip together the moment it closes. */
 function useEarlyBirdCountdown() {
   const endsAt = useMemo(() => Date.parse(MFM_EARLY_BIRD.endsAt), [])
   const [now, setNow] = useState(() => Date.now())
@@ -91,7 +85,6 @@ function TicketCard({
 }: {
   tier: Tier
   variant: ShopifyVariant | undefined
-  /** Returns the validated handle, or null after flagging the shared field. */
   resolveInstagram: () => string | null
 }) {
   const [busy, setBusy] = useState(false)
@@ -101,8 +94,6 @@ function TicketCard({
   const isGeneral = tier.variantTitle === 'General Admission'
   const { active: earlyBirdActive } = useEarlyBirdCountdown()
 
-  // Shopify applies the early-bird discount at checkout, so the variant price
-  // is always the full $247. Show what they'll actually be charged.
   const showDiscount = isGeneral && earlyBirdActive && variant
   const fullPrice = variant ? parseFloat(variant.price) : 0
   const paidPrice = showDiscount ? fullPrice - MFM_EARLY_BIRD.saving : fullPrice
@@ -110,8 +101,6 @@ function TicketCard({
   async function handleCheckout() {
     if (!variant || busy) return
 
-    // Micah tags every attendee and uses the handle as the backup way to reach
-    // them, so checkout doesn't open without one.
     const handle = resolveInstagram()
     if (!handle) return
 

@@ -79,8 +79,6 @@ export default function HowItWorks() {
               />
 
               <div className="absolute inset-0" style={{ background: SCRIM }} />
-
-              {/* Extra darkening so the expanded copy stays legible */}
               <div
                 className="absolute inset-0"
                 style={{

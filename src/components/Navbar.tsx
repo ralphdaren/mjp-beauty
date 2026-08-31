@@ -35,7 +35,6 @@ const singleModules = [
   { num: '06', name: "Glam Up Your Grid: A Brow Artist's Social Media Guide", to: '/online-modules/glam-up-your-grid-a-brow-artists-social-media-guide' },
 ]
 
-/** Small brand pill that flags a nav item as new. */
 function NewBadge() {
   return (
     <span className="shrink-0 rounded-full bg-brand px-1.5 py-1 text-[0.6rem] font-medium uppercase leading-none tracking-[0.1em] text-white">
@@ -152,7 +151,6 @@ export default function Navbar() {
     setCurrentSlide(0)
   }, [location.pathname])
 
-  // ⌘K / Ctrl+K opens search from anywhere.
   useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey)) {
@@ -207,7 +205,6 @@ export default function Navbar() {
         scrolled ? 'shadow-[0_2px_16px_rgba(130,112,100,0.10)]' : '',
       ].join(' ')}
     >
-      {/* Promo announcement marquee — doubles as the top accent band */}
       <AnnouncementBar />
 
       <nav className="max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-16">
@@ -343,7 +340,7 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* ── Desktop Academy Dropdown Panel (absolute — overlays page) ── */}
+      {/* ── Desktop Academy Dropdown Panel ── */}
       <div
         className="hidden lg:block absolute left-0 w-full"
         style={{
@@ -599,7 +596,6 @@ export default function Navbar() {
                   <p className="text-[0.6rem] tracking-[0.28em] uppercase text-[#3d3028] font-medium mb-3">
                     Single Courses
                   </p>
-                  {/* Swipeable pages of 2 — mirrors the desktop carousel */}
                   <div
                     ref={mobileTrackRef}
                     onScroll={handleMobileScroll}
@@ -634,7 +630,6 @@ export default function Navbar() {
                     ))}
                   </div>
 
-                  {/* Dot nav — tappable, and reflects swipe position */}
                   <div className="flex items-center justify-center gap-1.5 mt-3">
                     {Array.from({ length: totalSlides }).map((_, i) => (
                       <button
@@ -695,8 +690,6 @@ export default function Navbar() {
       </div>
     </header>
 
-    {/* Rendered outside <header> — the header's transform would otherwise
-        become the containing block for the overlay's fixed positioning. */}
     <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </>
   )

@@ -109,7 +109,6 @@ export default function ProductDetailPage() {
 
   const handleTouchEnd = () => {
     const width = trackRef.current?.offsetWidth ?? 0
-    // A quarter of the frame is enough intent to advance; anything less snaps back.
     if (width > 0 && Math.abs(dragOffset) > width / 4) {
       dragOffset < 0 ? handleNext() : handlePrev()
     }
@@ -117,7 +116,6 @@ export default function ProductDetailPage() {
     setIsDragging(false)
   }
 
-  // Slide the thumbnail window so the active image is always one of the visible tiles.
   const thumbStart = Math.min(
     Math.max(0, currentImageIndex - Math.floor(THUMBNAIL_LIMIT / 2)),
     Math.max(0, images.length - THUMBNAIL_LIMIT),
@@ -136,7 +134,6 @@ export default function ProductDetailPage() {
     }
   }, [product])
 
-  // Review computed values
   const avg = reviews.length > 0
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
     : 0
@@ -566,8 +563,6 @@ export default function ProductDetailPage() {
               ) : (
                 /* Review form */
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-                  {/* Honeypot — off-screen and skipped by keyboard and screen
-                      readers, so only a bot ever fills it in. */}
                   <div
                     style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}
                     aria-hidden="true"

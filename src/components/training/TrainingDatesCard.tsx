@@ -19,7 +19,6 @@ export default function TrainingDatesCard({ groups, loading, onViewAll, onHowToE
     setTipOpen(true)
   }
 
-  // Small grace period so the pointer can travel into the tooltip without it vanishing
   function scheduleClose() {
     if (closeTimer.current) clearTimeout(closeTimer.current)
     closeTimer.current = setTimeout(() => setTipOpen(false), 250)

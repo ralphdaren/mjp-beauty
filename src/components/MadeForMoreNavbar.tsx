@@ -6,10 +6,7 @@ import { useMfmSaleStage } from '@/hooks/useMfmSaleStage'
 
 export default function MadeForMoreNavbar() {
   const [scrolled, setScrolled] = useState(false)
-  // Flips from the waitlist to the ticket page the moment the sale opens,
-  // even for someone who has had this page open since before noon.
   const stage = useMfmSaleStage()
-  // No point sending someone to the ticket page they're already reading.
   const onTicketsPage = useLocation().pathname === MFM_TICKETS_PATH
 
   useEffect(() => {

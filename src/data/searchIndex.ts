@@ -3,17 +3,11 @@ import { SERVICES } from './booking'
 export type SearchEntry = {
   title: string
   description: string
-  /** Extra words people might type that don't appear in the title or description. */
   keywords: string
   to: string
   group: 'Pages' | 'Services' | 'Courses'
 }
 
-/**
- * Hand-maintained entries for the site's fixed pages. Products are NOT listed
- * here — they're queried live from Shopify so new products are searchable the
- * moment they're published. Only add to this list when a new *page* ships.
- */
 const PAGE_ENTRIES: SearchEntry[] = [
   {
     title: 'Home',
@@ -94,7 +88,6 @@ const PAGE_ENTRIES: SearchEntry[] = [
   },
 ]
 
-/** Derived from SERVICES so adding a service to booking.ts makes it searchable. */
 const SERVICE_ENTRIES: SearchEntry[] = SERVICES.map((service) => ({
   title: service.name,
   description: service.tagline,
@@ -105,11 +98,6 @@ const SERVICE_ENTRIES: SearchEntry[] = SERVICES.map((service) => ({
 
 export const SEARCH_INDEX: SearchEntry[] = [...PAGE_ENTRIES, ...SERVICE_ENTRIES]
 
-/**
- * Scores an entry against a query. Every whitespace-separated term must match
- * somewhere, so "brow wax" narrows rather than widens. Matches in the title
- * outrank the description, which outranks the keyword bag.
- */
 export function searchStaticEntries(query: string): SearchEntry[] {
   const terms = query.toLowerCase().trim().split(/\s+/).filter(Boolean)
   if (!terms.length) return []

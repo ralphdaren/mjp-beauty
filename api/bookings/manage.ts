@@ -27,8 +27,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (fetchError || !request) return res.status(404).json({ error: 'Booking request not found' })
 
   if (req.method === 'GET') {
-    // `items` covers requests booked with several services; older rows only
-    // have the single-service columns.
     const items = Array.isArray(request.items) && request.items.length > 0
       ? request.items.map((item: any) => ({
           serviceName: String(item.serviceName ?? request.service_name),

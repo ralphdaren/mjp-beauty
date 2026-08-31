@@ -3,10 +3,6 @@ import type { BookingItem, Service, PriceTier, Slot, DrawerStep } from '../types
 import { MAX_SERVICES_PER_BOOKING } from '../types/booking'
 import { tierMinutes } from '../lib/catalog'
 
-// Every service in the appointment, in the order Square will run them. Both keys
-// are sent per service and stay positionally paired: the id is what Square is
-// really asked about, the label only covers a tier the catalog hasn't given an
-// id to yet.
 function availabilityQuery(items: BookingItem[]): string {
   return items
     .map((item) =>
@@ -26,12 +22,7 @@ export function useBookingState() {
   const [videoSrc, setVideoSrc] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [step, setStep] = useState<DrawerStep>(1)
-
-  // The appointment being built — one entry per service, booked back to back.
   const [items, setItems] = useState<BookingItem[]>([])
-
-  // The service/option pair the customer is picking right now on step 1. It only
-  // joins `items` once they add it, so backing out of the picker changes nothing.
   const [draftService, setDraftService] = useState<Service | null>(null)
   const [draftTier, setDraftTier] = useState<PriceTier | null>(null)
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
@@ -66,8 +57,7 @@ export function useBookingState() {
   const [cardConsent, setCardConsent] = useState(false)
   const [policyConsent, setPolicyConsent] = useState(false)
 
-  // Honeypot — hidden field real users never fill in; bots that auto-fill every
-  // input on the page do. Non-empty means the submission is bot traffic.
+  // Honeypot
   const [honeypot, setHoneypot] = useState('')
 
   // Availability is searched for the whole basket at once, so every effect below
@@ -118,9 +108,6 @@ export function useBookingState() {
   }
 
   // ─── Handlers ─────────────────────────────────────────────────────────────
-
-  // Changing what's booked changes how long the appointment runs, so any slot
-  // already picked no longer means anything.
   function clearTimeSelection() {
     setSelectedDate(null)
     setSelectedTime(null)
@@ -145,8 +132,6 @@ export function useBookingState() {
     setDraftTier(tier)
   }
 
-  // Commits the step 1 picker into the appointment — as a new service, or as a
-  // replacement when the customer came in through a summary pencil.
   function handleAddDraft() {
     if (!draftService || !draftTier) return
     const service = draftService
@@ -163,7 +148,6 @@ export function useBookingState() {
     setStep(2)
   }
 
-  // Back out of the option picker without touching the appointment.
   function handleCancelDraft() {
     clearDraft()
     if (items.length > 0) setStep(2)
@@ -213,7 +197,6 @@ export function useBookingState() {
   function handleBack() {
     setStep((s) => {
       if (s === 5) setCardSourceId(null)
-      // Step 1 is the service list; leaving the summary means starting a new pick.
       if (s === 2) clearDraft()
       return Math.max(1, s - 1) as DrawerStep
     })
@@ -231,8 +214,6 @@ export function useBookingState() {
   async function handleConfirm() {
     if (items.length === 0 || !selectedStartAt || !cardSourceId) return
 
-    // Bot filled the hidden honeypot field — pretend success without touching
-    // Square/Supabase/Resend at all.
     if (honeypot.trim() !== '') {
       setBookingSuccess(true)
       return
@@ -271,9 +252,6 @@ export function useBookingState() {
       const bookingData = await bookingRes.json()
       if (!bookingRes.ok) throw new Error(bookingData.error ?? 'Booking failed')
 
-      // This is a reschedule — the old request is only cancelled now that the
-      // replacement booking has actually gone through. Fire-and-forget: the
-      // new booking already succeeded, so don't block success on this.
       if (rescheduleToken) {
         fetch('/api/bookings/manage', {
           method: 'POST',
@@ -290,8 +268,6 @@ export function useBookingState() {
     }
   }
 
-  // Clears the previous booking so a reopened drawer never inherits its
-  // selections, card or form values. Shared by every entry point below.
   function resetBooking() {
     setItems([])
     clearDraft()
@@ -313,8 +289,6 @@ export function useBookingState() {
     setDrawerOpen(true)
   }
 
-  // "Book Now" on a service row — opens the option picker for that service, so
-  // the client only has to choose an option to get their first item added.
   function openDrawerForService(service: Service) {
     resetBooking()
     setDraftService(service)
@@ -323,8 +297,6 @@ export function useBookingState() {
     setDrawerOpen(true)
   }
 
-  // Reschedule: the same services are already chosen, so land straight on the
-  // date & time step with the basket pre-filled.
   function openDrawerWithItems(
     selections: Array<{ service: Service; tier: PriceTier }>,
     forRescheduleToken: string | null = null,

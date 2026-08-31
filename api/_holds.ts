@@ -13,7 +13,6 @@ export interface Block {
   end: number
 }
 
-/** How far back to look for a request that started earlier but still overlaps. */
 const LOOKBACK_MINUTES = 8 * 60
 
 interface HoldRow {
@@ -22,11 +21,6 @@ interface HoldRow {
   tier_label: string | null
   items: Array<{ tierLabel?: string; variationId?: string | null }> | null
 }
-
-// Rows written before duration_minutes existed still carry their service labels,
-// so their length is recoverable from the catalog we already have in hand. Rows
-// older than `variationId` resolve by name, which is why a service Micah has
-// since renamed can read as zero minutes — the row still holds its own start.
 function rowMinutes(row: HoldRow, catalogItems: any[]): number {
   if (row.duration_minutes != null) return row.duration_minutes
 

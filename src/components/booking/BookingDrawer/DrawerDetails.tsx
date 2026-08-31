@@ -23,7 +23,6 @@ function formatCancellationDeadline(startAt: string): string {
   return `${get('hour')}:${get('minute')} ${get('dayPeriod')} on ${get('weekday')}, ${get('month')} ${get('day')}`
 }
 
-// 50% of everything booked — a late cancellation costs the whole appointment.
 function formatCancellationFee(items: BookingItem[]): string {
   const { prefix, subtotal } = basketTotals(items)
   if (isNaN(subtotal)) return ''
@@ -166,7 +165,6 @@ export default function DrawerDetails({
 
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a0948a] mb-4">Contact Information</p>
 
-      {/* Honeypot — hidden from real users, bots that auto-fill every input trip it */}
       <div
         style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}
         aria-hidden="true"

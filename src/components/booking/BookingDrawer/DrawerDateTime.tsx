@@ -6,7 +6,6 @@ import MiniCalendar from '../MiniCalendar'
 
 interface DrawerDateTimeProps {
   items: BookingItem[]
-  /** Length of the whole appointment — availability is searched for all of it. */
   totalMinutes: number
   selectedDate: string | null
   selectedTime: string | null

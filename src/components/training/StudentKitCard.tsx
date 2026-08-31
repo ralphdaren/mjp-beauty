@@ -5,16 +5,10 @@ type StudentKitCardProps = {
   onOpen: () => void
   onClose: () => void
   className?: string
-  /** Explicit height for stacked layouts where the grid cell has none. */
   height?: string
-  /** Front-face teaser size — smaller in the dense desktop bento cell. */
   teaserClassName?: string
 }
 
-/**
- * Perk No.1 — flips from the kit photo to the full contents list. Same card is
- * rendered in the desktop bento grid and the stacked mobile grid.
- */
 export default function StudentKitCard({
   open,
   onOpen,

@@ -8,8 +8,6 @@ export function isValidEmail(value: unknown): value is string {
   return typeof value === 'string' && value.length <= 254 && EMAIL_RE.test(value)
 }
 
-// Catches malformed ids before they reach Postgres, where an invalid uuid cast
-// would surface as a database error string.
 export function isValidUuid(value: unknown): value is string {
   return typeof value === 'string' && UUID_RE.test(value)
 }
@@ -26,7 +24,6 @@ export function isNonEmptyString(value: unknown, maxLength = 200): value is stri
   return typeof value === 'string' && value.trim().length > 0 && value.length <= maxLength
 }
 
-// For optional fields: absent/empty is fine, but if present it must respect the length limit.
 export function isOptionalString(value: unknown, maxLength = 200): boolean {
   return value === undefined || value === null || value === '' || (typeof value === 'string' && value.length <= maxLength)
 }

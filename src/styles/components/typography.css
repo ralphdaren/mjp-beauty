@@ -12,9 +12,6 @@
 
 /* ─── Script Accent ──────────────────────────────────────────────── */
 
-/* Swap the family here to try a different script — nothing else changes.
-   Sized up and given a tight line box, since script lowercase runs small
-   next to Playfair capitals. */
 .script-accent {
   font-family: 'Luxurious Script', 'Playfair Display', cursive;
   font-style: normal;

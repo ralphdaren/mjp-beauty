@@ -16,8 +16,6 @@ interface DrawerStep3Props {
 const inputCls =
   'w-full px-3 py-2.5 rounded-lg border border-[#e3e2de] text-sm text-[#3d3530] placeholder:text-[#c0b4ac] focus:outline-none focus:border-[#827064] bg-white transition-colors'
 const labelCls = 'block text-[10px] font-semibold uppercase tracking-[0.15em] text-[#a0948a] mb-1.5'
-// Padding spelled out rather than reusing inputCls — the native select arrow is
-// replaced by a positioned ChevronDown, so the right side needs room for it.
 const selectCls =
   'w-full pl-3 pr-9 py-2.5 rounded-lg border border-[#e3e2de] text-sm focus:outline-none focus:border-[#827064] bg-white transition-colors appearance-none cursor-pointer'
 
@@ -47,8 +45,6 @@ export default function DrawerStep3({
       </button>
 
       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a0948a] mb-4">Your Details</p>
-
-      {/* Honeypot — hidden from real users; bots that auto-fill every input trip it */}
       <div
         style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}
         aria-hidden="true"
@@ -102,8 +98,6 @@ export default function DrawerStep3({
       <div className="mb-4">
         <PhoneInput value={details.phone} onChange={(phone) => onUpdateDetails({ phone })} />
       </div>
-
-      {/* Location — lets Micah see which students are local to the training city */}
       <div className="grid grid-cols-2 gap-3 mb-6">
         <div>
           <label className={labelCls}>City</label>

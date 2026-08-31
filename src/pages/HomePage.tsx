@@ -37,7 +37,6 @@ export default function Home() {
     <main>
       {/* Landing Hero Section */}
       <section className="hero-section">
-        {/* Background video */}
         <video
           className="hero-video"
           src={headVid}

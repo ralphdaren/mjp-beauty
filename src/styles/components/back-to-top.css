@@ -46,8 +46,6 @@
   text-transform: uppercase;
 }
 
-/* On small screens the vertical label makes the button tall enough to cover
-   page content, so collapse it to a compact circular arrow. */
 @media (max-width: 640px) {
   .back-to-top {
     right: 1rem;

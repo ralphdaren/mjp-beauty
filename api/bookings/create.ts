@@ -4,10 +4,6 @@
 // An appointment holds one or more services, booked back to back in the order
 // they're listed. Stores a pending booking request in Supabase — the Square
 // booking is NOT created until admin accepts.
-// Nothing the browser sends about the services themselves is trusted: `tierLabel`
-// is resolved against the Square catalog, and the duration, the service names and
-// whether the slot exists at all all come back from Square.
-// Sends two emails: "request received" to customer, "new request" notification to admin.
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { randomUUID } from 'crypto'
@@ -57,25 +53,16 @@ function parseItems(raw: unknown): RequestedItem[] | null {
   return items
 }
 
-// Everything the browser says about a service is unverified free text, and it
-// lands in the admin's notification email — so Square's own names win. The
-// browser's values are kept only when the two agree, which keeps the wording
-// identical to the booking page without letting anyone plant arbitrary text in
-// Micah's inbox.
 function resolveServiceName(claimed: string, match: VariationMatch, tierLabel: string): string {
   const itemName = match.itemName.trim()
   if (claimed && itemName && claimed.toLowerCase().trim() === itemName.toLowerCase()) return claimed
   return itemName || tierLabel
 }
 
-/** Square's name for the option actually booked — the id is what resolved it. */
 function resolveTierLabel(claimed: string, match: VariationMatch): string {
   return match.variationName.trim() || claimed
 }
 
-// True when Square lists `startMs` as an opening long enough for the whole
-// appointment. Searches the same day-wide window /api/bookings/availability
-// uses, so a slot the customer was actually shown always matches here.
 async function isOfferedBySquare(
   locationId: string,
   matches: VariationMatch[],
@@ -139,9 +126,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // How long the visit runs, and what each service is really called, are
-    // Square's answers rather than the browser's — the conflict check below and
-    // the admin's calendar both depend on them.
     const [locationId, catalogItems] = await Promise.all([getLocationId(), getCatalogItems()])
 
     const matches: VariationMatch[] = []
@@ -152,8 +136,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const durationMinutes = matches.reduce((total, match) => total + variationMinutes(match), 0)
-    // Stored with Square's id and Square's wording, so a later rename can still
-    // be traced back to the option that was actually booked.
     const items: RequestedItem[] = requested.map((item, index) => ({
       ...item,
       variationId: matches[index].id,
@@ -164,9 +146,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const startMs = new Date(String(startAt)).getTime()
     const endMs = startMs + Math.max(durationMinutes, 1) * 60_000
 
-    // A pending request holds its whole range on the public calendar, so a time
-    // Square never offered would black out hours of the day on nothing more than
-    // a hand-made request. Re-ask Square the same question the booking page did.
     if (!(await isOfferedBySquare(locationId, matches, startMs))) {
       return res.status(409).json({ error: 'That time is no longer available. Please pick another slot.' })
     }
@@ -187,8 +166,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { data, error } = await supabase
       .from('booking_requests')
       .insert({
-        // The first service fills the legacy single-service columns, so the
-        // admin filters and older rows keep lining up; `items` holds them all.
         tier_label: items[0].tierLabel,
         service_name: items[0].serviceName,
         team_member_id: items[0].teamMemberId,
@@ -206,9 +183,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .single()
 
     if (error) {
-      // The overlap check above can't see a request that lands between it and
-      // this insert, so the database has the final say: 23P01 is the no-overlap
-      // exclusion constraint firing, 23505 a duplicate on an older unique index.
       if (error.code === '23P01' || error.code === '23505') {
         return res.status(409).json({ error: 'This time slot was just booked by someone else. Please choose another.' })
       }

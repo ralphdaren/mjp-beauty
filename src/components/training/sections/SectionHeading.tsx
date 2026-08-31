@@ -1,13 +1,10 @@
 type SectionHeadingProps = {
-  /** Small uppercase kicker above the title. */
   eyebrow?: string
   title: string
-  /** Caption set between two hairlines below the title. */
   caption: string
   className?: string
 }
 
-/** Shared heading block for the "How it Works" and "Choose Your Path" sections. */
 export default function SectionHeading({ eyebrow, title, caption, className = '' }: SectionHeadingProps) {
   return (
     <div className={`anim-fade-up text-center ${className}`}>

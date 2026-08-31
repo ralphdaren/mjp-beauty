@@ -1,8 +1,4 @@
 // POST /api/customers { action: 'attach-card', firstName, lastName, email, phone, sourceId }       → { customerId, cardId }
-//
-// Resolves the customer (search-or-create by email) itself — it never accepts a client-supplied
-// customerId. Accepting one directly would let a caller attach a card to *any* Square customer
-// record by guessing/enumerating IDs, regardless of whose email they submitted.
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { squareFetch } from './_square.js'

@@ -18,7 +18,6 @@ export type ReviewSubmission = {
   rating: number
   title: string
   body: string
-  // Decoy field — only a bot fills it in. See the hidden input in the review forms.
   honeypot?: string
 }
 

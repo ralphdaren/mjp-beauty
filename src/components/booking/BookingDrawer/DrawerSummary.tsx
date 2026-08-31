@@ -41,7 +41,6 @@ export default function DrawerSummary({
       <p className="text-sm font-medium text-[#3d3530] mb-5">Appointment summary</p>
 
       <div className="rounded-2xl border border-[#e3e2de] overflow-hidden">
-        {/* Totals header — doubles as the collapse toggle */}
         <button
           onClick={() => setExpanded((v) => !v)}
           className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left hover:bg-[#fdf9f6] transition-colors"
@@ -68,7 +67,6 @@ export default function DrawerSummary({
           <ul className="border-t border-[#e3e2de] px-5 py-4 space-y-4">
             {items.map((item, index) => (
               <li key={item.id} className="relative flex gap-3">
-                {/* Timeline rail — services run back to back in this order */}
                 <div className="flex flex-col items-center pt-1.5 shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#c0b4ac]" />
                   {index < items.length - 1 && <span className="w-px flex-1 bg-[#e3e2de] mt-1" />}

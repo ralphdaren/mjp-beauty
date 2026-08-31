@@ -3,27 +3,14 @@ import { SiInstagram } from '@icons-pack/react-simple-icons'
 import { Volume2, VolumeX } from 'lucide-react'
 
 const BASE = 'https://res.cloudinary.com/dr9nm40gf/video/upload'
-
-// c_limit only ever shrinks. Plain w_600 would upscale a master narrower than
-// 600px and hand back a bigger file than the one we asked it to trim.
 const srcFor = (id: string) => `${BASE}/q_auto:eco,f_auto,w_600,c_limit/${id}.mp4`
-
-// Cloudinary renders a still from the video itself, so the queued side cards
-// have something to show before their <video> has decoded a frame.
 const posterFor = (id: string) => `${BASE}/so_0,w_400,c_limit/${id}.jpg`
-
-// Center card: tall portrait rectangle
-// Side ±1: square matching center width
-// Side ±2: smaller square (partially clipped at viewport edge)
 const CW = 300   // center width
 const CH = 545   // center height
 const S1 = 275   // ±1 square side
 const S2 = 220   // ±2 square side
 const GAP = 12   // visible space between adjacent cards
 
-// A 300px center card on a phone pushes the side cards almost entirely
-// off-screen, leaving only a sliver at each edge. Below that, scale the whole
-// layout down together so the neighbours still read as videos.
 function getDims(vw: number) {
   const cw = Math.min(CW, Math.round(vw * 0.6))
   const k = cw / CW
@@ -31,7 +18,6 @@ function getDims(vw: number) {
   const s1 = Math.round(S1 * k)
   const s2 = Math.round(S2 * k)
   const gap = Math.max(8, Math.round(GAP * k))
-  // x = translateX from the container's horizontal centre (card-centre to card-centre)
   const x1 = cw / 2 + gap + s1 / 2
   const x2 = x1 + s1 / 2 + gap + s2 / 2
   return { cw, ch, s1, s2, x1, x2, park: x2 + s2 }
@@ -49,25 +35,19 @@ function getSlot(diff: number, d: ReturnType<typeof getDims>) {
     case  0: return { x:    0,  w: d.cw, h: d.ch, opacity: 1,    z: 3 }
     case  1: return { x:  d.x1, w: d.s1, h: d.s1, opacity: 0.82, z: 2 }
     case  2: return { x:  d.x2, w: d.s2, h: d.s2, opacity: 0.5,  z: 1 }
-    // park off-screen at the same square size so they slide in naturally
     default: return { x: diff < 0 ? -d.park : d.park, w: d.s2, h: d.s2, opacity: 0, z: -1 }
   }
 }
 
-// `reels` holds Cloudinary public IDs only — the transform belongs to the
-// delivery helpers above so a video and its poster can never drift apart.
 export default function InstagramReels({ reels }: { reels: string[] }) {
   const N = reels.length
   const [active, setActive] = useState(0)
   const [inView, setInView] = useState(false)
   const [isMuted, setIsMuted] = useState(true)
-  // Grows only. A card that has come into range keeps its src so stepping back
-  // through the carousel replays from buffer instead of refetching.
   const [loaded, setLoaded] = useState<Set<number>>(() => new Set())
   const [vw, setVw] = useState(() => (typeof window === 'undefined' ? 1280 : window.innerWidth))
   const sectionRef = useRef<HTMLElement | null>(null)
   const videoRefs = useRef<(HTMLVideoElement | null)[]>(new Array(N).fill(null))
-  // Lets the observer seed the right window without re-subscribing on every step.
   const activeRef = useRef(0)
 
   const dims = getDims(vw)
@@ -78,8 +58,6 @@ export default function InstagramReels({ reels }: { reels: string[] }) {
     return () => window.removeEventListener('resize', onResize)
   }, [])
 
-  // Only the centre card and its immediate neighbours fetch video; the ±2 cards
-  // sit on their poster until they are one step away from being watched.
   const markLoaded = (centre: number) =>
     setLoaded(prev => {
       const next = new Set(prev)
@@ -122,9 +100,6 @@ export default function InstagramReels({ reels }: { reels: string[] }) {
   }, [active, inView, loaded])
 
   const step = (dir: 1 | -1) => goTo((active + dir + N) % N)
-
-  // Track the finger so a horizontal drag advances the carousel. Nothing is
-  // preventDefault-ed, so a mostly-vertical drag still scrolls the page.
   const touchStart = useRef<{ x: number; y: number } | null>(null)
   const swiped = useRef(false)
 
@@ -182,8 +157,6 @@ export default function InstagramReels({ reels }: { reels: string[] }) {
                   willChange: 'width, height, transform, opacity',
                 }}
                 onClick={() => {
-                  // A swipe ends with a click on whichever card was under the
-                  // finger; ignore it so the swipe target wins.
                   if (swiped.current) return
                   if (abs > 0 && visible) goTo(i)
                 }}
@@ -194,8 +167,6 @@ export default function InstagramReels({ reels }: { reels: string[] }) {
                     src={loaded.has(i) ? srcFor(id) : undefined}
                     poster={posterFor(id)}
                     loop
-                    // Autoplay is only permitted while muted, so a card can
-                    // carry sound solely when it is the one being watched.
                     muted={isMuted || i !== active}
                     playsInline
                     preload={diff === 0 ? 'auto' : 'metadata'}
@@ -211,10 +182,6 @@ export default function InstagramReels({ reels }: { reels: string[] }) {
             )
           })}
         </div>
-
-        {/* Sound toggle, pinned to the top-right corner of the centre card.
-            The cards are centred in a container 60px taller than the tall one,
-            so the centre card starts 30px down. */}
         <button
           onClick={() => setIsMuted(m => !m)}
           aria-label={isMuted ? 'Unmute reel' : 'Mute reel'}

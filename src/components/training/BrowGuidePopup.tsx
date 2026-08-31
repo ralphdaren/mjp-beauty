@@ -8,7 +8,6 @@ export default function BrowGuidePopup({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Slight delay so the backdrop mounts before animating in
     const t = setTimeout(() => setVisible(true), 30)
     return () => clearTimeout(t)
   }, [])

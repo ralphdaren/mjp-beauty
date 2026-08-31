@@ -130,9 +130,6 @@ export const MFM_EARLY_BIRD = {
   saving: 50,
 } as const
 
-/** Three stages, in order: waitlist, the 72-hour early-bird window, then
- *  regular sale. The boundaries are Central time — noon Winnipeg, confirmed
- *  with the client — so they read an hour earlier in Calgary. */
 export type MfmSaleStage = 'before' | 'early' | 'after'
 
 export const saleStage = (now: number = Date.now()): MfmSaleStage => {
@@ -143,31 +140,20 @@ export const saleStage = (now: number = Date.now()): MfmSaleStage => {
 
 export const isEarlyBird = (now: number = Date.now()) => saleStage(now) === 'early'
 
-/** Tickets go on sale when the early-bird window opens; until then the CTA
- *  still points at the Flodesk waitlist. */
 export const MFM_TICKETS_HREF: Record<MfmSaleStage, string> = {
   before: MFM_WAITLIST_URL,
   early: MFM_TICKETS_PATH,
   after: MFM_TICKETS_PATH,
 }
 
-/** Button copy has to move with the link, or launch day ships a button that
- *  promises the waitlist and lands on checkout. */
 export const MFM_TICKETS_CTA: Record<MfmSaleStage, string> = {
   before: 'Get First Access to Early-Bird Tickets',
   early: `Secure Your Seat — Save $${MFM_EARLY_BIRD.saving}`,
   after: 'Secure Your Seat',
 }
 
-/** GST only, added on top at checkout — confirmed with the client 2026-08-31.
- *  Ticket prices are therefore pre-tax: $197 is charged as $206.85.
- *
- *  Stays accurate only while "Include tax in prices" is OFF in the Shopify tax
- *  settings. Turning it on would make these prices tax-inclusive and this line
- *  a lie, so the two have to move together. */
 export const MFM_TAX_NOTE = 'plus GST'
 
-/** Perks shared by every tier. */
 export const MFM_TICKET_INCLUDED = [
   'Light appetizers and desserts',
   'A beverage on arrival',
@@ -175,12 +161,6 @@ export const MFM_TICKET_INCLUDED = [
   'Certificate of attendance',
 ] as const
 
-/** Keyed to the Shopify variant titles — matching is by `variantTitle`, so
- *  renaming a variant in Shopify without updating this drops the tier.
- *
- *  Seat counts live in Shopify inventory (70 general, 30 VIP), not here — Micah
- *  may release more general seats later, so no copy hardcodes a number. Both
- *  tiers can sell out, and each card reads its own `availableForSale`. */
 export const MFM_TICKET_TIERS = [
   {
     variantTitle: 'General Admission',

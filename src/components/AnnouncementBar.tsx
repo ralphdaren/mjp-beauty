@@ -1,9 +1,5 @@
 import { CalendarCheck, GraduationCap, Heart, MapPin, type LucideIcon } from 'lucide-react'
 
-/**
- * Evergreen rotation — no promo required. Swap the whole array for a single
- * entry when there IS a sale on, then restore these when it ends.
- */
 const MESSAGES: { icon: LucideIcon; text: string }[] = [
   { icon: MapPin, text: 'Brows, lashes & permanent makeup — 186 Provencher Blvd, St. Boniface' },
   { icon: CalendarCheck, text: 'Book online anytime — appointments open 24/7' },
@@ -25,11 +21,9 @@ function Message({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
 export default function AnnouncementBar() {
   return (
     <div className="announcement-bar bg-brand overflow-hidden py-2">
-      {/* Screen readers get each message once; the marquee copies are hidden from them */}
       <p className="sr-only">{MESSAGES.map((m) => m.text).join('. ')}</p>
 
       <div className="announcement-track flex w-max" aria-hidden="true">
-        {/* Two identical halves — the track scrolls -50% for a seamless loop */}
         {Array.from({ length: 2 }).map((_, half) => (
           <div key={half} className="flex shrink-0">
             {MESSAGES.map((m, i) => (

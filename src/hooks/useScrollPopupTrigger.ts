@@ -1,14 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { RefObject } from 'react'
 
-/**
- * Shows a popup once per session. Dismissing it remembers the choice for the
- * session under `sessionKey`, so each popup needs its own key.
- *
- * Fires when `triggerRef` scrolls into view if one is given — anchor it to the
- * element the popup should follow. Without a ref it falls back to roughly 72%
- * of total page scroll, which drifts as a page grows, so prefer the ref.
- */
+
 export function useScrollPopupTrigger(
   sessionKey: string,
   triggerRef?: RefObject<HTMLElement | null>,

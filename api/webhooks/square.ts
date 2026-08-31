@@ -4,16 +4,6 @@
 // app's admin dashboard entirely). Keeps booking_requests.status in sync so
 // the admin dashboard doesn't keep showing a cancelled appointment as
 // "accepted".
-//
-// Runs on the Edge runtime (not the default Node runtime used by the rest of
-// api/*) because signature verification needs the exact raw request bytes —
-// Vercel's Node runtime parses JSON into req.body before the handler runs,
-// which would make the HMAC input diverge from what Square actually signed.
-//
-// Requires a webhook subscription configured in the Square Developer
-// Dashboard for the `booking.updated` event, pointed at this route's URL,
-// plus that subscription's signature key stored as SQUARE_WEBHOOK_SIGNATURE_KEY.
-
 import { supabase } from '../_supabase.js'
 
 export const config = { runtime: 'edge' }

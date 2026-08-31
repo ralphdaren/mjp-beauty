@@ -9,10 +9,6 @@ type ReviewSummary = { avg: number; count: number }
 
 const COLLECTION_HANDLE = import.meta.env.VITE_SHOPIFY_COLLECTION_MODULES as string | undefined
 
-/**
- * The all-in-one course is sold as two separate Shopify products (tracks), not as
- * variants of one product — so each has its own handle and its own detail page.
- */
 const ALL_IN_ONE_TRACKS = [
   { label: 'Independent Artist', handle: import.meta.env.VITE_SHOPIFY_HANDLE_INDEPENDENT as string | undefined },
   { label: 'VIP Mentorship', handle: import.meta.env.VITE_SHOPIFY_HANDLE_VIP as string | undefined },

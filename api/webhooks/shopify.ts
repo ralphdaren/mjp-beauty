@@ -2,15 +2,6 @@
 //
 // Shopify calls this when an order is paid. It records the ticket in Supabase
 // and sends the buyer their Made For More confirmation ticket.
-//
-// Runs on the Edge runtime for the same reason api/webhooks/square.ts does:
-// signature verification needs the exact raw request bytes, and Vercel's Node
-// runtime parses JSON into req.body before the handler sees it, which would
-// make the HMAC input diverge from what Shopify actually signed.
-//
-// Requires a webhook subscription in the Shopify admin (Settings > Notifications
-// > Webhooks) for the `orders/paid` event pointed at this route, plus that
-// subscription's signing secret stored as SHOPIFY_WEBHOOK_SECRET.
 
 import { supabase } from '../_supabase.js'
 import { renderTicketEmail, ticketEmailText, ticketEmailSubject } from '../_mfm-ticket-email.js'
@@ -85,9 +76,6 @@ export default async function handler(req: Request): Promise<Response> {
   const orderId = order.id != null ? String(order.id) : ''
   if (!orderId) return ok({ ignored: 'no order id' })
 
-  // The store sells brow academy products too — only ticket orders belong here.
-  // Match on product id first so renaming the product in Shopify can't quietly
-  // stop tickets being recognised; the title check is a backstop.
   const ticketLines = (order.line_items ?? []).filter(
     (line) =>
       String(line.product_id ?? '') === MFM_TICKETS_PRODUCT_ID ||
@@ -113,9 +101,6 @@ export default async function handler(req: Request): Promise<Response> {
   const currency = order.currency ?? 'CAD'
   const orderedAt = order.created_at ?? new Date().toISOString()
 
-  // Shopify retries a webhook until it gets a 2xx, and can deliver the same
-  // event more than once. The unique constraint on shopify_order_id is what
-  // stops a retry from sending a second ticket for the same order.
   const { error: insertError } = await supabase.from('mfm_tickets').insert({
     shopify_order_id: orderId,
     order_number: order.name ?? null,
@@ -129,11 +114,7 @@ export default async function handler(req: Request): Promise<Response> {
   })
 
   if (insertError) {
-    // 23505 = unique violation: this order was already handled, so the buyer
-    // already has their ticket. Ack it so Shopify stops retrying.
     if (insertError.code === '23505') return ok({ duplicate: orderId })
-    // Anything else is a real failure — 500 so Shopify retries rather than
-    // silently dropping someone's ticket.
     return new Response(JSON.stringify({ error: 'Could not record ticket' }), { status: 500 })
   }
 
@@ -168,8 +149,5 @@ export default async function handler(req: Request): Promise<Response> {
       .eq('shopify_order_id', orderId)
   }
 
-  // The ticket is recorded either way. A failed send is left for the admin to
-  // chase rather than retried, since a retry would re-run the whole webhook and
-  // the insert above would already read as a duplicate.
   return ok({ recorded: orderId, emailed: sent.ok })
 }

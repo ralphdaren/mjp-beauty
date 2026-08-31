@@ -1,7 +1,6 @@
 import type { BookingItem, Service, PriceTier } from '../types/booking'
 import { formatMoney } from './pricing'
 
-/** Shape returned by /api/services — mirrors CatalogVariation in api/_square.ts. */
 export interface CatalogVariation {
   id: string
   name: string
@@ -10,14 +9,12 @@ export interface CatalogVariation {
   bookable: boolean
 }
 
-/** One Square service with its options — mirrors CatalogItem in api/_square.ts. */
 export interface CatalogItem {
   id: string
   name: string
   variations: CatalogVariation[]
 }
 
-/** 4_500_000 → "1 hr 15 min". Matches the strings booking.ts used to hardcode. */
 export function formatDuration(ms: number): string {
   const totalMinutes = Math.round(ms / 60000)
   const hours = Math.floor(totalMinutes / 60)
@@ -27,7 +24,6 @@ export function formatDuration(ms: number): string {
   return `${minutes} min`
 }
 
-/** "1 hr 15 min" → 75. Inverse of formatDuration, for the booking.ts fallbacks. */
 export function parseDurationLabel(label?: string): number {
   if (!label) return 0
   const hours = /(\d+)\s*hr/.exec(label)
@@ -35,19 +31,16 @@ export function parseDurationLabel(label?: string): number {
   return (hours ? Number(hours[1]) * 60 : 0) + (minutes ? Number(minutes[1]) : 0)
 }
 
-/** Square's duration once the catalog has loaded, the display string otherwise. */
 export function tierMinutes(tier: PriceTier): number {
   return tier.durationMs != null
     ? Math.round(tier.durationMs / 60000)
     : parseDurationLabel(tier.duration)
 }
 
-/** How long the whole appointment runs — services are booked back to back. */
 export function basketMinutes(items: BookingItem[]): number {
   return items.reduce((total, item) => total + tierMinutes(item.tier), 0)
 }
 
-/** Applies Square's live name, price and duration over a local tier. */
 function toTier(tier: PriceTier, match: CatalogVariation): PriceTier {
   return {
     ...tier,

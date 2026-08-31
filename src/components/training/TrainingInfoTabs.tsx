@@ -25,7 +25,6 @@ function HowToEnroll() {
 }
 
 type TrainingInfoTabsProps = {
-  /** Scroll target for the "How to enroll" shortcut on the dates card. */
   sectionRef: React.RefObject<HTMLElement | null>
   active: TrainingTabId
   onChange: (id: TrainingTabId) => void

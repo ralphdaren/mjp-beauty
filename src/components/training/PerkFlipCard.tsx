@@ -1,12 +1,9 @@
 type PerkFlipCardProps = {
   number: string
   title: string
-  /** Optional short line shown under the title on the front face. */
   teaser?: string
-  /** Heading on the flipped face. */
   backTitle: string
   body: string
-  /** Front face background — matches the surrounding bento palette. */
   frontBg: string
   numberColor: string
   ctaLabel?: string
@@ -14,9 +11,7 @@ type PerkFlipCardProps = {
   onOpen: () => void
   onClose: () => void
   className?: string
-  /** Extra classes on the front face (borders, shadows). */
   frontClassName?: string
-  /** Explicit height for stacked layouts where the grid cell has none. */
   height?: string
   titleClassName?: string
 }

@@ -2,9 +2,6 @@ import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
 
 const CLIENT_LIST_URL = 'https://mjpbeauty.myflodesk.com/clientupdates'
-
-// Cropped server-side so each breakpoint downloads only the pixels it paints:
-// a portrait panel beside the copy on desktop, a wide band above it on mobile.
 const CLD = 'https://res.cloudinary.com/dr9nm40gf/image/upload'
 const CARD_ID = 'v1785125705/booking-card-master_buat8e.jpg'
 const cardDesktop = `${CLD}/q_auto/f_auto/c_fill,g_auto,w_600,h_880/${CARD_ID}`
@@ -14,7 +11,6 @@ export default function ClientEmailPopup({ onClose }: { onClose: () => void }) {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    // Slight delay so the backdrop mounts before animating in
     const t = setTimeout(() => setVisible(true), 30)
     return () => clearTimeout(t)
   }, [])

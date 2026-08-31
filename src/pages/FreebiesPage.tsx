@@ -74,7 +74,6 @@ function NewsletterPopup({ onClose }: { onClose: () => void }) {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    // Slight delay so the backdrop mounts before animating in
     const t = setTimeout(() => setVisible(true), 30)
     return () => clearTimeout(t)
   }, [])

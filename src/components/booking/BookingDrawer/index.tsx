@@ -167,7 +167,6 @@ export default function BookingDrawer({
 
             {/* Scrollable step content */}
             <div className="flex-1 overflow-y-auto px-6 pb-8">
-              {/* Step 1 picks one service at a time: the list, then its options. */}
               {step === 1 && !draftService && (
                 <DrawerServices
                   services={services}

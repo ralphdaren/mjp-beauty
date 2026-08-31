@@ -6,8 +6,8 @@ const CLIENT_TIMEZONE = 'America/Winnipeg'
 export type TrainingDate = {
   id: string
   option: 'group' | 'private'
-  startsAt: string // raw ISO datetime
-  date: string // YYYY-MM-DD in the studio's timezone (for the existing date formatters)
+  startsAt: string
+  date: string
   location: string
   spotsTotal: number
   spotsRemaining: number

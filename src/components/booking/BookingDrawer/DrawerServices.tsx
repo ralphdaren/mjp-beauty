@@ -3,7 +3,6 @@ import type { Service } from '../../../types/booking'
 
 interface DrawerServicesProps {
   services: Service[]
-  /** How many services are already in the appointment — 0 on a fresh booking. */
   bookedCount: number
   onSelectService: (service: Service) => void
   onBack: () => void

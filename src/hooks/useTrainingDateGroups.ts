@@ -9,10 +9,6 @@ const EMPTY_GROUPS: TrainingDateGroup[] = OPTION_CARDS.map((card) => ({
   dates: [],
 }))
 
-/**
- * Loads the upcoming dates for every training option in one pass, so the dates
- * card and the "all dates" modal paint from a single fetch.
- */
 export function useTrainingDateGroups() {
   const [groups, setGroups] = useState<TrainingDateGroup[]>(EMPTY_GROUPS)
   const [loading, setLoading] = useState(true)

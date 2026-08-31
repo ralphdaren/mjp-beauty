@@ -4,11 +4,9 @@ import { COUNTRIES, type Country } from '../data/countries'
 import { formatNANP, countryForPhone, localDigits } from '../lib/phone'
 
 interface PhoneInputProps {
-  /** Stored as dial code + digits, e.g. "+12045550134". */
   value: string
   onChange: (value: string) => void
   label?: string
-  /** Fine print rendered under the field, e.g. the SMS consent notice. */
   children?: ReactNode
 }
 

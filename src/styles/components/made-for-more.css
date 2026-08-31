@@ -862,7 +862,6 @@
 
 /* ---------- Instagram field ---------- */
 
-/* Sits above the grid — one handle applies to whichever tier they pick. */
 .mfm-ticket-field {
   display: flex;
   flex-direction: column;

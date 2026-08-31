@@ -40,7 +40,6 @@ function DateCardSkeleton() {
   )
 }
 
-// ISO → 'YYYY-MM-DDTHH:mm' in the browser's local time, for the datetime-local input.
 function isoToLocalInput(iso: string) {
   const d = new Date(iso)
   const pad = (n: number) => String(n).padStart(2, '0')
@@ -55,7 +54,6 @@ export default function TrainingDatesPanel({
   onRefetch,
 }: {
   token: string
-  /** Owned by AdminPage so it survives this panel unmounting on a sidebar switch. */
   dates: TrainingDateRow[]
   loading: boolean
   error: string

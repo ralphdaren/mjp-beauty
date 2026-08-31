@@ -4,7 +4,6 @@ import type { Service, PriceTier } from '../../../types/booking'
 interface DrawerOptionsProps {
   service: Service
   selectedTier: PriceTier | null
-  /** Set when the customer got here from a pencil on the summary. */
   isEditing: boolean
   onSelectTier: (tier: PriceTier) => void
   onBack: () => void

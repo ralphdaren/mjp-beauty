@@ -40,8 +40,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!(await enforceRateLimit(req, res, judgemeWriteLimiter))) return
     const { id, email, name, rating, title, body, honeypot } = (req.body ?? {}) as Record<string, unknown>
 
-    // A real visitor never sees the decoy field, so anything in it means a bot.
-    // Answer with a plausible success so it doesn't retry or adapt.
     if (honeypot) {
       return res.status(200).json({ message: 'Review submitted' })
     }
@@ -49,8 +47,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!isValidEmail(email) || !isNonEmptyString(name, 200) || !isNonEmptyString(body, 5000)) {
       return res.status(400).json({ message: 'Missing or invalid required fields: id, email, name, rating, body' })
     }
-    // Judge.me keys reviews by the numeric Shopify product id, which the client
-    // parses out of the product gid — so it arrives as a number, not a string.
     const idNum = Number(id)
     if (!Number.isInteger(idNum) || idNum <= 0) {
       return res.status(400).json({ message: 'id must be a positive integer product id' })

@@ -77,13 +77,6 @@ export default function ManageBookingPage() {
   function handleReschedule() {
     if (!token || !data) return
 
-    // Don't cancel the old request yet — only navigate into the booking
-    // widget with the old token in tow, so it's cancelled once the customer
-    // actually completes a new booking (see handleConfirm in useBookingState).
-    // One `tier` param per booked service, in order, plus its Square variation
-    // id where the row has one — the booking page resolves each back to its
-    // service and rebuilds the basket. The id is what survives Micah renaming
-    // the option between the booking and the reschedule.
     const params = new URLSearchParams()
     for (const item of data.items) {
       params.append('tier', item.tierLabel)

@@ -90,7 +90,6 @@ export default function BookAppointmentPage() {
         <VideoModal src={b.videoSrc} onClose={() => b.setVideoSrc(null)} />
       )}
 
-      {/* Held back while the drawer or a video is open — both sit at z-50 too */}
       {clientEmailPopup.show && !b.drawerOpen && !b.videoSrc && (
         <ClientEmailPopup onClose={clientEmailPopup.dismiss} />
       )}

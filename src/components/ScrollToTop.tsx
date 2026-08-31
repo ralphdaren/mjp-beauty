@@ -10,8 +10,6 @@ export default function ScrollToTop() {
       return
     }
 
-    // The target may not be mounted on the first frame after a route change,
-    // so retry briefly before giving up and landing at the top.
     let frames = 0
     let raf = 0
 

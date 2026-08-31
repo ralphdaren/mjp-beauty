@@ -7,8 +7,6 @@ const AUTOPLAY_MS = 6000
 export default function TrainingIntro() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [animating, setAnimating] = useState(false)
-
-  // Cross-fade out, swap the copy, fade back in.
   const goTo = useCallback((next: (prev: number) => number) => {
     setAnimating(true)
     setTimeout(() => {

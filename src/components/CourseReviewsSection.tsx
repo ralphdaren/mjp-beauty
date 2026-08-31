@@ -6,12 +6,8 @@ import type { JudgeMeReview } from '@/lib/judgeme'
 const REVIEWS_PER_PAGE = 3
 
 export type ReviewOption = {
-  // Shown on the filter row and in the modal's course picker.
   label: string
-  // Judge.me groups reviews by Shopify product handle — this is what the filter matches on.
   handle: string
-  // Numeric Shopify product id a new review gets attached to. Null while the
-  // product is still loading (or failed to load), which disables submission.
   productId: string | null
 }
 
@@ -60,30 +56,22 @@ export default function CourseReviewsSection({
   optionQuestion = 'Which training did you take?',
   emptyMessage = 'Be the first to share your experience.',
 }: {
-  // The courses this section covers — drives both the filter row and the
-  // modal's picker. Reviews for anything outside this list are ignored.
   options: ReviewOption[]
   eyebrow?: string
   heading?: string
   optionQuestion?: string
-  // Shown in place of the rating summary until the first review is published.
   emptyMessage?: string
 }) {
   const [reviews, setReviews] = useState<JudgeMeReview[]>([])
   const [filter, setFilter] = useState<'all' | string>('all')
   const [sort, setSort] = useState<SortOption>('recent')
   const [page, setPage] = useState(1)
-
-  // Write-a-review modal
   const [showModal, setShowModal] = useState(false)
   const [courseIndex, setCourseIndex] = useState(0)
   const [form, setForm] = useState(emptyForm)
   const [hoverRating, setHoverRating] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [submitResult, setSubmitResult] = useState<{ ok: boolean; message: string } | null>(null)
-
-  // Joined rather than the array itself so a parent re-render passing a fresh
-  // array literal doesn't refetch.
   const handleKey = options.map(o => o.handle).filter(Boolean).join(',')
 
   useEffect(() => {
@@ -94,8 +82,6 @@ export default function CourseReviewsSection({
     )
   }, [handleKey])
 
-  // The summary always reflects every course review; only the list below reacts
-  // to the filter.
   const avg = reviews.length > 0
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
     : 0
@@ -116,8 +102,6 @@ export default function CourseReviewsSection({
 
   const totalPages = Math.max(1, Math.ceil(visibleReviews.length / REVIEWS_PER_PAGE))
   const pageReviews = visibleReviews.slice((page - 1) * REVIEWS_PER_PAGE, page * REVIEWS_PER_PAGE)
-
-  // Changing the visible set always sends the reader back to its first page.
   const applyFilter = (value: string) => { setFilter(value); setPage(1) }
   const applySort = (value: SortOption) => { setSort(value); setPage(1) }
 
@@ -152,10 +136,6 @@ export default function CourseReviewsSection({
   return (
     <section className="bg-[#f6f2ec] py-20 px-6 md:px-8">
       <div className="max-w-[1200px] mx-auto">
-
-        {/* Header — no scroll-reveal class here: the page-level observer only
-            picks up elements present at mount, and this section renders once
-            the reviews have loaded. */}
         <div>
           <p className="text-[0.72rem] uppercase tracking-[0.3em] text-[#b07b5a] mb-4">
             {eyebrow}
@@ -170,9 +150,6 @@ export default function CourseReviewsSection({
 
         <div className="h-px bg-[#d8d0c8] mt-10" />
 
-        {/* Before the first review lands, the average and the star breakdown
-            would read as 0.0 out of five empty bars — worse than saying nothing.
-            Show an invitation instead. */}
         {!hasReviews && (
           <div className="py-16 flex flex-col items-center text-center gap-5">
             <Stars rating={0} size={18} />
@@ -411,8 +388,6 @@ export default function CourseReviewsSection({
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-                  {/* Honeypot — off-screen and skipped by keyboard and screen
-                      readers, so only a bot ever fills it in. */}
                   <div
                     style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}
                     aria-hidden="true"

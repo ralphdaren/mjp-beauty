@@ -5,12 +5,10 @@ import { STUDENT_WORK } from '@/data/training'
 
 const linkClass = 'underline underline-offset-2 text-[#3d3530] hover:text-[#827064] transition-colors duration-200'
 
-/** Emphasised run of text inside an answer. */
 function Em({ children }: { children: ReactNode }) {
   return <strong className="text-[#3d3530] font-semibold">{children}</strong>
 }
 
-/** Answer list item with the small round bullet. */
 function Bullet({ children }: { children: ReactNode }) {
   return (
     <li className="flex gap-3">

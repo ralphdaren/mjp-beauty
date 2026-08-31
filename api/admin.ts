@@ -37,8 +37,6 @@ function requestedItems(request: any): RequestedItem[] {
   if (Array.isArray(request.items) && request.items.length > 0) {
     return request.items.map((item: any) => ({
       serviceName: String(item.serviceName ?? request.service_name),
-      // Absent on rows stored before ids were recorded — those fall back to the
-      // label, which is what they were booked under anyway.
       variationId: item.variationId ?? null,
       tierLabel: String(item.tierLabel ?? request.tier_label),
       teamMemberId: item.teamMemberId ?? null,
@@ -77,7 +75,6 @@ async function listTrainingBookings() {
     .limit(200)
   if (error) return { data: null, error }
 
-  // Holds past their expiry read as expired without a write having happened yet.
   const now = Date.now()
   const bookings = (data ?? []).map((b: any) => ({
     ...b,
@@ -95,16 +92,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (!isAuthorized(req)) return res.status(401).json({ error: 'Unauthorized' })
 
-  // ── Password check only, no data ───────────────────────────────────────────
-  // Reaching this line means the password is good, so the dashboard can sign in
-  // and paint its skeletons without waiting on any query.
   if (req.method === 'GET' && req.query.resource === 'auth') {
     return res.status(200).json({ ok: true })
   }
 
-  // ── Everything the dashboard shows, in one round trip ──────────────────────
-  // Fetching the three lists separately cost three rate-limit slots per page
-  // load, so a few browser reloads was enough to trip the limiter.
   if (req.method === 'GET' && req.query.resource === 'dashboard') {
     const [requests, bookings, dates] = await Promise.all([
       listBookingRequests(),
@@ -154,8 +145,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       try {
         const [locationId, catalogItems] = await Promise.all([getLocationId(), getCatalogItems()])
 
-        // One segment per booked service, run back to back. Rows written before
-        // multi-service booking have no `items`, so fall back to their columns.
         const appointmentSegments = requestedItems(request).map((item) => {
           const match = findVariation(catalogItems, item)
           if (!match) throw new Error(`No Square variation found for: "${item.tierLabel}"`)
@@ -315,7 +304,6 @@ async function handleTraining(
         if (!Number.isInteger(spotsTotal) || spotsTotal < 0) {
           return res.status(400).json({ error: 'spotsTotal must be a non-negative integer' })
         }
-        // Never oversell: block lowering capacity below the seats already taken.
         const { data: avail, error: availError } = await supabase
           .from('training_availability')
           .select('spots_taken')

@@ -12,7 +12,6 @@ export interface TrainingDateGroup {
   dates: TrainingDate[]
 }
 
-/** One of the two purchasable training styles, as painted on the page. */
 export interface TrainingOptionCard extends TrainingOption {
   img: string
   alt: string
@@ -21,7 +20,6 @@ export interface TrainingOptionCard extends TrainingOption {
   description: string
 }
 
-/** A step in the three-part "How it Works" strip. */
 export interface TrainingFormatItem {
   img: string
   alt: string

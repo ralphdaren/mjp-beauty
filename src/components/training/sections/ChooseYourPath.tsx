@@ -5,7 +5,6 @@ import TrainingDatesCard from '../TrainingDatesCard'
 import { OPTION_CARDS } from '@/data/training'
 import type { TrainingDateGroup, TrainingOptionCard } from '@/types/training'
 
-/** Flodesk form for students who want to hear about future training dates. */
 const TRAINING_INQUIRIES_URL = 'https://mjpbeauty.myflodesk.com/traininginquiries'
 
 type ChooseYourPathProps = {
@@ -16,7 +15,6 @@ type ChooseYourPathProps = {
   onBookNow: (card: TrainingOptionCard) => void
 }
 
-/** "(gst included)" line with the payment-plan tooltip toggle. */
 function GstNote({ open, onToggle }: { open: boolean; onToggle: () => void }) {
   return (
     <div className="relative mb-8 flex items-center gap-2">
@@ -47,11 +45,9 @@ type OptionCardBodyProps = {
   tooltipOpen: boolean
   onToggleTooltip: () => void
   onBookNow: () => void
-  /** Desktop only: the collapsed card's body is inert until it is switched in. */
   disabled?: boolean
 }
 
-/** Copy, price and CTA — shared by the stacked mobile card and the expanding desktop card. */
 function OptionCardBody({
   card,
   className,
@@ -104,7 +100,6 @@ export default function ChooseYourPath({
     setActiveOption((prev) => 1 - prev)
   }, [])
 
-  // Any click outside the tooltip trigger dismisses it.
   useEffect(() => {
     if (tooltipCard === null) return
     const handler = () => setTooltipCard(null)
@@ -158,7 +153,6 @@ export default function ChooseYourPath({
         {/* Desktop: the selected option expands, the other collapses to a peek */}
         <div className="hidden sm:flex gap-8 items-stretch">
           <div className="flex-[7] min-w-0 relative">
-            {/* Invisible clone of the widest card — reserves the row's height. */}
             <div
               className="invisible pointer-events-none flex flex-row"
               style={{ width: 'calc(80% - 16px)' }}
@@ -211,7 +205,6 @@ export default function ChooseYourPath({
                       />
                     </div>
 
-                    {/* Peek overlay — visible when inactive, clickable to switch */}
                     <button
                       className="absolute inset-0 group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#a0948a]"
                       style={{
@@ -266,7 +259,6 @@ export default function ChooseYourPath({
         </div>
       </div>
 
-      {/* Dates don't work? — capture the lead for future sessions */}
       <div className="anim-fade-up mx-auto max-w-[1300px] mt-10" style={{ transitionDelay: '0.4s' }}>
         <div className="rounded-2xl border border-[#e3e2de] bg-white/70 px-7 py-7 sm:px-9 sm:py-6 flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-8">
           <span className="hidden sm:flex w-11 h-11 shrink-0 items-center justify-center rounded-full bg-[#f6f2ec] text-[#827064]">

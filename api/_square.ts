@@ -24,7 +24,7 @@ export async function squareFetch(path: string, options: RequestInit = {}): Prom
   return data
 }
 
-// Cached location ID — warm serverless instances reuse this across requests
+// Cached location ID
 let _locationId: string | null = null
 
 export async function getLocationId(): Promise<string> {
@@ -36,7 +36,6 @@ export async function getLocationId(): Promise<string> {
   return id
 }
 
-// Cached catalog items (5-minute TTL)
 let _catalogCache: { objects: any[]; fetchedAt: number } | null = null
 
 export async function getCatalogItems(): Promise<any[]> {
@@ -58,18 +57,12 @@ export interface CatalogVariation {
   bookable: boolean
 }
 
-/** One bookable service, with the options Square sells it under. */
 export interface CatalogItem {
   id: string
   name: string
   variations: CatalogVariation[]
 }
 
-// Groups the appointment services for the public /api/services route, keeping
-// each option under the item that owns it so the site can show Square's own
-// service name. Only ids, names, price, duration and bookability are exposed —
-// Square's item descriptions and image_ids are deliberately never read, since
-// the site uses its own copy and Cloudinary photos.
 export function listServiceItems(items: any[]): CatalogItem[] {
   const services: CatalogItem[] = []
   for (const item of items) {
@@ -94,7 +87,6 @@ export function listServiceItems(items: any[]): CatalogItem[] {
   return services
 }
 
-/** Flat variation list — the pre-ID response shape, kept for cached clients. */
 export function listServiceVariations(items: any[]): CatalogVariation[] {
   return listServiceItems(items).flatMap((item) => item.variations)
 }
@@ -103,9 +95,7 @@ export interface VariationMatch {
   id: string
   version: number
   durationMs: number | null
-  /** Name of the parent catalog item — the service this option belongs to. */
   itemName: string
-  /** Square's own name for this option, whatever the browser called it. */
   variationName: string
 }
 
@@ -119,7 +109,6 @@ function toMatch(item: any, v: any): VariationMatch {
   }
 }
 
-/** Find a catalog variation by its Square id — unique, and stable across renames. */
 export function findVariationById(items: any[], variationId: string): VariationMatch | null {
   for (const item of items) {
     for (const v of item.item_data?.variations ?? []) {
@@ -129,14 +118,6 @@ export function findVariationById(items: any[], variationId: string): VariationM
   return null
 }
 
-// Find a catalog variation by name (case-insensitive exact match).
-// Returns the variation id + version, or null when Square has no such name.
-//
-// Names are only unique because Micah keeps them that way — nothing in Square
-// enforces it. Two items sharing an option name (say both offering a "Returning
-// Client") is ambiguous, and guessing would book the wrong service at the wrong
-// price, so an ambiguous label resolves to nothing and the caller fails visibly.
-// Prefer `findVariationById`; this stays for rows stored before ids were sent.
 export function findVariationByLabel(items: any[], tierLabel: string): VariationMatch | null {
   const needle = tierLabel.toLowerCase().trim()
   let found: VariationMatch | null = null
@@ -151,14 +132,11 @@ export function findVariationByLabel(items: any[], tierLabel: string): Variation
   return found
 }
 
-/** How the browser (or a stored booking row) points at one service option. */
 export interface VariationRef {
   variationId?: string | null
   tierLabel: string
 }
 
-// Resolve by id when the caller sent one, falling back to the label. The label
-// is still what's shown and stored, so a stale id never blocks a booking.
 export function findVariation(items: any[], ref: VariationRef): VariationMatch | null {
   if (ref.variationId) {
     const byId = findVariationById(items, ref.variationId)
@@ -167,10 +145,6 @@ export function findVariation(items: any[], ref: VariationRef): VariationMatch |
   return findVariationByLabel(items, ref.tierLabel)
 }
 
-/**
- * Resolves every service in a multi-service appointment, in booking order.
- * Throws on the first ref Square doesn't know, so callers can 404 with it.
- */
 export function findVariations(items: any[], refs: VariationRef[]): VariationMatch[] {
   return refs.map((ref) => {
     const match = findVariation(items, ref)
@@ -179,7 +153,6 @@ export function findVariations(items: any[], refs: VariationRef[]): VariationMat
   })
 }
 
-/** Minutes a service runs for, 0 when Square has no duration on the variation. */
 export function variationMinutes(match: VariationMatch): number {
   return match.durationMs != null ? Math.round(match.durationMs / 60000) : 0
 }

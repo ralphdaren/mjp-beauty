@@ -7,10 +7,7 @@ export interface TrainingDetails {
   lastName: string
   email: string
   phone: string
-  /** Where the student lives — surfaced in the admin dashboard so Micah can
-   *  confirm the students local to each training city. */
   city: string
-  /** Two-letter province/territory code, e.g. 'MB'. */
   province: string
 }
 
@@ -40,7 +37,6 @@ export function useTrainingBookingState() {
   const [submitError, setSubmitError] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
-  // Fetch available dates from the API whenever the selected training option changes
   useEffect(() => {
     if (!selectedOption) { setTrainingDates([]); return }
     setDatesLoading(true)

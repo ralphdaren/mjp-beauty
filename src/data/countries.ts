@@ -1,7 +1,3 @@
-// Country dial codes for the phone inputs in the booking and training drawers.
-// Canada and the most common origin countries are pinned to the top; the rest
-// follow alphabetically. Consumed by <PhoneInput> via src/lib/phone.ts.
-
 export interface Country {
   iso: string
   flag: string

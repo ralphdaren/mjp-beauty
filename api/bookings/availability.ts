@@ -1,11 +1,5 @@
 // GET /api/bookings/availability?tierLabel=…&variationId=…&date=YYYY-MM-DD → { slots }
 // GET /api/bookings/availability?tierLabel=…&variationId=…&month=YYYY-MM   → { dates }
-//
-// `tierLabel` may be repeated, once per service, for an appointment that books
-// several services back to back — Square searches for one opening long enough
-// to fit them all, in the order they're passed. `variationId` is optional and
-// positional: the nth id goes with the nth label, and an empty one falls back to
-// resolving that service by name.
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { squareFetch, getCatalogItems, getLocationId, findVariations, variationMinutes, type VariationRef } from '../_square.js'
@@ -22,9 +16,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!(await enforceRateLimit(req, res, availabilityLimiter))) return
 
   const { tierLabel, variationId, date, month } = req.query
-
-  // Zipped before filtering so a service whose id is blank keeps its label lined
-  // up with the right position.
   const rawLabels = Array.isArray(tierLabel) ? tierLabel : [tierLabel]
   const rawIds = Array.isArray(variationId) ? variationId : [variationId]
   const refs: VariationRef[] = rawLabels.flatMap((label, index) => {
@@ -57,8 +48,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(404).json({ error: String(err instanceof Error ? err.message : err) })
     }
 
-    // One segment per service — Square chains them and only returns start times
-    // with room for the whole appointment.
     const segmentFilters = matches.map((match) => ({ service_variation_id: match.id }))
     const totalMinutes = matches.reduce((total, match) => total + variationMinutes(match), 0)
     const totalMs = Math.max(totalMinutes, 1) * 60_000

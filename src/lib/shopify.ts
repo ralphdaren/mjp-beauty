@@ -6,7 +6,6 @@ export const shopifyClient = createStorefrontApiClient({
   publicAccessToken: import.meta.env.VITE_SHOPIFY_STOREFRONT_TOKEN,
 })
 
-/** One purchasable option on a product — a ticket tier, a course bundle, a shade. */
 export type ShopifyVariant = {
   id: string
   title: string
@@ -26,8 +25,6 @@ export type ShopifyProduct = {
   currencyCode: string
   featuredImage: { url: string; altText: string } | null
   images: { url: string; altText: string }[]
-  /** Every variant, in the order Shopify returns them. Single-variant products
-   *  keep using variantId/price above; multi-variant ones (event tickets) read this. */
   variants: ShopifyVariant[]
 }
 
@@ -242,8 +239,6 @@ export async function searchProducts(term: string, first = 6): Promise<ShopifyPr
         currencyCode: variant?.price?.currencyCode ?? 'CAD',
         featuredImage: node.featuredImage ?? null,
         images: [],
-        // List queries fetch one variant for pricing only — use getProductByHandle
-        // when the full tier list matters.
         variants: [],
       }
     })
@@ -254,8 +249,6 @@ export async function searchProducts(term: string, first = 6): Promise<ShopifyPr
 
 export interface CheckoutOptions {
   quantity?: number
-  /** Free-form key/value pairs carried onto the Shopify order — how the ticket
-   *  flow passes through details Shopify's checkout has no field for. */
   attributes?: Record<string, string>
 }
 

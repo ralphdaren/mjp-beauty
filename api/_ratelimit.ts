@@ -1,6 +1,5 @@
 // Shared IP-based rate limiting for public API routes, backed by Upstash Redis
-// so limits are enforced consistently across serverless instances (unlike an
-// in-memory counter, which resets per cold start and isn't shared).
+// so limits are enforced consistently across serverless instances
 
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
@@ -26,8 +25,6 @@ export function getClientIp(req: VercelRequest): string {
   return first?.split(',')[0]?.trim() || 'unknown'
 }
 
-// Returns true if the request is allowed to proceed. If not, it writes the
-// 429 response itself so callers can just `if (!(await ...)) return`.
 export async function enforceRateLimit(
   req: VercelRequest,
   res: VercelResponse,

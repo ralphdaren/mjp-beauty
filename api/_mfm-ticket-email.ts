@@ -23,14 +23,9 @@ const SERIF = "Georgia, 'Times New Roman', serif"
 
 export interface TicketEmailData {
   firstName: string
-  /** One line per purchased tier, e.g. "General Admission × 1". */
   items: string[]
-  /** Formatted total including tax, e.g. "$206.85 CAD". */
   total: string
   orderNumber: string
-  /** Micah announces the winner once early bird closes, so the giveaway block
-   *  is suppressed for anyone buying after that — otherwise an October buyer
-   *  reads an announcement date that has already passed. */
   showGiveaway: boolean
 }
 
@@ -41,7 +36,6 @@ export const EVENT = {
   venue: 'Offsite YYC',
   address: '221 10 Ave SE #110, Calgary, AB T2G 0V9',
   dressCode: 'Shades of brown, business casual',
-  /** All three hosts, in the order they're signed off below. */
   hosts: [
     { handle: '@mjpbeauty', url: 'https://www.instagram.com/mjpbeauty/' },
     { handle: '@standout.beautystudio', url: 'https://www.instagram.com/standout.beautystudio/' },
@@ -58,7 +52,6 @@ function detailRow(label: string, value: string, last = false) {
     </tr>`
 }
 
-/** "@a, @b or @c" — Oxford-less, because it reads as a sign-off, not a list. */
 function joinHandles(parts: readonly string[]) {
   return parts.length < 2
     ? parts.join('')
@@ -74,7 +67,6 @@ const handleLinks = joinHandles(
 
 const plainHandles = joinHandles(EVENT.hosts.map((host) => host.handle))
 
-/** The email's inner markup — reused as-is by the preview page. */
 export function ticketEmailBody(data: TicketEmailData): string {
   const name = escapeHtml(data.firstName)
   const order = escapeHtml(data.orderNumber)

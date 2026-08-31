@@ -398,8 +398,6 @@ export default function OnlineBrowAcademyPage() {
       .catch(() => {})
   }, [])
 
-  // Only the two full-course products carry reviews on this page — single
-  // modules have their own product pages.
   const reviewOptions = useMemo<ReviewOption[]>(() => [
     {
       label: 'Independent Artist',
