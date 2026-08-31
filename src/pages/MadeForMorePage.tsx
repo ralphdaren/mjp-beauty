@@ -12,7 +12,7 @@ import {
   MFM_INVITATION,
   MFM_PILLARS,
   MFM_QUALIFIER,
-  MFM_TICKETS_URL,
+  ticketsHref,
 } from '@/data/madeForMore'
 
 export default function MadeForMorePage() {
@@ -238,7 +238,7 @@ function MadeForMoreClosing() {
           {MFM_EVENT.time} · {MFM_EVENT.addressFull}
         </p>
 
-        <a href={MFM_TICKETS_URL} className="font-sans mfm-closing-btn">
+        <a href={ticketsHref()} className="font-sans mfm-closing-btn">
           {MFM_CTA.cta}
         </a>
 

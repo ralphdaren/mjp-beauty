@@ -120,8 +120,63 @@ export const MFM_CTA = {
 } as const
 
 export const MFM_NEW_BADGE_UNTIL = '2026-10-19'
-
 export const isMadeForMoreNew = () => Date.now() < new Date(MFM_NEW_BADGE_UNTIL).getTime()
+export const MFM_WAITLIST_URL = 'https://mjpbeauty.myflodesk.com/made-for-more-beauty-biz-event'
+export const MFM_TICKETS_PATH = '/made-for-more-calgary/tickets'
+export const MFM_TICKETS_HANDLE = 'made-for-more-calgary'
 
-// swap for the live ticket checkout link once the client provides it.
-export const MFM_TICKETS_URL = 'https://mjpbeauty.myflodesk.com/made-for-more-beauty-biz-event'
+export const MFM_EARLY_BIRD = {
+  startsAt: '2026-09-01T17:00:00Z',
+  endsAt: '2026-09-04T17:00:00Z',
+  saving: 50,
+} as const
+
+export const isEarlyBird = (now: number = Date.now()) =>
+  now >= Date.parse(MFM_EARLY_BIRD.startsAt) && now < Date.parse(MFM_EARLY_BIRD.endsAt)
+
+/** Tickets go on sale when the early-bird window opens; until then the CTA
+ *  still points at the Flodesk waitlist. */
+export const ticketsHref = (now: number = Date.now()) =>
+  now >= Date.parse(MFM_EARLY_BIRD.startsAt) ? MFM_TICKETS_PATH : MFM_WAITLIST_URL
+
+/** GST only, added on top at checkout — confirmed with the client 2026-08-31.
+ *  Ticket prices are therefore pre-tax: $197 is charged as $206.85.
+ *
+ *  Stays accurate only while "Include tax in prices" is OFF in the Shopify tax
+ *  settings. Turning it on would make these prices tax-inclusive and this line
+ *  a lie, so the two have to move together. */
+export const MFM_TAX_NOTE = 'plus GST'
+
+/** Perks shared by every tier. */
+export const MFM_TICKET_INCLUDED = [
+  'Light appetizers and desserts',
+  'A beverage on arrival',
+  'Entry to win a door prize',
+  'Certificate of attendance',
+] as const
+
+/** Keyed to the Shopify variant titles — matching is by `variantTitle`, so
+ *  renaming a variant in Shopify without updating this drops the tier.
+ *
+ *  Seat counts live in Shopify inventory (70 general, 30 VIP), not here — Micah
+ *  may release more general seats later, so no copy hardcodes a number. Both
+ *  tiers can sell out, and each card reads its own `availableForSale`. */
+export const MFM_TICKET_TIERS = [
+  {
+    variantTitle: 'General Admission',
+    name: 'General Admission',
+    blurb: 'A seat in the room, and everything that comes with the day.',
+    perks: ['Standout Beauty goody bag, valued at $120'],
+  },
+  {
+    variantTitle: 'VIP',
+    name: 'VIP',
+    blurb: 'Closest to the front, and in the draw for the grand prize.',
+    perks: [
+      'Front-row seating',
+      'Standout Beauty goody bag, valued at $250',
+      'Entered to win every course, products included',
+    ],
+    limitNote: 'Only 30 spots',
+  },
+] as const

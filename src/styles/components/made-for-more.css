@@ -637,3 +637,345 @@
   backdrop-filter: blur(16px) saturate(140%);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
 }
+
+/* ---------- Tickets ---------- */
+
+.mfm-tickets-page {
+  background-color: #f6f2ec;
+  min-height: 100vh;
+}
+
+.mfm-tickets {
+  max-width: 68rem;
+  margin: 0 auto;
+  padding: clamp(6.5rem, 12vw, 9rem) clamp(1.25rem, 5vw, 3rem) clamp(4rem, 8vw, 6rem);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2.25rem, 4vw, 3.25rem);
+}
+
+.mfm-tickets-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  text-align: center;
+}
+
+.mfm-tickets-title {
+  color: #3d3028;
+  margin: 0;
+}
+
+.mfm-tickets-where {
+  color: #6b5f58;
+  margin: 0;
+}
+
+.mfm-tickets-address {
+  color: #a0948a;
+  font-size: clamp(0.72rem, 0.95vw, 0.82rem);
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+/* ---------- Countdown ---------- */
+
+.mfm-countdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  padding: clamp(1.35rem, 3vw, 1.9rem);
+  border: 1px solid #ded5c8;
+  border-radius: 0.4rem;
+  background-color: #f2efe9;
+}
+
+.mfm-countdown-label {
+  color: #827064;
+  margin: 0;
+}
+
+.mfm-countdown-cells {
+  display: flex;
+  gap: clamp(0.85rem, 3vw, 1.75rem);
+}
+
+.mfm-countdown-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 3.25rem;
+}
+
+.mfm-countdown-value {
+  color: #3d3028;
+  font-size: clamp(1.75rem, 4.5vw, 2.5rem);
+  font-weight: 300;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.mfm-countdown-unit {
+  color: #a0948a;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.mfm-countdown-note {
+  color: #6b5f58;
+  font-size: clamp(0.75rem, 1vw, 0.85rem);
+  text-align: center;
+  text-wrap: balance;
+  margin: 0;
+}
+
+/* ---------- Ticket cards ---------- */
+
+.mfm-tickets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: clamp(1.25rem, 2.5vw, 1.75rem);
+  align-items: start;
+}
+
+.mfm-ticket {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  height: 100%;
+  padding: clamp(1.6rem, 3vw, 2.25rem);
+  border: 1px solid #ded5c8;
+  border-radius: 0.4rem;
+  background-color: #fffdfa;
+}
+
+.mfm-ticket--sold {
+  opacity: 0.62;
+}
+
+.mfm-ticket-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.mfm-ticket-name {
+  color: #3d3028;
+  font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+.mfm-ticket-flag,
+.mfm-ticket-limit {
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 0.32rem 0.6rem;
+  border-radius: 9999px;
+}
+
+.mfm-ticket-flag {
+  color: #f6f2ec;
+  background-color: #3d3028;
+}
+
+.mfm-ticket-limit {
+  color: #827064;
+  background-color: #f0eae0;
+}
+
+.mfm-ticket-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.55rem;
+}
+
+.mfm-ticket-amount {
+  color: #3d3028;
+  font-size: clamp(2.1rem, 5vw, 2.75rem);
+  font-weight: 300;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.mfm-ticket-amount--placeholder {
+  color: #ded5c8;
+}
+
+.mfm-ticket-was {
+  color: #a0948a;
+  font-size: 1.05rem;
+  text-decoration: line-through;
+}
+
+.mfm-ticket-tax {
+  flex-basis: 100%;
+  color: #a0948a;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.mfm-ticket-blurb {
+  color: #6b5f58;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.mfm-ticket-perks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  list-style: none;
+  padding: 1.1rem 0 0;
+  margin: 0;
+  border-top: 1px solid #e8e1d6;
+}
+
+.mfm-ticket-perks li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.6rem;
+  align-items: start;
+  color: #3d3028;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.mfm-ticket-tick {
+  width: 0.95rem;
+  height: 0.95rem;
+  margin-top: 0.22rem;
+  color: #a0948a;
+  flex-shrink: 0;
+}
+
+/* ---------- Instagram field ---------- */
+
+/* Sits above the grid — one handle applies to whichever tier they pick. */
+.mfm-ticket-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+  max-width: 26rem;
+  margin: 0 auto;
+}
+
+.mfm-ticket-field-label {
+  color: #827064;
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.mfm-ticket-input {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid #ded5c8;
+  border-radius: 0.3rem;
+  background-color: #f6f2ec;
+  color: #3d3028;
+  font-size: 0.9rem;
+  transition: border-color 180ms ease;
+}
+
+.mfm-ticket-input::placeholder {
+  color: #b8ada2;
+}
+
+.mfm-ticket-input:focus-visible {
+  outline: none;
+  border-color: #827064;
+}
+
+.mfm-ticket-field-hint {
+  color: #a0948a;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+/* ---------- Actions ---------- */
+
+.mfm-ticket-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 3.25rem;
+  margin-top: auto;
+  padding: 1rem 1.5rem;
+  border: 0;
+  border-radius: 9999px;
+  background-color: #3d3028;
+  color: #f6f2ec;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 200ms ease, transform 200ms ease;
+}
+
+.mfm-ticket-btn:hover:not(:disabled) {
+  background-color: #2c221c;
+}
+
+.mfm-ticket-btn:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.mfm-ticket-btn:disabled {
+  background-color: #a0948a;
+  cursor: not-allowed;
+}
+
+.mfm-ticket-spinner {
+  width: 0.95rem;
+  height: 0.95rem;
+  animation: mfm-spin 900ms linear infinite;
+}
+
+@keyframes mfm-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mfm-ticket-spinner { animation-duration: 2.4s; }
+  .mfm-ticket-btn { transition: none; }
+}
+
+.mfm-ticket-error,
+.mfm-tickets-error {
+  color: #8a4b32;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.mfm-tickets-error {
+  text-align: center;
+  text-wrap: balance;
+}
+
+.mfm-tickets-foot {
+  color: #a0948a;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  text-align: center;
+  text-wrap: balance;
+  max-width: 34rem;
+  margin: 0 auto;
+}

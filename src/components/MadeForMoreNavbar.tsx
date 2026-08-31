@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
-import { MFM_TICKETS_URL } from '@/data/madeForMore'
+import { MFM_TICKETS_PATH, ticketsHref } from '@/data/madeForMore'
 
 export default function MadeForMoreNavbar() {
   const [scrolled, setScrolled] = useState(false)
+  // No point sending someone to the ticket page they're already reading.
+  const onTicketsPage = useLocation().pathname === MFM_TICKETS_PATH
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 8)
@@ -36,12 +38,14 @@ export default function MadeForMoreNavbar() {
           </span>
         </Link>
 
+        {!onTicketsPage && (
         <a
-          href={MFM_TICKETS_URL}
+          href={ticketsHref()}
           className="shrink-0 inline-flex items-center h-10 sm:h-11 px-5 sm:px-7 rounded-full bg-[#3d3028] text-[#f6f2ec] text-[0.68rem] sm:text-[0.72rem] uppercase tracking-[0.18em] font-medium hover:bg-[#2c221c] active:scale-[0.99] transition-all duration-200 whitespace-nowrap"
         >
           Get Tickets
         </a>
+        )}
       </nav>
     </header>
   )

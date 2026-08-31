@@ -6,6 +6,15 @@ export const shopifyClient = createStorefrontApiClient({
   publicAccessToken: import.meta.env.VITE_SHOPIFY_STOREFRONT_TOKEN,
 })
 
+/** One purchasable option on a product — a ticket tier, a course bundle, a shade. */
+export type ShopifyVariant = {
+  id: string
+  title: string
+  price: string
+  currencyCode: string
+  availableForSale: boolean
+}
+
 export type ShopifyProduct = {
   id: string
   title: string
@@ -17,6 +26,9 @@ export type ShopifyProduct = {
   currencyCode: string
   featuredImage: { url: string; altText: string } | null
   images: { url: string; altText: string }[]
+  /** Every variant, in the order Shopify returns them. Single-variant products
+   *  keep using variantId/price above; multi-variant ones (event tickets) read this. */
+  variants: ShopifyVariant[]
 }
 
 const PRODUCT_QUERY = `
@@ -39,10 +51,12 @@ const PRODUCT_QUERY = `
           }
         }
       }
-      variants(first: 1) {
+      variants(first: 25) {
         edges {
           node {
             id
+            title
+            availableForSale
             price {
               amount
               currencyCode
@@ -117,9 +131,10 @@ const PRODUCT_SEARCH_QUERY = `
 `
 
 const CART_CREATE_MUTATION = `
-  mutation CartCreate($variantId: ID!) {
+  mutation CartCreate($variantId: ID!, $quantity: Int!, $attributes: [AttributeInput!]) {
     cartCreate(input: {
-      lines: [{ merchandiseId: $variantId, quantity: 1 }]
+      lines: [{ merchandiseId: $variantId, quantity: $quantity }]
+      attributes: $attributes
     }) {
       cart {
         checkoutUrl
@@ -139,8 +154,22 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
     })
     if (errors || !data?.productByHandle) return null
 
+    type VariantNode = {
+      id: string
+      title?: string
+      availableForSale?: boolean
+      price?: { amount?: string; currencyCode?: string }
+    }
+
     const product = data.productByHandle
-    const variant = product.variants.edges[0]?.node
+    const variants: ShopifyVariant[] = (product.variants?.edges ?? []).map(({ node }: { node: VariantNode }) => ({
+      id: node.id,
+      title: node.title ?? '',
+      price: node.price?.amount ?? '0',
+      currencyCode: node.price?.currencyCode ?? 'CAD',
+      availableForSale: node.availableForSale ?? false,
+    }))
+    const variant = variants[0]
 
     return {
       id: product.id,
@@ -149,10 +178,11 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
       description: product.description ?? '',
       descriptionHtml: product.descriptionHtml ?? '',
       variantId: variant?.id ?? '',
-      price: variant?.price?.amount ?? '0',
-      currencyCode: variant?.price?.currencyCode ?? 'CAD',
+      price: variant?.price ?? '0',
+      currencyCode: variant?.currencyCode ?? 'CAD',
       featuredImage: product.featuredImage ?? null,
       images: (product.images?.edges ?? []).map(({ node }: { node: any }) => ({ url: node.url, altText: node.altText ?? '' })),
+      variants,
     }
   } catch {
     return null
@@ -179,6 +209,9 @@ export async function getCollectionProducts(collectionHandle: string, first = 50
         currencyCode: variant?.price?.currencyCode ?? 'CAD',
         featuredImage: node.featuredImage ?? null,
         images: [],
+        // List queries fetch one variant for pricing only — use getProductByHandle
+        // when the full tier list matters.
+        variants: [],
       }
     })
   } catch {
@@ -209,6 +242,9 @@ export async function searchProducts(term: string, first = 6): Promise<ShopifyPr
         currencyCode: variant?.price?.currencyCode ?? 'CAD',
         featuredImage: node.featuredImage ?? null,
         images: [],
+        // List queries fetch one variant for pricing only — use getProductByHandle
+        // when the full tier list matters.
+        variants: [],
       }
     })
   } catch {
@@ -216,10 +252,25 @@ export async function searchProducts(term: string, first = 6): Promise<ShopifyPr
   }
 }
 
-export async function createCheckoutUrl(variantId: string): Promise<string | null> {
+export interface CheckoutOptions {
+  quantity?: number
+  /** Free-form key/value pairs carried onto the Shopify order — how the ticket
+   *  flow passes through details Shopify's checkout has no field for. */
+  attributes?: Record<string, string>
+}
+
+export async function createCheckoutUrl(
+  variantId: string,
+  { quantity = 1, attributes }: CheckoutOptions = {},
+): Promise<string | null> {
   try {
+    const entries = Object.entries(attributes ?? {}).filter(([, value]) => value.trim() !== '')
     const { data, errors } = await shopifyClient.request(CART_CREATE_MUTATION, {
-      variables: { variantId },
+      variables: {
+        variantId,
+        quantity,
+        attributes: entries.length ? entries.map(([key, value]) => ({ key, value })) : null,
+      },
     })
     if (errors || !data?.cartCreate?.cart) return null
     return data.cartCreate.cart.checkoutUrl
