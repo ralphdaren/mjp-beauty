@@ -1,14 +1,4 @@
 // The Made For More confirmation ticket.
-//
-// Shopify sends its own order receipt automatically and that can't be turned
-// off, so this is deliberately the *ticket* rather than a second receipt: it
-// leads with the event details someone needs on the day, and carries the price
-// only so it stands on its own if they never open the Shopify one.
-//
-// Everything is inline-styled and table-based because email clients strip
-// <style> blocks, ignore flex/grid, and fall back to system fonts. The palette
-// matches the Made For More page.
-
 import { escapeHtml } from './_html.js'
 
 const CREAM = '#f6f2ec'
@@ -17,9 +7,11 @@ const INK = '#3d3028'
 const INK_SOFT = '#6b5f58'
 const INK_FAINT = '#a0948a'
 const RULE = '#ded5c8'
+const MARK = '#ece4d8'
 
 const SANS = "'Helvetica Neue', Helvetica, Arial, sans-serif"
-const SERIF = "Georgia, 'Times New Roman', serif"
+const DISPLAY = "'Playfair Display', Georgia, 'Times New Roman', serif"
+const GEIST = "Geist, 'Helvetica Neue', Helvetica, Arial, sans-serif"
 
 export interface TicketEmailData {
   firstName: string
@@ -42,6 +34,16 @@ export const EVENT = {
     { handle: '@missnc.studio', url: 'https://www.instagram.com/missnc.studio/' },
   ],
 } as const
+
+const logoMark = `
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" width="118" style="width:118px;margin:0 auto;">
+      <tr>
+        <td height="118" align="center" valign="middle" style="width:118px;height:118px;background-color:${MARK};border-radius:59px;text-align:center;">
+          <div style="font-family:${DISPLAY};font-size:48px;line-height:48px;color:${INK};">M</div>
+          <div style="font-family:${GEIST};font-size:12px;line-height:16px;letter-spacing:0.2px;color:${INK};padding-top:6px;padding-bottom:8px;"><em style="font-style:italic;">made</em> for <strong style="font-weight:700;">more.</strong></div>
+        </td>
+      </tr>
+    </table>`
 
 function detailRow(label: string, value: string, last = false) {
   const border = last ? '' : `border-bottom:1px solid ${RULE};`
@@ -102,9 +104,9 @@ export function ticketEmailBody(data: TicketEmailData): string {
 
         <tr>
           <td style="padding:40px 32px 8px;text-align:center;">
-            <div style="font-family:${SANS};font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${INK_FAINT};">You're going to</div>
-            <div style="font-family:${SERIF};font-size:34px;line-height:1.15;color:${INK};padding-top:10px;">Made For <em>More</em></div>
-            <div style="font-family:${SANS};font-size:13px;letter-spacing:1px;color:${INK_SOFT};padding-top:10px;">Calgary, Alberta</div>
+            <div style="font-family:${SANS};font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${INK_FAINT};padding-bottom:18px;">You're going to</div>
+${logoMark}
+            <div style="font-family:${SANS};font-size:13px;letter-spacing:1px;color:${INK_SOFT};padding-top:16px;">Calgary, Alberta</div>
           </td>
         </tr>
 
@@ -170,6 +172,9 @@ export function renderTicketEmail(data: TicketEmailData): string {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Your Made For More ticket</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Geist:ital,wght@0,400;0,700;1,400&family=Playfair+Display:wght@400;700&display=swap');
+</style>
 </head>
 <body style="margin:0;padding:0;background-color:${CREAM};">
 ${ticketEmailBody(data)}
