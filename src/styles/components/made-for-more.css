@@ -903,12 +903,10 @@
   letter-spacing: inherit;
 }
 
-.mfm-ticket-input--invalid {
-  border-color: #8a4b32;
-}
-
+.mfm-ticket-input--invalid,
 .mfm-ticket-input--invalid:focus-visible {
-  border-color: #8a4b32;
+  border-color: #c0271b;
+  box-shadow: 0 0 0 3px rgba(192, 39, 27, 0.14);
 }
 
 .mfm-ticket-field-hint,
@@ -920,7 +918,9 @@
 }
 
 .mfm-ticket-field-error {
-  color: #8a4b32;
+  color: #c0271b;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
 /* ---------- Actions ---------- */
@@ -976,8 +976,9 @@
 
 .mfm-ticket-error,
 .mfm-tickets-error {
-  color: #8a4b32;
+  color: #c0271b;
   font-size: 0.82rem;
+  font-weight: 500;
   line-height: 1.55;
   margin: 0;
 }

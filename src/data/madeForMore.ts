@@ -121,7 +121,8 @@ export const MFM_CTA = {
 export const MFM_NEW_BADGE_UNTIL = '2026-10-19'
 export const isMadeForMoreNew = () => Date.now() < new Date(MFM_NEW_BADGE_UNTIL).getTime()
 export const MFM_WAITLIST_URL = 'https://mjpbeauty.myflodesk.com/made-for-more-beauty-biz-event'
-export const MFM_TICKETS_PATH = '/made-for-more-calgary/tickets'
+export const MFM_EVENT_PATH = '/made-for-more-calgary'
+export const MFM_TICKETS_PATH = `${MFM_EVENT_PATH}/tickets`
 export const MFM_TICKETS_HANDLE = 'made-for-more-calgary'
 
 export const MFM_EARLY_BIRD = {

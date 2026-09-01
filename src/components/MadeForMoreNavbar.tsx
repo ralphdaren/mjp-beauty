@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
-import { MFM_TICKETS_HREF, MFM_TICKETS_PATH } from '@/data/madeForMore'
+import { MFM_EVENT_PATH, MFM_TICKETS_HREF, MFM_TICKETS_PATH } from '@/data/madeForMore'
 import { useMfmSaleStage } from '@/hooks/useMfmSaleStage'
 
 export default function MadeForMoreNavbar() {
   const [scrolled, setScrolled] = useState(false)
   const stage = useMfmSaleStage()
   const onTicketsPage = useLocation().pathname === MFM_TICKETS_PATH
+
+  // The tickets page steps back to the event page; the event page steps out to the main site.
+  const backTo = onTicketsPage ? MFM_EVENT_PATH : '/'
+  const backLabel = onTicketsPage ? 'Back to Made For More' : 'Back to MJP Beauty'
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 8)
@@ -25,8 +29,8 @@ export default function MadeForMoreNavbar() {
     >
       <nav className="max-w-[1800px] mx-auto px-4 sm:px-8 lg:px-16 h-16 sm:h-20 flex items-center justify-between gap-4">
         <Link
-          to="/"
-          aria-label="Back to MJP Beauty"
+          to={backTo}
+          aria-label={backLabel}
           className="group inline-flex items-center gap-2 text-[#3d3028]/75 hover:text-[#3d3028] transition-colors duration-200"
         >
           <ArrowLeft
@@ -34,7 +38,7 @@ export default function MadeForMoreNavbar() {
             className="shrink-0 transition-transform duration-200 group-hover:-translate-x-0.5"
           />
           <span className="text-[0.7rem] sm:text-[0.75rem] uppercase tracking-[0.18em] whitespace-nowrap">
-            <span className="hidden sm:inline">Back to MJP Beauty</span>
+            <span className="hidden sm:inline">{backLabel}</span>
             <span className="sm:hidden">Back</span>
           </span>
         </Link>
