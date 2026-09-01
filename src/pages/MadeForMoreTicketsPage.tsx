@@ -72,7 +72,8 @@ function Countdown() {
         ))}
       </div>
       <p className="font-sans mfm-countdown-note">
-        Save ${MFM_EARLY_BIRD.saving} on general admission until noon on September 4.
+        Save ${MFM_EARLY_BIRD.saving} on general admission until noon on
+        September 4 — CST
       </p>
     </div>
   )
@@ -92,6 +93,13 @@ function TicketCard({
 
   const soldOut = !variant || !variant.availableForSale
   const isGeneral = tier.variantTitle === 'General Admission'
+
+  const remaining = variant?.quantityAvailable ?? null
+  const limitLabel = 'limitNote' in tier
+    ? remaining !== null && remaining > 0
+      ? `Only ${remaining} ${remaining === 1 ? 'spot' : 'spots'} left`
+      : tier.limitNote
+    : null
   const { active: earlyBirdActive } = useEarlyBirdCountdown()
 
   const showDiscount = isGeneral && earlyBirdActive && variant
@@ -124,8 +132,8 @@ function TicketCard({
       <div className="mfm-ticket-head">
         <h2 className="font-sans mfm-ticket-name">{tier.name}</h2>
         {showDiscount && <span className="font-sans mfm-ticket-flag">Early bird</span>}
-        {'limitNote' in tier && !soldOut && (
-          <span className="font-sans mfm-ticket-limit">{tier.limitNote}</span>
+        {limitLabel && !soldOut && (
+          <span className="font-sans mfm-ticket-limit">{limitLabel}</span>
         )}
       </div>
 
@@ -184,6 +192,7 @@ export default function MadeForMoreTicketsPage() {
   const [instagram, setInstagram] = useState('')
   const [instagramError, setInstagramError] = useState<string | null>(null)
   const instagramRef = useRef<HTMLInputElement>(null)
+  const loadedRef = useRef(false)
 
   const resolveInstagram = useCallback(() => {
     const handle = normalizeHandle(instagram)
@@ -203,16 +212,32 @@ export default function MadeForMoreTicketsPage() {
 
   useEffect(() => {
     let cancelled = false
-    getProductByHandle(MFM_TICKETS_HANDLE).then((product) => {
-      if (cancelled) return
-      if (!product) {
-        setFailed(true)
-        return
-      }
-      setVariants(product.variants)
-    })
+
+    const load = () => {
+      getProductByHandle(MFM_TICKETS_HANDLE).then((product) => {
+        if (cancelled) return
+        if (!product) {
+          if (!loadedRef.current) setFailed(true)
+          return
+        }
+        loadedRef.current = true
+        setFailed(false)
+        setVariants(product.variants)
+      })
+    }
+
+    load()
+
+    const refresh = () => {
+      if (document.visibilityState === 'visible') load()
+    }
+    const id = setInterval(refresh, 60_000)
+    document.addEventListener('visibilitychange', refresh)
+
     return () => {
       cancelled = true
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', refresh)
     }
   }, [])
 

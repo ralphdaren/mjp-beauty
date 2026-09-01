@@ -12,6 +12,7 @@ export type ShopifyVariant = {
   price: string
   currencyCode: string
   availableForSale: boolean
+  quantityAvailable: number | null
 }
 
 export type ShopifyProduct = {
@@ -54,6 +55,7 @@ const PRODUCT_QUERY = `
             id
             title
             availableForSale
+            quantityAvailable
             price {
               amount
               currencyCode
@@ -155,6 +157,7 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
       id: string
       title?: string
       availableForSale?: boolean
+      quantityAvailable?: number | null
       price?: { amount?: string; currencyCode?: string }
     }
 
@@ -165,6 +168,7 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
       price: node.price?.amount ?? '0',
       currencyCode: node.price?.currencyCode ?? 'CAD',
       availableForSale: node.availableForSale ?? false,
+      quantityAvailable: node.quantityAvailable ?? null,
     }))
     const variant = variants[0]
 
@@ -206,8 +210,6 @@ export async function getCollectionProducts(collectionHandle: string, first = 50
         currencyCode: variant?.price?.currencyCode ?? 'CAD',
         featuredImage: node.featuredImage ?? null,
         images: [],
-        // List queries fetch one variant for pricing only — use getProductByHandle
-        // when the full tier list matters.
         variants: [],
       }
     })
