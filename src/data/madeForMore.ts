@@ -156,7 +156,7 @@ export const MFM_TAX_NOTE = 'plus GST'
 
 export const MFM_TICKET_INCLUDED = [
   'Light appetizers and desserts',
-  'A beverage on arrival',
+  'Your choice of 1 mocktail/cocktail on us!',
   'Entry to win a door prize',
   'Certificate of attendance',
 ] as const
@@ -173,9 +173,10 @@ export const MFM_TICKET_TIERS = [
     name: 'VIP',
     blurb: 'Closest to the front, and in the draw for the grand prize.',
     perks: [
-      'Front-row seating',
       'Standout Beauty goody bag, valued at $250',
-      'Entered to win every course, products included',
+      'Entered to win the Standout Beauty Korean Lash Lift Masterclass, valued at $400',
+      'Entered to win a 90-min Intensive Biz Mentorship Call with MJP Beauty, valued at $400',
+      'Entered to win a $500 training credit towards Miss NC Brow Training (a $1300 value)',
     ],
     limitNote: 'Only 30 spots',
   },
