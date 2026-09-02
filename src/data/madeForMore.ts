@@ -177,7 +177,7 @@ export const MFM_TICKET_TIERS = [
       'Standout Beauty goody bag, valued at $250',
       'Entered to win the Standout Beauty Korean Lash Lift Masterclass, valued at $400',
       'Entered to win a 90-min Intensive Biz Mentorship Call with MJP Beauty, valued at $400',
-      'Entered to win a $500 training credit towards Miss NC Brow Training (a $1300 value)',
+      'Entered to win a $500 training credit towards Miss NC Brow Training (a $2350 value)',
     ],
     limitNote: 'Only 30 spots',
   },
