@@ -1,7 +1,9 @@
-import { CalendarCheck, GraduationCap, Heart, MapPin, type LucideIcon } from 'lucide-react'
+import { CalendarCheck, GraduationCap, Heart, MapPin, Sparkles, type LucideIcon } from 'lucide-react'
+import { MFM_EVENT } from '../data/madeForMore'
 
 const MESSAGES: { icon: LucideIcon; text: string }[] = [
-  { icon: MapPin, text: 'Brows, lashes & permanent makeup — 186 Provencher Blvd, St. Boniface' },
+  { icon: Sparkles, text: `${MFM_EVENT.title} — ${MFM_EVENT.eyebrow.toLowerCase()} · ${MFM_EVENT.city}, ${MFM_EVENT.date}` },
+  { icon: MapPin, text: 'Brows & lashes — 186 Provencher Blvd, St. Boniface' },
   { icon: CalendarCheck, text: 'Book online anytime — appointments open 24/7' },
   { icon: GraduationCap, text: 'Train with us — in-person & online brow education for artists' },
   { icon: Heart, text: 'Free brow guides & resources — no strings attached' },
