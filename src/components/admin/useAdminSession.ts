@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { BookingRequest } from './serviceRequests'
 import type { TrainingBooking } from './TrainingBookingsPanel'
 import type { TrainingDateRow } from './TrainingDatesPanel'
+import type { MfmTicket } from './MadeForMorePanel'
 
 const TOKEN_KEY = 'mjp_admin_token'
 
@@ -62,6 +63,10 @@ export function useAdminSession() {
   const [datesLoading, setDatesLoading] = useState(restoring)
   const [datesError, setDatesError] = useState('')
 
+  const [mfmTickets, setMfmTickets] = useState<MfmTicket[]>([])
+  const [ticketsLoading, setTicketsLoading] = useState(restoring)
+  const [ticketsError, setTicketsError] = useState('')
+
   const signOutUnauthorized = useCallback(() => {
     setAuthenticated(false)
     sessionStorage.removeItem(TOKEN_KEY)
@@ -115,14 +120,32 @@ export function useAdminSession() {
     [token, signOutUnauthorized],
   )
 
+  const refetchMfmTickets = useCallback(
+    (opts?: FetchOpts) =>
+      loadResource<MfmTicket[]>({
+        url: '/api/admin?resource=mfm-tickets',
+        token,
+        silent: opts?.silent,
+        pick: (d) => (d.tickets as MfmTicket[]) ?? [],
+        apply: setMfmTickets,
+        setLoading: setTicketsLoading,
+        setError: setTicketsError,
+        onUnauthorized: signOutUnauthorized,
+        fallbackError: 'Failed to load tickets',
+      }),
+    [token, signOutUnauthorized],
+  )
+
   const loadAll = useCallback(
     async (t: string) => {
       setRequestsLoading(true)
       setBookingsLoading(true)
       setDatesLoading(true)
+      setTicketsLoading(true)
       setRequestsError('')
       setBookingsError('')
       setDatesError('')
+      setTicketsError('')
       try {
         const res = await fetch('/api/admin?resource=dashboard', {
           headers: { Authorization: `Bearer ${t}` },
@@ -133,14 +156,17 @@ export function useAdminSession() {
         setRequests(data.requests ?? [])
         setTrainingBookings(data.bookings ?? [])
         setTrainingDates(data.dates ?? [])
+        setMfmTickets(data.tickets ?? [])
       } catch (err) {
         setRequestsError(String(err))
         setBookingsError(String(err))
         setDatesError(String(err))
+        setTicketsError(String(err))
       } finally {
         setRequestsLoading(false)
         setBookingsLoading(false)
         setDatesLoading(false)
+        setTicketsLoading(false)
       }
     },
     [signOutUnauthorized],
@@ -181,6 +207,7 @@ export function useAdminSession() {
     setRequests([])
     setTrainingBookings([])
     setTrainingDates([])
+    setMfmTickets([])
   }, [])
 
   return {
@@ -204,7 +231,12 @@ export function useAdminSession() {
     datesError,
     refetchTrainingDates,
 
+    mfmTickets,
+    ticketsLoading,
+    ticketsError,
+    refetchMfmTickets,
+
     reloadAll: useCallback(() => loadAll(token), [loadAll, token]),
-    anyLoading: requestsLoading || bookingsLoading || datesLoading,
+    anyLoading: requestsLoading || bookingsLoading || datesLoading || ticketsLoading,
   }
 }

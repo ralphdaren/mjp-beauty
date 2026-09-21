@@ -3,6 +3,8 @@
 // GET  /api/admin?resource=dashboard                     → { requests, bookings, dates }
 // POST /api/admin { action: 'accept', requestId }       → { squareBookingId }
 // POST /api/admin { action: 'decline', requestId }      → { ok: true }
+// GET  /api/admin?resource=mfm-tickets                   → { tickets }
+// POST /api/admin { resource: 'mfm-tickets', action: 'create' | 'resend' | 'delete' }
 // All routes require: Authorization: Bearer <ADMIN_SECRET>
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
@@ -13,7 +15,23 @@ import { squareFetch, getLocationId, getCatalogItems, findVariation } from './_s
 import { escapeHtml } from './_html.js'
 import { enforceRateLimit, adminLimiter } from './_ratelimit.js'
 import { setCorsHeaders } from './_cors.js'
-import { isNonEmptyString, isValidIsoDateTime } from './_validate.js'
+import { isNonEmptyString, isValidIsoDateTime, isValidEmail, isOptionalString } from './_validate.js'
+import {
+  renderTicketEmail,
+  ticketEmailText,
+  ticketEmailSubject,
+  type TicketEmailData,
+} from './_mfm-ticket-email.js'
+import {
+  EARLY_BIRD_ENDS_AT,
+  MFM_MANUAL_PREFIX,
+  MFM_PAYMENT_NOTE,
+  mfmInstallmentCents,
+  mfmPlanTotal,
+  isManualTicket,
+  mfmManualKey,
+  resolveMfmTier,
+} from './_mfm-config.js'
 
 const VALID_STATUSES = ['pending', 'accepted', 'declined', 'cancelled']
 const VALID_TRAINING_OPTIONS = ['group', 'private']
@@ -84,6 +102,14 @@ async function listTrainingBookings() {
   return { data: bookings, error: null }
 }
 
+function listMfmTickets() {
+  return supabase
+    .from('mfm_tickets')
+    .select('*')
+    .order('ordered_at', { ascending: false })
+    .limit(500)
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCorsHeaders(req, res)
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
@@ -97,17 +123,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'GET' && req.query.resource === 'dashboard') {
-    const [requests, bookings, dates] = await Promise.all([
+    const [requests, bookings, dates, tickets] = await Promise.all([
       listBookingRequests(),
       listTrainingBookings(),
       listTrainingDates(),
+      listMfmTickets(),
     ])
-    const failed = requests.error ?? bookings.error ?? dates.error
+    const failed = requests.error ?? bookings.error ?? dates.error ?? tickets.error
     if (failed) return res.status(500).json({ error: failed.message })
     return res.status(200).json({
       requests: requests.data,
       bookings: bookings.data,
       dates: dates.data,
+      tickets: tickets.data,
     })
   }
 
@@ -116,6 +144,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (resource === 'training-dates' || resource === 'training-bookings') {
     return handleTraining(req, res, resource)
   }
+  if (resource === 'mfm-tickets') return handleMfmTickets(req, res)
 
   // ── GET: list booking requests ─────────────────────────────────────────────
   if (req.method === 'GET') {
@@ -365,4 +394,253 @@ async function handleTraining(
   }
 
   return res.status(400).json({ error: 'action must be "confirm" or "cancel"' })
+}
+
+// ── Made For More tickets ────────────────────────────────────────────────────
+//
+// Shopify orders land here automatically via api/webhooks/shopify.ts. This is
+// the manual path for the buyers Micah invoices through Square on a payment
+// plan — Shopify never sees those, so they'd otherwise get no ticket.
+//
+// Square stays the source of truth for what's actually been paid; the
+// dashboard only records who is on a plan and whether their ticket went out.
+
+interface MfmTicketRow {
+  id: string
+  shopify_order_id: string
+  order_number: string | null
+  email: string
+  customer_name: string
+  instagram: string | null
+  items: { tier: string; quantity: number }[]
+  total_cents: number
+  currency: string
+  ordered_at: string
+  email_sent_at: string | null
+  notes?: string | null
+}
+
+/** Rebuilds the exact email payload the Shopify webhook would have produced. */
+function ticketDataFromRow(row: MfmTicketRow): TicketEmailData {
+  const items = Array.isArray(row.items) ? row.items : []
+  // total_cents is always the whole plan, so gross stays honest. The buyer is
+  // shown what each Square invoice charges them instead.
+  const plan = isManualTicket(row.shopify_order_id)
+  const amountShown = plan ? mfmInstallmentCents(row.total_cents) : row.total_cents
+  return {
+    firstName: String(row.customer_name ?? '').trim().split(/\s+/)[0] || 'there',
+    items: items.map((i) => (i.quantity > 1 ? `${i.tier} × ${i.quantity}` : i.tier)),
+    total: `$${(amountShown / 100).toFixed(2)} ${row.currency ?? 'CAD'}`,
+    orderNumber: row.order_number ?? '#MFM',
+    showGiveaway: Date.parse(row.ordered_at) < Date.parse(EARLY_BIRD_ENDS_AT),
+    ...(plan ? { paymentNote: MFM_PAYMENT_NOTE, amountLabel: 'Payment' } : {}),
+  }
+}
+
+async function sendTicketEmail(row: MfmTicketRow, to?: string) {
+  const data = ticketDataFromRow(row)
+  const { error } = await resend.emails.send({
+    from: process.env.RESEND_FROM_EMAIL ?? 'MJP Beauty <onboarding@resend.dev>',
+    to: to ?? row.email,
+    subject: ticketEmailSubject(data.orderNumber),
+    html: renderTicketEmail(data),
+    text: ticketEmailText(data),
+  })
+  if (error) throw new Error(error.message ?? 'Resend rejected the email')
+}
+
+/** `notes` is a late addition; tolerate it not existing yet in Supabase. */
+const isUnknownColumn = (error: { code?: string; message?: string } | null) =>
+  error?.code === '42703' || error?.code === 'PGRST204' || /column .*notes/i.test(error?.message ?? '')
+
+async function handleMfmTickets(req: VercelRequest, res: VercelResponse) {
+  if (req.method === 'GET') {
+    const { data, error } = await listMfmTickets()
+    if (error) return res.status(500).json({ error: error.message })
+    return res.status(200).json({ tickets: data })
+  }
+
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+  const { action } = req.body ?? {}
+
+  // ── Issue a ticket to someone paying by Square invoice ─────────────────────
+  if (action === 'create') {
+    const { email, name, tier: rawTier, quantity: rawQty, total: rawTotal, notes, instagram, testTo } = req.body ?? {}
+
+    if (!isValidEmail(email)) return res.status(400).json({ error: 'A valid email address is required' })
+    if (!isNonEmptyString(name, 120)) return res.status(400).json({ error: "The buyer's name is required" })
+    if (!isOptionalString(notes, 500)) return res.status(400).json({ error: 'Notes are too long' })
+    if (!isOptionalString(instagram, 100)) return res.status(400).json({ error: 'Instagram handle is too long' })
+    if (testTo !== undefined && !isValidEmail(testTo)) {
+      return res.status(400).json({ error: 'testTo must be a valid email address' })
+    }
+
+    const tier = resolveMfmTier(rawTier)
+    if (!tier) return res.status(400).json({ error: 'Ticket type must be General Admission or VIP' })
+
+    const quantity = rawQty === undefined || rawQty === '' ? 1 : Number(rawQty)
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 20) {
+      return res.status(400).json({ error: 'Quantity must be a whole number between 1 and 20' })
+    }
+
+    // Payment-plan pricing is Micah's rounded quote, not Shopify's exact
+    // price + GST — see MFM_PLAN_INSTALLMENT.
+    const expected = mfmPlanTotal(tier, quantity)
+    const total =
+      rawTotal === undefined || rawTotal === '' ? expected : Number(String(rawTotal).replace(/[$,\s]/g, ''))
+    if (!Number.isFinite(total) || total <= 0 || total > 100000) {
+      return res.status(400).json({ error: 'Total must be a positive amount' })
+    }
+
+    const normalisedEmail = String(email).toLowerCase()
+
+    // Anyone already holding a ticket — Shopify buyer or a previous manual add
+    // — must go through Resend instead, so nobody gets two ticket numbers.
+    // A test issues nothing, so it skips this and can be repeated freely.
+    if (!testTo) {
+      const { data: existing, error: existingError } = await supabase
+        .from('mfm_tickets')
+        .select('order_number, shopify_order_id')
+        .ilike('email', normalisedEmail)
+        .limit(1)
+      if (existingError) return res.status(500).json({ error: existingError.message })
+      if (existing && existing.length > 0) {
+        const which = isManualTicket(existing[0].shopify_order_id) ? 'a payment-plan ticket' : 'a Shopify order'
+        return res.status(409).json({
+          error: `${email} already has ${which} (${existing[0].order_number}). Use Resend on that row instead of adding them again.`,
+        })
+      }
+    }
+
+    // Continue from the highest number ever issued, so removing a row can
+    // never cause a number to be handed out twice.
+    const { data: numbered, error: numberError } = await supabase
+      .from('mfm_tickets')
+      .select('order_number')
+      .like('order_number', `${MFM_MANUAL_PREFIX}%`)
+    if (numberError) return res.status(500).json({ error: numberError.message })
+
+    let highest = 0
+    for (const r of numbered ?? []) {
+      const match = new RegExp(`^${MFM_MANUAL_PREFIX}(\\d+)$`).exec(String(r.order_number ?? ''))
+      if (match) highest = Math.max(highest, parseInt(match[1], 10))
+    }
+    const orderNumber = `${MFM_MANUAL_PREFIX}${String(highest + 1).padStart(2, '0')}`
+
+    const record = {
+      shopify_order_id: mfmManualKey(normalisedEmail),
+      order_number: orderNumber,
+      email: normalisedEmail,
+      customer_name: String(name).trim(),
+      instagram: instagram ? String(instagram).trim() : null,
+      items: [{ tier, quantity }],
+      total_cents: Math.round(total * 100),
+      currency: 'CAD',
+      ordered_at: new Date().toISOString(),
+    }
+
+    // A test never touches the table. Recording one left a phantom ticket
+    // behind, burned a ticket number, and tripped the "recorded but never
+    // emailed" banner — all for an email that only ever went to Micah.
+    if (testTo) {
+      const preview: MfmTicketRow = { ...record, id: 'preview', email_sent_at: null }
+      try {
+        await sendTicketEmail(preview, String(testTo))
+      } catch (err) {
+        return res.status(502).json({
+          error: `The test email could not be sent: ${String(err).replace('Error: ', '')}`,
+        })
+      }
+      return res.status(200).json({ ok: true, orderNumber, expected, testTo: String(testTo) })
+    }
+
+    // Record before sending: the unique index on shopify_order_id is what
+    // stops a double-send, not this handler remembering to check.
+    let inserted = await supabase
+      .from('mfm_tickets')
+      .insert({ ...record, notes: notes ? String(notes).trim() : null })
+      .select('*')
+      .single()
+
+    if (inserted.error && isUnknownColumn(inserted.error)) {
+      inserted = await supabase.from('mfm_tickets').insert(record).select('*').single()
+    }
+    if (inserted.error) {
+      if (inserted.error.code === '23505') {
+        return res.status(409).json({ error: `${email} already has a ticket.` })
+      }
+      return res.status(500).json({ error: inserted.error.message })
+    }
+
+    const row = inserted.data as MfmTicketRow
+
+    try {
+      await sendTicketEmail(row)
+    } catch (err) {
+      // The row stays with a null email_sent_at so the UI shows it as unsent
+      // and Micah can retry with Resend.
+      return res.status(502).json({
+        error: `Ticket ${orderNumber} was saved, but the email failed to send: ${String(err).replace('Error: ', '')}. Use Resend on that row to try again.`,
+      })
+    }
+
+    await supabase
+      .from('mfm_tickets')
+      .update({ email_sent_at: new Date().toISOString() })
+      .eq('id', row.id)
+
+    return res.status(200).json({ ok: true, orderNumber, expected, testTo: null })
+  }
+
+  // ── Re-send an existing ticket (works for Shopify buyers too) ──────────────
+  if (action === 'resend') {
+    const { id, testTo } = req.body ?? {}
+    if (!isNonEmptyString(id, 100)) return res.status(400).json({ error: 'id is required' })
+    if (testTo !== undefined && !isValidEmail(testTo)) {
+      return res.status(400).json({ error: 'testTo must be a valid email address' })
+    }
+
+    const { data: row, error } = await supabase.from('mfm_tickets').select('*').eq('id', String(id)).single()
+    if (error || !row) return res.status(404).json({ error: 'Ticket not found' })
+
+    try {
+      await sendTicketEmail(row as MfmTicketRow, testTo ? String(testTo) : undefined)
+    } catch (err) {
+      return res.status(502).json({ error: String(err).replace('Error: ', '') })
+    }
+
+    if (!testTo) {
+      await supabase
+        .from('mfm_tickets')
+        .update({ email_sent_at: new Date().toISOString() })
+        .eq('id', String(id))
+    }
+
+    return res.status(200).json({ ok: true })
+  }
+
+  // ── Remove a manually added ticket ─────────────────────────────────────────
+  if (action === 'delete') {
+    const { id } = req.body ?? {}
+    if (!isNonEmptyString(id, 100)) return res.status(400).json({ error: 'id is required' })
+
+    const { data: row, error } = await supabase
+      .from('mfm_tickets')
+      .select('shopify_order_id')
+      .eq('id', String(id))
+      .single()
+    if (error || !row) return res.status(404).json({ error: 'Ticket not found' })
+
+    // Shopify orders are the webhook's record of a real payment — never let
+    // the dashboard delete one.
+    if (!isManualTicket(row.shopify_order_id)) {
+      return res.status(403).json({ error: 'Shopify orders can\'t be removed here — only payment-plan tickets.' })
+    }
+
+    const { error: deleteError } = await supabase.from('mfm_tickets').delete().eq('id', String(id))
+    if (deleteError) return res.status(500).json({ error: deleteError.message })
+    return res.status(200).json({ ok: true })
+  }
+
+  return res.status(400).json({ error: 'action must be "create", "resend", or "delete"' })
 }

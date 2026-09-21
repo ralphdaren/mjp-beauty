@@ -2,6 +2,7 @@ import { useState } from 'react'
 import AdminHeader from '../components/admin/AdminHeader'
 import AdminLogin from '../components/admin/AdminLogin'
 import AdminSidebar from '../components/admin/AdminSidebar'
+import MadeForMorePanel from '../components/admin/MadeForMorePanel'
 import MentorshipPanel from '../components/admin/MentorshipPanel'
 import ServiceRequestsList from '../components/admin/ServiceRequestsList'
 import ServiceRequestsToolbar from '../components/admin/ServiceRequestsToolbar'
@@ -40,7 +41,12 @@ export default function AdminPage() {
       <AdminSidebar
         category={category}
         onSelect={setCategory}
-        counts={{ services: serviceRequests.tabCount('pending'), training: holdCount, mentorship: 0 }}
+        counts={{
+          services: serviceRequests.tabCount('pending'),
+          training: holdCount,
+          mentorship: 0,
+          mfm: session.mfmTickets.filter((t) => !t.email_sent_at).length,
+        }}
         trainingView={trainingView}
         onTrainingViewSelect={setTrainingView}
         onSignOut={handleSignOut}
@@ -78,6 +84,16 @@ export default function AdminPage() {
             loading={session.datesLoading}
             error={session.datesError}
             onRefetch={session.refetchTrainingDates}
+          />
+        )}
+
+        {category === 'mfm' && (
+          <MadeForMorePanel
+            token={session.token}
+            tickets={session.mfmTickets}
+            loading={session.ticketsLoading}
+            error={session.ticketsError}
+            onRefetch={session.refetchMfmTickets}
           />
         )}
 

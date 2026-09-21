@@ -19,6 +19,12 @@ export interface TicketEmailData {
   total: string
   orderNumber: string
   showGiveaway: boolean
+  paymentNote?: string
+  /**
+   * Label for the amount row. Defaults to "Paid"; a payment plan passes
+   * "Payment", because `total` is then one invoice and not the whole ticket.
+   */
+  amountLabel?: string
 }
 
 export const EVENT = {
@@ -76,6 +82,10 @@ export function ticketEmailBody(data: TicketEmailData): string {
   const items = data.items
     .map((item) => `<div style="padding:2px 0;">${escapeHtml(item)}</div>`)
     .join('')
+  const amountLabel = data.amountLabel ?? 'Paid'
+  const paid = data.paymentNote
+    ? `${total}<br><span style="color:${INK_SOFT};font-size:13px;">${escapeHtml(data.paymentNote)}</span>`
+    : total
 
   const giveaway = data.showGiveaway
     ? `
@@ -124,7 +134,7 @@ ${logoMark}
           <td style="padding:26px 32px 8px;">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
               ${detailRow('Ticket', items)}
-              ${detailRow('Paid', total)}
+              ${detailRow(amountLabel, paid)}
               ${detailRow('Order', order)}
               ${detailRow('Date', EVENT.date)}
               ${detailRow('Time', EVENT.time)}
@@ -190,7 +200,7 @@ export function ticketEmailText(data: TicketEmailData): string {
     "Keep this email; it's everything you'll need on the day.",
     '',
     `Ticket:     ${data.items.join(', ')}`,
-    `Paid:       ${data.total}`,
+    `${`${data.amountLabel ?? 'Paid'}:`.padEnd(12)}${data.total}${data.paymentNote ? ` (${data.paymentNote})` : ''}`,
     `Order:      ${data.orderNumber}`,
     `Date:       ${EVENT.date}`,
     `Time:       ${EVENT.time}`,

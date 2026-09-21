@@ -1,11 +1,12 @@
 import { useLayoutEffect, useRef, useState } from 'react'
-import { LogOut, CalendarCheck, GraduationCap, Users, X, ChevronRight, type LucideIcon } from 'lucide-react'
+import { LogOut, CalendarCheck, GraduationCap, Users, Ticket, X, ChevronRight, type LucideIcon } from 'lucide-react'
 import { CATEGORY_LABEL, type AdminCategory, type TrainingView } from './adminShell'
 
 const NAV: Array<{ id: AdminCategory; icon: LucideIcon }> = [
   { id: 'services', icon: CalendarCheck },
   { id: 'training', icon: GraduationCap },
   { id: 'mentorship', icon: Users },
+  { id: 'mfm', icon: Ticket },
 ]
 
 const TRAINING_VIEWS: Array<{ id: TrainingView; label: string }> = [
