@@ -13,6 +13,7 @@ import AdminPage from '@/pages/AdminPage'
 import ManageBookingPage from '@/pages/ManageBookingPage'
 import MadeForMorePage from '@/pages/MadeForMorePage'
 import MadeForMoreTicketsPage from '@/pages/MadeForMoreTicketsPage'
+import MadeForMoreWaitlistPage from '@/pages/MadeForMoreWaitlistPage'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import ScrollToTop from '@/components/ScrollToTop'
@@ -36,6 +37,7 @@ function AppContent() {
         <Route path="/biz-mentorship" element={<BizMentorshipPage />} />
         <Route path="/made-for-more-calgary" element={<MadeForMorePage />} />
         <Route path="/made-for-more-calgary/tickets" element={<MadeForMoreTicketsPage />} />
+        <Route path="/made-for-more-calgary/waitlist" element={<MadeForMoreWaitlistPage />} />
         <Route path="/made-for-more" element={<Navigate to="/made-for-more-calgary" replace />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsOfUsePage />} />

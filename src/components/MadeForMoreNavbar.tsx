@@ -1,17 +1,27 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
-import { MFM_EVENT_PATH, MFM_TICKETS_HREF, MFM_TICKETS_PATH } from '@/data/madeForMore'
+import {
+  MFM_EVENT_PATH,
+  MFM_TICKETS_HREF,
+  MFM_TICKETS_NAV_CTA,
+  MFM_TICKETS_PATH,
+  MFM_WAITLIST_PATH,
+} from '@/data/madeForMore'
 import { useMfmSaleStage } from '@/hooks/useMfmSaleStage'
 
 export default function MadeForMoreNavbar() {
   const [scrolled, setScrolled] = useState(false)
   const stage = useMfmSaleStage()
-  const onTicketsPage = useLocation().pathname === MFM_TICKETS_PATH
+  const { pathname } = useLocation()
+  const onTicketsPage = pathname === MFM_TICKETS_PATH
+  const onWaitlistPage = pathname === MFM_WAITLIST_PATH
 
-  // The tickets page steps back to the event page; the event page steps out to the main site.
-  const backTo = onTicketsPage ? MFM_EVENT_PATH : '/'
-  const backLabel = onTicketsPage ? 'Back to Made For More' : 'Back to MJP Beauty'
+  // The tickets and waitlist pages step back to the event page; the event page
+  // steps out to the main site.
+  const isSubPage = onTicketsPage || onWaitlistPage
+  const backTo = isSubPage ? MFM_EVENT_PATH : '/'
+  const backLabel = isSubPage ? 'Back to Made For More' : 'Back to MJP Beauty'
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 8)
@@ -43,12 +53,12 @@ export default function MadeForMoreNavbar() {
           </span>
         </Link>
 
-        {!onTicketsPage && (
+        {!isSubPage && (
         <a
           href={MFM_TICKETS_HREF[stage]}
           className="shrink-0 inline-flex items-center h-10 sm:h-11 px-5 sm:px-7 rounded-full bg-[#3d3028] text-[#f6f2ec] text-[0.68rem] sm:text-[0.72rem] uppercase tracking-[0.18em] font-medium hover:bg-[#2c221c] active:scale-[0.99] transition-all duration-200 whitespace-nowrap"
         >
-          Get Tickets
+          {MFM_TICKETS_NAV_CTA[stage]}
         </a>
         )}
       </nav>

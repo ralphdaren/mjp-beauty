@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Navigate } from 'react-router-dom'
 import { Check, Loader2 } from 'lucide-react'
 import MadeForMoreNavbar from '@/components/MadeForMoreNavbar'
+import { useMfmSaleStage } from '@/hooks/useMfmSaleStage'
 import { createCheckoutUrl, getProductByHandle, type ShopifyVariant } from '@/lib/shopify'
 import {
   MFM_EARLY_BIRD,
@@ -9,6 +11,7 @@ import {
   MFM_TICKETS_HANDLE,
   MFM_TICKET_INCLUDED,
   MFM_TICKET_TIERS,
+  MFM_WAITLIST_PATH,
   isEarlyBird,
 } from '@/data/madeForMore'
 
@@ -187,6 +190,7 @@ function TicketCard({
 }
 
 export default function MadeForMoreTicketsPage() {
+  const stage = useMfmSaleStage()
   const [variants, setVariants] = useState<ShopifyVariant[] | null>(null)
   const [failed, setFailed] = useState(false)
   const [instagram, setInstagram] = useState('')
@@ -246,6 +250,10 @@ export default function MadeForMoreTicketsPage() {
     for (const variant of variants ?? []) map.set(variant.title, variant)
     return map
   }, [variants])
+
+  // Sales are over — anyone landing here on an old link goes to the waitlist
+  // instead, so the checkout buttons can't be reached at all.
+  if (stage === 'closed') return <Navigate to={MFM_WAITLIST_PATH} replace />
 
   return (
     <main className="mfm-tickets-page">

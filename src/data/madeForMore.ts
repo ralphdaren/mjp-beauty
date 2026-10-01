@@ -123,6 +123,7 @@ export const isMadeForMoreNew = () => Date.now() < new Date(MFM_NEW_BADGE_UNTIL)
 export const MFM_WAITLIST_URL = 'https://mjpbeauty.myflodesk.com/made-for-more-beauty-biz-event'
 export const MFM_EVENT_PATH = '/made-for-more-calgary'
 export const MFM_TICKETS_PATH = `${MFM_EVENT_PATH}/tickets`
+export const MFM_WAITLIST_PATH = `${MFM_EVENT_PATH}/waitlist`
 export const MFM_TICKETS_HANDLE = 'made-for-more-calgary'
 
 export const MFM_EARLY_BIRD = {
@@ -131,27 +132,88 @@ export const MFM_EARLY_BIRD = {
   saving: 50,
 } as const
 
-export type MfmSaleStage = 'before' | 'early' | 'after'
+/**
+ * Ticket sales close at 11:59pm on September 30 in Calgary (MDT, UTC-6) — the
+ * last minute before October 1st. From then on every ticket CTA points at the
+ * waitlist and the tickets page redirects there.
+ */
+export const MFM_SALES_END = '2026-10-01T05:59:00Z'
+
+export type MfmSaleStage = 'before' | 'early' | 'after' | 'closed'
 
 export const saleStage = (now: number = Date.now()): MfmSaleStage => {
+  if (now >= Date.parse(MFM_SALES_END)) return 'closed'
   if (now < Date.parse(MFM_EARLY_BIRD.startsAt)) return 'before'
   if (now < Date.parse(MFM_EARLY_BIRD.endsAt)) return 'early'
   return 'after'
 }
 
 export const isEarlyBird = (now: number = Date.now()) => saleStage(now) === 'early'
+export const ticketsClosed = (now: number = Date.now()) => saleStage(now) === 'closed'
+
+/** The instant each stage gives way to the next, or null once sales are closed. */
+export const MFM_STAGE_BOUNDARY: Record<MfmSaleStage, string | null> = {
+  before: MFM_EARLY_BIRD.startsAt,
+  early: MFM_EARLY_BIRD.endsAt,
+  after: MFM_SALES_END,
+  closed: null,
+}
 
 export const MFM_TICKETS_HREF: Record<MfmSaleStage, string> = {
   before: MFM_WAITLIST_URL,
   early: MFM_TICKETS_PATH,
   after: MFM_TICKETS_PATH,
+  closed: MFM_WAITLIST_PATH,
 }
 
 export const MFM_TICKETS_CTA: Record<MfmSaleStage, string> = {
   before: 'Get First Access to Early-Bird Tickets',
   early: `Secure Your Seat — Save $${MFM_EARLY_BIRD.saving}`,
   after: 'Secure Your Seat',
+  closed: 'Join the Waitlist',
 }
+
+/** Short labels for the navbar pill, where the long CTA copy doesn't fit. */
+export const MFM_TICKETS_NAV_CTA: Record<MfmSaleStage, string> = {
+  before: 'Get Tickets',
+  early: 'Get Tickets',
+  after: 'Get Tickets',
+  closed: 'Join Waitlist',
+}
+
+/** The italic line under the closing CTA. */
+export const MFM_CLOSING_NOTE: Record<MfmSaleStage, string> = {
+  before: MFM_CTA.note,
+  early: MFM_CTA.note,
+  after: MFM_CTA.note,
+  closed: 'Ticket sales are closed. Join the waitlist to hear about the next one first.',
+}
+
+/** The third cell of the hero band, which tracks the early bird until sales end. */
+export const MFM_BAND_SALE: Record<MfmSaleStage, { line: string; sub: string }> = {
+  before: { line: MFM_EVENT.earlyBird, sub: MFM_EVENT.earlyBirdNote },
+  early: { line: MFM_EVENT.earlyBird, sub: MFM_EVENT.earlyBirdNote },
+  after: { line: MFM_EVENT.earlyBird, sub: MFM_EVENT.earlyBirdNote },
+  closed: { line: 'Ticket sales closed', sub: 'Join the waitlist for what’s next' },
+}
+
+/** Copy for the waitlist page that replaces ticket sales. */
+export const MFM_WAITLIST = {
+  eyebrow: MFM_EVENT.title,
+  headingLead: 'Tickets are',
+  headingAccent: 'closed.',
+  body: 'Ticket sales for Made For More closed on September 30. Leave your email and you’ll be the first to know when the next room opens — early access, before it goes public.',
+  fieldLabel: 'Email address',
+  placeholder: 'you@example.com',
+  hint: 'Only for news about future events. No spam, and you can leave any time.',
+  submit: 'Join the Waitlist',
+  submitting: 'Adding you',
+  successHeading: 'You’re on the list.',
+  successBody: 'We’ll email you as soon as the next event opens up. In the meantime, come say hi on Instagram.',
+  foot: 'Already bought a ticket? Your confirmation is in your email — reply to it or message us on Instagram if you need anything.',
+} as const
+
+export const MFM_WAITLIST_SOURCE = 'made-for-more-calgary'
 
 export const MFM_TAX_NOTE = 'plus GST'
 

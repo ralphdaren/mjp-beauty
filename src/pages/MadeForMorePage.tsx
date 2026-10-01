@@ -4,6 +4,8 @@ import MadeForMoreNavbar from '@/components/MadeForMoreNavbar'
 import { useMfmSaleStage } from '@/hooks/useMfmSaleStage'
 import { useScrollAnimation } from '@/hooks/useScrollAnimation'
 import {
+  MFM_BAND_SALE,
+  MFM_CLOSING_NOTE,
   MFM_CTA,
   MFM_EVENT,
   MFM_HERO_HOSTS,
@@ -246,13 +248,16 @@ function MadeForMoreClosing() {
           {MFM_TICKETS_CTA[stage]}
         </a>
 
-        <p className="about-subheading mfm-closing-note">{MFM_CTA.note}</p>
+        <p className="about-subheading mfm-closing-note">{MFM_CLOSING_NOTE[stage]}</p>
       </div>
     </section>
   )
 }
 
 function MadeForMoreBand() {
+  const stage = useMfmSaleStage()
+  const sale = MFM_BAND_SALE[stage]
+
   return (
     <div className="mfm-band">
       <div className="mfm-band-cell">
@@ -273,8 +278,8 @@ function MadeForMoreBand() {
 
       <div className="mfm-band-cell mfm-band-cell-wide">
         <p className="font-sans mfm-band-text">
-          <span className="mfm-band-line">{MFM_EVENT.earlyBird}</span>
-          <span className="mfm-band-line mfm-band-line-sub">{MFM_EVENT.earlyBirdNote}</span>
+          <span className="mfm-band-line">{sale.line}</span>
+          <span className="mfm-band-line mfm-band-line-sub">{sale.sub}</span>
         </p>
       </div>
     </div>
