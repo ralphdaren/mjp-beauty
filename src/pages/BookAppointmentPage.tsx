@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useScrollAnimation } from '../hooks/useScrollAnimation'
 import { useScrollPopupTrigger } from '../hooks/useScrollPopupTrigger'
@@ -11,6 +11,11 @@ import InfoTabs from '../components/booking/InfoTabs'
 import InstagramReels from '../components/InstagramReels'
 import StudioLocation from '../components/booking/StudioLocation'
 import BookingDrawer from '../components/booking/BookingDrawer'
+import BookingPausedModal from '../components/booking/BookingPausedModal'
+
+// Online booking is paused while the page is reworked; appointments go through Instagram DMs.
+// Flip to false to restore the booking drawer.
+const BOOKING_PAUSED = true
 
 const REELS = [
   'v1785121052/b-reel-01_cx8hqx',
@@ -30,9 +35,10 @@ export default function BookAppointmentPage() {
   const [searchParams] = useSearchParams()
   const appliedReschedule = useRef(false)
   const clientEmailPopup = useScrollPopupTrigger('mjp-booking-client-email-popup-dismissed')
+  const [pausedOpen, setPausedOpen] = useState(BOOKING_PAUSED)
 
   useEffect(() => {
-    if (appliedReschedule.current || !ready) return
+    if (BOOKING_PAUSED || appliedReschedule.current || !ready) return
     const tierLabels = searchParams.getAll('tier')
     const variationIds = searchParams.getAll('variation')
     const rescheduleToken = searchParams.get('rescheduleToken')
@@ -74,7 +80,7 @@ export default function BookAppointmentPage() {
               service={service}
               index={index}
               onVideoOpen={b.setVideoSrc}
-              onBook={b.openDrawerForService}
+              onBook={BOOKING_PAUSED ? () => setPausedOpen(true) : b.openDrawerForService}
             />
           ))}
         </div>
@@ -90,9 +96,11 @@ export default function BookAppointmentPage() {
         <VideoModal src={b.videoSrc} onClose={() => b.setVideoSrc(null)} />
       )}
 
-      {clientEmailPopup.show && !b.drawerOpen && !b.videoSrc && (
+      {!BOOKING_PAUSED && clientEmailPopup.show && !b.drawerOpen && !b.videoSrc && (
         <ClientEmailPopup onClose={clientEmailPopup.dismiss} />
       )}
+
+      {pausedOpen && <BookingPausedModal onClose={() => setPausedOpen(false)} />}
 
       <BookingDrawer
         open={b.drawerOpen}
