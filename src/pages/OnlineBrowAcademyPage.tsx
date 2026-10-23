@@ -10,10 +10,13 @@ import type { ReviewOption } from '@/components/CourseReviewsSection'
 import InstagramReels from '@/components/InstagramReels'
 import { getProductByHandle, createCheckoutUrl, formatPrice } from '@/lib/shopify'
 import type { ShopifyProduct } from '@/lib/shopify'
-const olHeadImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_1600/v1783027948/ol-head_xivqpl.jpg'
-const optImg01 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_600/v1783027940/opt-img-01_ufhoau.jpg'
-const optImg02 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_600/v1783027944/opt-img-02_l9ncxq.jpg'
-const curriculumImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_900/v1783027938/curriculum-img_frtvcf.jpg'
+import { cld, toSrcSet } from '@/lib/cloudinary'
+const olHeadImg         = cld('v1783027948/ol-head_xivqpl.jpg', ',c_limit')
+const olHeadPortraitImg = cld('v1783027948/ol-head_xivqpl.jpg', ',c_fill,g_center,ar_9:16')
+const optImg01      = cld('v1783027940/opt-img-01_ufhoau.jpg', ',c_limit')
+const optImg02      = cld('v1783027944/opt-img-02_l9ncxq.jpg', ',c_limit')
+const OPT_WIDTHS    = [500, 750, 1000]
+const curriculumImg = cld('v1783027938/curriculum-img_frtvcf.jpg', ',c_limit')
 
 const REELS = [
   'v1785127684/ol-reel-01_e1wqcz',
@@ -175,7 +178,8 @@ const curriculumParts: CurriculumPart[] = [
 
 const onlineOptionCards = [
   {
-    img: optImg01,
+    img: optImg01(600),
+    srcSet: toSrcSet(optImg01, OPT_WIDTHS),
     alt: 'Independent Artist',
     label: 'Option 01',
     title: 'Independent Artist',
@@ -192,7 +196,8 @@ const onlineOptionCards = [
     ],
   },
   {
-    img: optImg02,
+    img: optImg02(600),
+    srcSet: toSrcSet(optImg02, OPT_WIDTHS),
     alt: 'VIP Mentorship',
     label: 'Option 02',
     title: 'VIP Mentorship',
@@ -444,11 +449,19 @@ export default function OnlineBrowAcademyPage() {
     <main>
       {/* ── Hero Section ────────────────────────────────────────────── */}
       <section className="hero-section">
-        <img
-          src={olHeadImg}
-          alt="Online Brow Academy"
-          className="hero-video object-cover"
-        />
+        <picture>
+          {/* Original is only 1920x1280, so the portrait crop tops out at 720px */}
+          <source media="(orientation: portrait)" srcSet={toSrcSet(olHeadPortraitImg, [480, 720])} sizes="100vw" />
+          {/* object-cover on a 3:2 image: rendered width is the larger of 100vw and 150vh */}
+          <img
+            src={olHeadImg(1600)}
+            srcSet={toSrcSet(olHeadImg, [1200, 1600, 1920])}
+            sizes="max(100vw, 150vh)"
+            alt="Online Brow Academy"
+            className="hero-video object-cover"
+            fetchPriority="high"
+          />
+        </picture>
         <div className="hero-overlay" />
         <div className="hero-content">
           <p className="hero-eyebrow text-sm tracking-[0.25em] uppercase text-white/70 mb-4 font-light">
@@ -559,7 +572,7 @@ export default function OnlineBrowAcademyPage() {
                 className={`rounded-2xl border border-[#e3e2de] bg-white ${card.shadowClass} overflow-hidden flex flex-col`}
               >
                 <div className="relative h-64 flex-shrink-0 overflow-hidden">
-                  <img src={card.img} alt={card.alt} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
+                  <img src={card.img} srcSet={card.srcSet} sizes="(min-width: 1024px) 500px, 100vw" alt={card.alt} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
                 </div>
                 <div className="p-8 flex flex-col">
                   <p className="text-[0.7rem] uppercase tracking-[0.28em] text-[#a0948a] mb-4">{card.label}</p>
@@ -686,7 +699,7 @@ export default function OnlineBrowAcademyPage() {
                         aria-hidden={!isActive}
                       >
                         <div className="relative w-[38%] flex-shrink-0 overflow-hidden">
-                          <img src={card.img} alt={card.alt} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
+                          <img src={card.img} srcSet={card.srcSet} sizes="(min-width: 1024px) 500px, 100vw" alt={card.alt} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
                         </div>
                         <div className="flex-1 p-10 flex flex-col">
                           <p className="text-[0.7rem] uppercase tracking-[0.28em] text-[#a0948a] mb-4">{card.label}</p>
@@ -733,7 +746,7 @@ export default function OnlineBrowAcademyPage() {
                         aria-label={`Switch to ${card.title}`}
                         tabIndex={isActive ? -1 : 0}
                       >
-                        <img src={card.img} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
+                        <img src={card.img} srcSet={card.srcSet} sizes="(min-width: 1024px) 500px, 100vw" alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
                         <div className="absolute inset-0 bg-[#2a1a0e]/55 group-hover:bg-[#2a1a0e]/40 transition-colors duration-300" />
                         <div className="absolute inset-x-0 bottom-0 p-5">
                           <p className="text-[0.6rem] uppercase tracking-[0.22em] text-white/50 mb-1.5">{card.label}</p>
@@ -803,7 +816,9 @@ export default function OnlineBrowAcademyPage() {
             MJP Beauty · Curriculum
           </p>
           <img
-            src={curriculumImg}
+            src={curriculumImg(900)}
+            srcSet={toSrcSet(curriculumImg, [700, 900, 1024])}
+            sizes="max(42vw, 67vh)"
             alt="MJP Beauty Curriculum"
             className="absolute inset-0 w-full h-full object-cover"
             loading="lazy"

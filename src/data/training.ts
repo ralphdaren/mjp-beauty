@@ -1,11 +1,8 @@
+import { cld, toSrcSet } from '@/lib/cloudinary'
 import type { FlipPerk, PerkKey, TrainingFormatItem, TrainingOptionCard } from '../types/training'
 
 // ─── Imagery ──────────────────────────────────────────────────────────────────
 
-const cld = (id: string, extra = '', quality = 'good') => (w: number) =>
-  `https://res.cloudinary.com/dr9nm40gf/image/upload/f_auto,q_auto:${quality}${extra},w_${w}/${id}`
-const toSrcSet = (img: (w: number) => string, widths: number[]) =>
-  widths.map((w) => `${img(w)} ${w}w`).join(', ')
 const browGuideImg = cld('v1792788400/freebie-05_jdspdg.png', ',c_limit', 'best')
 export const BROW_GUIDE_IMG        = browGuideImg(500)
 export const BROW_GUIDE_IMG_SRCSET = toSrcSet(browGuideImg, [500, 760, 940])

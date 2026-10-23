@@ -4,10 +4,10 @@ import { Menu, X, ChevronDown, ChevronLeft, ChevronRight, ArrowRight, User, Cale
 import logoBrown from '@/assets/brand-kit/logo-brown.png'
 import AnnouncementBar from '@/components/AnnouncementBar'
 import SearchOverlay from '@/components/SearchOverlay'
+import { cld, toSrcSet } from '@/lib/cloudinary'
 
-const optImg01 = (w: number) =>
-  `https://res.cloudinary.com/dr9nm40gf/image/upload/f_auto,q_auto:good,c_limit,w_${w}/v1783027940/opt-img-01_ufhoau.jpg`
-const optImg01SrcSet = [300, 500, 750, 1000].map((w) => `${optImg01(w)} ${w}w`).join(', ')
+const optImg01 = cld('v1783027940/opt-img-01_ufhoau.jpg', ',c_limit')
+const optImg01SrcSet = toSrcSet(optImg01, [300, 500, 750, 1000])
 import { getCollectionProducts } from '@/lib/shopify'
 import type { ShopifyProduct } from '@/lib/shopify'
 
