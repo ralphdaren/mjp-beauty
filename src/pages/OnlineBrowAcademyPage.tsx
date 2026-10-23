@@ -374,7 +374,12 @@ export default function OnlineBrowAcademyPage() {
 
   useLayoutEffect(() => {
     const el = tabRefs.current[activePart]
-    if (el) setIndicatorStyle({ top: el.offsetTop, height: el.offsetHeight })
+    if (!el) return
+    // Re-measure on resize: the tabs switch between a horizontal row (mobile) and the sidebar (md+)
+    const update = () => setIndicatorStyle({ top: el.offsetTop, height: el.offsetHeight })
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
   }, [activePart])
 
   const handleOptionSwitch = useCallback(() => {
@@ -833,7 +838,7 @@ export default function OnlineBrowAcademyPage() {
         </div>
 
         {/* Right: curriculum content */}
-        <div className="flex-1 py-14 px-8 lg:px-14 xl:px-16 min-h-screen">
+        <div className="flex-1 min-w-0 py-14 px-8 lg:px-14 xl:px-16 min-h-screen">
 
           {/* Header */}
           <div className="mb-10 anim-fade-up">
@@ -849,14 +854,14 @@ export default function OnlineBrowAcademyPage() {
             </p>
           </div>
 
-          {/* Tabs + Module list */}
-          <div className="flex gap-0 anim-fade-up" style={{ transitionDelay: '0.15s' }}>
+          {/* Tabs + Module list: tabs scroll horizontally above the list on mobile, sidebar from md */}
+          <div className="flex flex-col md:flex-row gap-0 anim-fade-up" style={{ transitionDelay: '0.15s' }}>
 
             {/* Sidebar tabs */}
-            <div className="relative flex flex-col pr-6 border-r border-[#d8d0c8] min-w-[160px] shrink-0">
-              {/* Sliding active indicator */}
+            <div className="relative flex md:flex-col overflow-x-auto md:overflow-visible -mx-8 px-5 md:mx-0 md:px-0 md:pr-6 mb-6 md:mb-0 border-b md:border-b-0 md:border-r border-[#d8d0c8] md:min-w-[160px] shrink-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {/* Sliding active indicator (sidebar only) */}
               <div
-                className="absolute left-0 w-0.5 bg-[#b07b5a] transition-[top,height] duration-300 ease-in-out"
+                className="hidden md:block absolute left-0 w-0.5 bg-[#b07b5a] transition-[top,height] duration-300 ease-in-out"
                 style={{ top: indicatorStyle.top, height: indicatorStyle.height }}
               />
               {curriculumParts.map((part, i) => (
@@ -864,7 +869,10 @@ export default function OnlineBrowAcademyPage() {
                   key={i}
                   ref={el => { tabRefs.current[i] = el }}
                   onClick={() => setActivePart(i)}
-                  className="text-left py-2.5 pl-3 transition-all duration-200 flex flex-col gap-0.5"
+                  className={[
+                    'text-left shrink-0 whitespace-nowrap md:whitespace-normal py-3 px-3 md:py-2.5 md:pr-0 border-b-2 md:border-b-0 transition-all duration-200 flex flex-col gap-0.5',
+                    activePart === i ? 'border-[#b07b5a]' : 'border-transparent',
+                  ].join(' ')}
                 >
                   <span className={[
                     'text-[0.9rem] transition-colors duration-200',
@@ -874,7 +882,7 @@ export default function OnlineBrowAcademyPage() {
                   </span>
                   {part.tabSub && (
                     <span className={[
-                      'text-[0.67rem] transition-colors duration-200',
+                      'hidden md:block text-[0.67rem] transition-colors duration-200',
                       activePart === i ? 'text-[#827064]' : 'text-[#c4b8b0]',
                     ].join(' ')}>
                       {part.tabSub}
@@ -885,7 +893,7 @@ export default function OnlineBrowAcademyPage() {
             </div>
 
             {/* Module content */}
-            <div className="flex-1 pl-8 min-w-0">
+            <div className="flex-1 md:pl-8 min-w-0">
               <p className="text-[0.65rem] uppercase tracking-[0.3em] text-[#827064] mb-1">
                 {curriculumParts[activePart].partLabel}
               </p>
