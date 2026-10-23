@@ -95,8 +95,8 @@ export default function Home() {
             <p className="m-0 text-[0.8rem] uppercase tracking-[0.28em] text-[color:var(--muted-foreground)]">
               GET TO KNOW ME
             </p>
-            <h2 className="about-heading m-0 text-2xl font-semibold leading-tight text-[color:var(--foreground)] sm:text-3xl md:text-[2.15rem]">
-              Meet Micah — The Face Behind <span className="whitespace-nowrap text-[#827064]">MJP Beauty</span>
+            <h2 className="about-heading about-heading--upright m-0 text-2xl font-semibold leading-tight text-[color:var(--foreground)] sm:text-3xl md:text-[2.15rem]">
+              Meet Micah — The Face Behind <span className="whitespace-nowrap tracking-[-0.03em] text-[#827064]"><span className="italic">mjp</span> beauty</span>
             </h2>
 
             <p className="m-0 max-w-xl text-[0.8rem] leading-[1.75] text-[color:var(--foreground)] sm:text-[0.92rem]">
@@ -144,8 +144,8 @@ export default function Home() {
           <p className="mb-3 text-[0.75rem] uppercase tracking-[0.28em] text-[color:var(--muted-foreground)]">
             COURSES AVAILABLE
           </p>
-          <h2 className="about-heading text-3xl font-semibold leading-tight text-[color:var(--foreground)] sm:text-4xl md:text-[2.8rem]">
-            Train the <span className="text-[#827064]">MJP Beauty Way</span>
+          <h2 className="about-heading about-heading--upright text-3xl font-semibold leading-tight text-[color:var(--foreground)] sm:text-4xl md:text-[2.8rem]">
+            Train the <span className="text-[#827064]"><span className="whitespace-nowrap tracking-[-0.03em]"><span className="italic">mjp</span> beauty</span></span> Way
           </h2>
         </div>
 

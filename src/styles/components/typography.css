@@ -1,19 +1,25 @@
 /* ─── Serif Headings ─────────────────────────────────────────────── */
 
 .about-heading {
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: 'Noto Serif Display', Georgia, serif;
+  font-stretch: 62.5%; /* ExtraCondensed */
   font-style: italic;
 }
 
+.about-heading--upright {
+  font-style: normal;
+}
+
 .about-subheading {
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: 'Noto Serif Display', Georgia, serif;
+  font-stretch: 62.5%; /* ExtraCondensed */
   font-style: normal;
 }
 
 /* ─── Script Accent ──────────────────────────────────────────────── */
 
 .script-accent {
-  font-family: 'Luxurious Script', 'Playfair Display', cursive;
+  font-family: 'Luxurious Script', 'Noto Serif Display', cursive;
   font-style: normal;
   font-size: 1.3em;
   line-height: 0.85;
