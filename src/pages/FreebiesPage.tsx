@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
 import { Download, X } from 'lucide-react'
-const freebie01 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_500/v1783028294/freebie-01_kevhzi.png'
-const freebie02 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_500/v1783028295/freebie-02_ehtixa.png'
-const freebie03 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_500/v1783028295/freebie-03_kgj6h2.png'
-const freebie04 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_500/v1783028295/freebie-04_zowfvz.png'
-const freebie05 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_500/v1783028296/freebie-05_xqncqj.png'
-const freebieCard = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_500/v1783028296/freebie-card_cmpmgd.jpg'
+import { cld, toSrcSet } from '@/lib/cloudinary'
+const freebieImg = (id: string) => cld(id, ',c_limit', 'best')
+const FREEBIE_WIDTHS = [300, 500, 700, 940]
+const freebie01 = freebieImg('v1783028294/freebie-01_kevhzi.png')
+const freebie02 = freebieImg('v1783028295/freebie-02_ehtixa.png')
+const freebie03 = freebieImg('v1783028295/freebie-03_kgj6h2.png')
+const freebie04 = freebieImg('v1783028295/freebie-04_zowfvz.png')
+const freebie05 = freebieImg('v1792788400/freebie-05_jdspdg.png')
+const freebieCard = cld('v1783028296/freebie-card_cmpmgd.jpg')
 import { useScrollAnimation } from '../hooks/useScrollAnimation'
 
 const NEWSLETTER_URL = 'https://mjpbeauty.myflodesk.com/insider-subscribers'
@@ -16,6 +19,7 @@ interface Freebie {
   id: string
   type: string
   image: string
+  srcSet: string
   title: string
   description: string
   url: string
@@ -25,7 +29,8 @@ const FREEBIES: Freebie[] = [
   {
     id: 'brow-artistry-essentials',
     type: 'PDF Guide',
-    image: freebie01,
+    image: freebie01(500),
+    srcSet: toSrcSet(freebie01, FREEBIE_WIDTHS),
     title: 'Brow Artistry Essentials',
     description:
       "A guide of my go-to brow products — the exact tools I use daily as a pro. This is the guide I wish I had when I started — it'll save you time, money, and a lot of trial and error.",
@@ -34,7 +39,8 @@ const FREEBIES: Freebie[] = [
   {
     id: 'waxing-contraindications',
     type: 'Reference Guide',
-    image: freebie02,
+    image: freebie02(500),
+    srcSet: toSrcSet(freebie02, FREEBIE_WIDTHS),
     title: 'Deep Diving into Waxing Contraindications',
     description:
       "A clear, easy-to-understand guide that breaks down who you should and shouldn't wax — and more importantly, why.",
@@ -43,7 +49,8 @@ const FREEBIES: Freebie[] = [
   {
     id: 'consent-form',
     type: 'Editable Template',
-    image: freebie03,
+    image: freebie03(500),
+    srcSet: toSrcSet(freebie03, FREEBIE_WIDTHS),
     title: 'Customizable Brow Lamination Consent Form',
     description:
       'An editable client consent form designed to protect your business and elevate your professionalism. Includes all the key questions and disclaimers you need.',
@@ -52,7 +59,8 @@ const FREEBIES: Freebie[] = [
   {
     id: 'brow-concealing-demo',
     type: 'Free Tutorial',
-    image: freebie04,
+    image: freebie04(500),
+    srcSet: toSrcSet(freebie04, FREEBIE_WIDTHS),
     title: 'Brow Concealing Demo',
     description:
       "Watch a free, mini tutorial on how I conceal my client's brows! This is a game-changing step that helps to top off the brows and give your clients stunning, carved, eye-catching brows!",
@@ -61,7 +69,8 @@ const FREEBIES: Freebie[] = [
   {
     id: 'brow-business-starter-guide',
     type: 'PDF Guide',
-    image: freebie05,
+    image: freebie05(500),
+    srcSet: toSrcSet(freebie05, FREEBIE_WIDTHS),
     title: 'Brow Business Starter Guide',
     description: 'Micah breaks down exactly how to start and grow your brow business — without the fears, mistakes, and confusion most beginners face.',
     url: 'https://mjpbeauty.myflodesk.com/browbusinesstarterguide',
@@ -119,7 +128,9 @@ function NewsletterPopup({ onClose }: { onClose: () => void }) {
         {/* Left — image */}
         <div className="sm:w-[42%] shrink-0 h-40 sm:h-auto sm:aspect-auto overflow-hidden">
           <img
-            src={freebieCard}
+            src={freebieCard(700)}
+            srcSet={toSrcSet(freebieCard, [400, 700, 1000, 1400])}
+            sizes="(min-width: 640px) 320px, 100vw"
             alt="Freebies"
             className="w-full h-full object-cover"
             loading="lazy"
@@ -154,7 +165,7 @@ function NewsletterPopup({ onClose }: { onClose: () => void }) {
 // ─── Freebie card ─────────────────────────────────────────────────────────────
 
 function FreebieCard({ freebie, index }: { freebie: Freebie; index: number }) {
-  const { image, type, title, description, url } = freebie
+  const { image, srcSet, type, title, description, url } = freebie
 
   return (
     <div
@@ -162,7 +173,15 @@ function FreebieCard({ freebie, index }: { freebie: Freebie; index: number }) {
       style={{ transitionDelay: `${index * 0.1}s` }}
     >
       <div className="w-full aspect-[940/788] overflow-hidden">
-        <img src={image} alt={title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+        <img
+          src={image}
+          srcSet={srcSet}
+          sizes="(min-width: 1280px) 240px, (min-width: 768px) 33vw, 50vw"
+          alt={title}
+          className="w-full h-full object-cover"
+          loading="lazy"
+          decoding="async"
+        />
       </div>
 
       <div className="p-5 flex flex-col flex-1">
