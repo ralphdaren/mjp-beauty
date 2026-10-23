@@ -1,8 +1,14 @@
 import { useEffect } from 'react'
 const headVid = 'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1781343345/home-head-vid_jlpxxp.mp4'
-const aboutImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_900/v1783028047/about-me_vztzrm.jpg'
-const inPersonCourseImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028044/in-person_jkrk1f.jpg'
-const onlineCourseImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028040/online_os6yyd.jpg'
+const aboutImg = (w: number) =>
+  `https://res.cloudinary.com/dr9nm40gf/image/upload/f_auto,q_auto:good,w_${w}/v1792780992/about-me_asob5e.jpg`
+const aboutImgSrcSet = [450, 700, 900, 1350, 1800].map((w) => `${aboutImg(w)} ${w}w`).join(', ')
+const courseImg = (id: string) => (w: number) =>
+  `https://res.cloudinary.com/dr9nm40gf/image/upload/f_auto,q_auto:good,w_${w}/${id}`
+const courseSrcSet = (img: (w: number) => string) =>
+  [600, 900, 1200, 1600, 2000].map((w) => `${img(w)} ${w}w`).join(', ')
+const inPersonCourseImg = courseImg('v1792781734/in-person_rqa2rz.jpg')
+const onlineCourseImg = courseImg('v1792781733/online_uiaeq7.jpg')
 import { Link, useLocation } from 'react-router-dom'
 import { CircleCheck } from 'lucide-react'
 import { useScrollAnimation } from '@/hooks/useScrollAnimation'
@@ -74,7 +80,9 @@ export default function Home() {
             <div className="about-arch-photo">
               <img
                 className="w-full h-full object-cover object-center"
-                src={aboutImg}
+                src={aboutImg(900)}
+                srcSet={aboutImgSrcSet}
+                sizes="(min-width: 1024px) 451px, 304px"
                 alt="Micah portrait"
                 loading="lazy"
                 decoding="async"
@@ -161,13 +169,15 @@ export default function Home() {
               <div className="relative mb-6 overflow-hidden rounded-2xl">
                 <img
                   className="h-72 w-full object-cover transition duration-300 group-hover:scale-105"
-                  src={inPersonCourseImg}
+                  src={inPersonCourseImg(900)}
+                  srcSet={courseSrcSet(inPersonCourseImg)}
+                  sizes="(min-width: 1024px) 544px, 100vw"
                   alt="In person brow training"
                   loading="lazy"
                   decoding="async"
                 />
                 <div className="absolute bottom-4 left-4 rounded-full bg-white/95 px-4 py-2 text-[0.65rem] uppercase tracking-[0.22em] text-[color:var(--muted-foreground)] shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
-                  Now Enrolling · August - December 2026
+                  Now Open · Year 2027 Brow Training
                 </div>
               </div>
               <p className="mb-5 text-sm leading-7 text-[color:var(--foreground)]">
@@ -210,7 +220,9 @@ export default function Home() {
               <div className="relative mb-6 overflow-hidden rounded-2xl">
                 <img
                   className="h-72 w-full object-cover transition duration-300 group-hover:scale-105"
-                  src={onlineCourseImg}
+                  src={onlineCourseImg(900)}
+                  srcSet={courseSrcSet(onlineCourseImg)}
+                  sizes="(min-width: 1024px) 544px, 100vw"
                   alt="Online brow training"
                   loading="lazy"
                   decoding="async"
