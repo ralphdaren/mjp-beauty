@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useScrollAnimation } from '@/hooks/useScrollAnimation'
 import ComingSoonModal from '@/components/ComingSoonModal'
+import { cld, toSrcSet } from '@/lib/cloudinary'
 
-const bizHeroImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_1600/v1784488781/biz-hero_one8ko.jpg'
-const aboutMeImg = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_900/v1784488922/biz-about-me_lsza9g.jpg'
+const bizHeroImg = cld('v1784488781/biz-hero_one8ko.jpg')
+const aboutMeImg = cld('v1784488922/biz-about-me_lsza9g.jpg')
 
 // TODO: swap `src` for the client's Cloudinary screenshot URLs once provided.
 const resultScreenshots: { src: string | null; alt: string }[] = [
@@ -171,8 +172,11 @@ export default function BizMentorshipPage() {
 
           {/* Right — full-bleed image */}
           <div className="order-1 lg:order-2 relative h-[45vh] min-h-[320px] sm:h-[55vh] lg:h-auto">
+            {/* object-cover on a 2:3 portrait: half the screen wide, or wider when the window is tall */}
             <img
-              src={bizHeroImg}
+              src={bizHeroImg(1200)}
+              srcSet={toSrcSet(bizHeroImg, [800, 1200, 1600, 2000])}
+              sizes="(min-width: 1024px) max(50vw, 67vh), 100vw"
               alt="BIZ Mentorship with Micah"
               className="absolute inset-0 h-full w-full object-cover"
             />
@@ -189,7 +193,9 @@ export default function BizMentorshipPage() {
           <div className="lg:sticky lg:top-20 lg:h-[calc(100vh-5rem)] lg:flex lg:items-center">
             <div className="anim-fade-left w-full overflow-hidden rounded-2xl shadow-[0_12px_40px_rgba(130,112,100,0.15)]">
               <img
-                src={aboutMeImg}
+                src={aboutMeImg(900)}
+                srcSet={toSrcSet(aboutMeImg, [500, 800, 1100, 1500])}
+                sizes="(min-width: 1024px) 520px, 100vw"
                 alt="Micah — MJP Beauty"
                 className="w-full h-[420px] sm:h-[520px] lg:h-[600px] object-cover"
               />
