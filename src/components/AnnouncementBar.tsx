@@ -1,13 +1,11 @@
-import { CalendarCheck, GraduationCap, Heart, MapPin, Sparkles, type LucideIcon } from 'lucide-react'
-import { MFM_EVENT } from '../data/madeForMore'
+import { CalendarCheck, GraduationCap, type LucideIcon } from 'lucide-react'
 
 const MESSAGES: { icon: LucideIcon; text: string }[] = [
-  { icon: Sparkles, text: `${MFM_EVENT.title} — ${MFM_EVENT.eyebrow.toLowerCase()} · ${MFM_EVENT.city}, ${MFM_EVENT.date}` },
-  { icon: MapPin, text: 'Brows & lashes — 186 Provencher Blvd, St. Boniface' },
-  { icon: CalendarCheck, text: 'Book online anytime — appointments open 24/7' },
-  { icon: GraduationCap, text: 'Train with us — in-person & online brow education for artists' },
-  { icon: Heart, text: 'Free brow guides & resources — no strings attached' },
+  { icon: GraduationCap, text: 'Brow training for 2027 is now open' },
+  { icon: CalendarCheck, text: 'Now booking appointments for November' },
 ]
+
+const REPEATS_PER_HALF = 3
 
 function Message({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
   return (
@@ -28,9 +26,9 @@ export default function AnnouncementBar() {
       <div className="announcement-track flex w-max" aria-hidden="true">
         {Array.from({ length: 2 }).map((_, half) => (
           <div key={half} className="flex shrink-0">
-            {MESSAGES.map((m, i) => (
-              <Message key={i} icon={m.icon} text={m.text} />
-            ))}
+            {Array.from({ length: REPEATS_PER_HALF }).flatMap((_, r) =>
+              MESSAGES.map((m, i) => <Message key={`${r}-${i}`} icon={m.icon} text={m.text} />),
+            )}
           </div>
         ))}
       </div>

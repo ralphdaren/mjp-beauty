@@ -39,7 +39,7 @@
 /* ─── Announcement Bar Marquee ──────────────────────────────────── */
 
 .announcement-track {
-  animation: announcement-scroll 34s linear infinite;
+  animation: announcement-scroll 40s linear infinite;
   will-change: transform;
 }
 
