@@ -14,6 +14,7 @@ export interface TrainingDateGroup {
 
 export interface TrainingOptionCard extends TrainingOption {
   img: string
+  srcSet: string
   alt: string
   label: string
   shadowClass: string
@@ -22,6 +23,7 @@ export interface TrainingOptionCard extends TrainingOption {
 
 export interface TrainingFormatItem {
   img: string
+  srcSet: string
   alt: string
   step: string
   title: string

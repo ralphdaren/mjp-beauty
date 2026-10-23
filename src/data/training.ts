@@ -2,16 +2,32 @@ import type { FlipPerk, PerkKey, TrainingFormatItem, TrainingOptionCard } from '
 
 // ─── Imagery ──────────────────────────────────────────────────────────────────
 
-export const IP_HEAD_IMG    = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_1600/v1783028022/ip-head_djhc92.jpg'
-export const BROW_GUIDE_IMG = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_500/v1783028296/freebie-05_xqncqj.png'
-export const PERK_01_IMG    = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_600/v1783027997/perk-01_g3rwy8.jpg'
-export const PERK_02_IMG    = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028018/perk-02_qmp0qf.jpg'
+const cld = (id: string, extra = '', quality = 'good') => (w: number) =>
+  `https://res.cloudinary.com/dr9nm40gf/image/upload/f_auto,q_auto:${quality}${extra},w_${w}/${id}`
+const toSrcSet = (img: (w: number) => string, widths: number[]) =>
+  widths.map((w) => `${img(w)} ${w}w`).join(', ')
+const browGuideImg = cld('v1792788400/freebie-05_jdspdg.png', ',c_limit', 'best')
+export const BROW_GUIDE_IMG        = browGuideImg(500)
+export const BROW_GUIDE_IMG_SRCSET = toSrcSet(browGuideImg, [500, 760, 940])
+const ipHeadImg         = cld('v1783028022/ip-head_djhc92.jpg')
+const ipHeadPortraitImg = cld('v1783028022/ip-head_djhc92.jpg', ',c_fill,g_auto,ar_9:16')
+export const IP_HEAD_IMG                 = ipHeadImg(1600)
+export const IP_HEAD_IMG_SRCSET          = toSrcSet(ipHeadImg, [1200, 1600, 2000, 2800, 3600])
+export const IP_HEAD_PORTRAIT_IMG_SRCSET = toSrcSet(ipHeadPortraitImg, [600, 900, 1200, 1500])
+const perk01Img = cld('v1783027997/perk-01_g3rwy8.jpg', ',c_limit')
+export const PERK_01_IMG        = perk01Img(600)
+export const PERK_01_IMG_SRCSET = toSrcSet(perk01Img, [600, 800, 1024])
+const perk02Img = cld('v1783028018/perk-02_qmp0qf.jpg')
+export const PERK_02_IMG        = perk02Img(700)
+export const PERK_02_IMG_SRCSET = toSrcSet(perk02Img, [700, 1000, 1400, 2000])
 
-const formatImg01 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_800/v1783028008/format-img-01_oxprvi.jpg'
-const formatImg02 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_800/v1783028001/format-img-02_rb0b1z.jpg'
-const formatImg03 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_800/v1783028011/format-img-03_wixz0f.jpg'
-const optImg01    = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_600/v1783028004/opt-img-01_yy8i3c.jpg'
-const optImg02    = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_600/v1783028014/opt-img-02_pyljws.jpg'
+const formatImg01 = cld('v1783028008/format-img-01_oxprvi.jpg')
+const formatImg02 = cld('v1783028001/format-img-02_rb0b1z.jpg')
+const formatImg03 = cld('v1783028011/format-img-03_wixz0f.jpg')
+const FORMAT_WIDTHS = [600, 900, 1200, 1600, 2000]
+const optImg01    = cld('v1783028004/opt-img-01_yy8i3c.jpg')
+const optImg02    = cld('v1783028014/opt-img-02_pyljws.jpg')
+const OPT_WIDTHS = [500, 800, 1200, 1600]
 
 // ─── "This is for you if ..." carousel ────────────────────────────────────────
 
@@ -25,7 +41,8 @@ export const IDEAL_FOR_ITEMS = [
 
 export const FORMAT_ITEMS: TrainingFormatItem[] = [
   {
-    img: formatImg01,
+    img: formatImg01(800),
+    srcSet: toSrcSet(formatImg01, FORMAT_WIDTHS),
     alt: 'Complete the Online Training',
     step: '01',
     title: 'Complete the Online Training',
@@ -35,7 +52,8 @@ export const FORMAT_ITEMS: TrainingFormatItem[] = [
     ],
   },
   {
-    img: formatImg02,
+    img: formatImg02(800),
+    srcSet: toSrcSet(formatImg02, FORMAT_WIDTHS),
     alt: 'Attend your In-Person Training Day',
     step: '02',
     title: 'Attend your In-Person Training Day',
@@ -45,7 +63,8 @@ export const FORMAT_ITEMS: TrainingFormatItem[] = [
     ],
   },
   {
-    img: formatImg03,
+    img: formatImg03(800),
+    srcSet: toSrcSet(formatImg03, FORMAT_WIDTHS),
     alt: 'Post-Training Support',
     step: '03',
     title: 'Post-Training Support',
@@ -61,7 +80,8 @@ export const FORMAT_ITEMS: TrainingFormatItem[] = [
 export const OPTION_CARDS: TrainingOptionCard[] = [
   {
     id: 'group',
-    img: optImg02,
+    img: optImg02(600),
+    srcSet: toSrcSet(optImg02, OPT_WIDTHS),
     alt: 'Small Group Training',
     label: 'Option 01',
     title: 'Small Group',
@@ -72,7 +92,8 @@ export const OPTION_CARDS: TrainingOptionCard[] = [
   },
   {
     id: 'private',
-    img: optImg01,
+    img: optImg01(600),
+    srcSet: toSrcSet(optImg01, OPT_WIDTHS),
     alt: 'Private 1-on-1 Training',
     label: 'Option 02',
     title: 'Private 1-on-1',

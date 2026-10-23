@@ -1,4 +1,4 @@
-import { KIT_ITEMS, PERK_01_IMG } from '@/data/training'
+import { KIT_ITEMS, PERK_01_IMG, PERK_01_IMG_SRCSET } from '@/data/training'
 
 type StudentKitCardProps = {
   open: boolean
@@ -35,6 +35,8 @@ export default function StudentKitCard({
           <div className="relative flex-1 min-h-0 overflow-hidden">
             <img
               src={PERK_01_IMG}
+              srcSet={PERK_01_IMG_SRCSET}
+              sizes="(min-width: 768px) 320px, (min-width: 640px) 50vw, 100vw"
               alt="Premium Student Kit"
               className="absolute inset-0 w-full h-full object-cover"
               loading="lazy"

@@ -16,7 +16,7 @@ export default function SectionHeading({ eyebrow, title, caption, className = ''
       </h2>
       <div className="mt-8 flex items-center gap-4 max-w-xl mx-auto">
         <div className="flex-1 h-px bg-[#d6cec8]" />
-        <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[#a0948a] whitespace-nowrap">
+        <p className="min-w-0 text-[0.72rem] uppercase tracking-[0.22em] leading-relaxed text-[#a0948a] text-balance sm:whitespace-nowrap">
           {caption}
         </p>
         <div className="flex-1 h-px bg-[#d6cec8]" />

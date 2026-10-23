@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { X } from 'lucide-react'
-import { BROW_GUIDE_IMG } from '@/data/training'
+import { BROW_GUIDE_IMG, BROW_GUIDE_IMG_SRCSET } from '@/data/training'
 
 export default function BrowGuidePopup({ onClose }: { onClose: () => void }) {
   const [visible, setVisible] = useState(false)
@@ -54,6 +54,8 @@ export default function BrowGuidePopup({ onClose }: { onClose: () => void }) {
         <div className="sm:w-1/2 shrink-0 h-40 sm:h-auto sm:aspect-[940/788] overflow-hidden">
           <img
             src={BROW_GUIDE_IMG}
+            srcSet={BROW_GUIDE_IMG_SRCSET}
+            sizes="(min-width: 640px) 380px, 100vw"
             alt="Brow Business Starter Guide"
             className="w-full h-full object-cover"
             loading="lazy"

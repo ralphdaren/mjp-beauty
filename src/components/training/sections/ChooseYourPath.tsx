@@ -134,7 +134,7 @@ export default function ChooseYourPath({
               className={`rounded-2xl border border-[#e3e2de] bg-white ${card.shadowClass} overflow-hidden flex flex-col`}
             >
               <div className="relative h-64 flex-shrink-0 overflow-hidden">
-                <img src={card.img} alt={card.alt} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
+                <img src={card.img} srcSet={card.srcSet} sizes="(min-width: 640px) 500px, 100vw" alt={card.alt} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
               </div>
               <OptionCardBody
                 card={card}
@@ -192,7 +192,7 @@ export default function ChooseYourPath({
                       aria-hidden={!isActive}
                     >
                       <div className="relative w-[38%] flex-shrink-0 overflow-hidden">
-                        <img src={card.img} alt={card.alt} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
+                        <img src={card.img} srcSet={card.srcSet} sizes="(min-width: 640px) 500px, 100vw" alt={card.alt} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
                       </div>
                       <OptionCardBody
                         card={card}
@@ -216,7 +216,7 @@ export default function ChooseYourPath({
                       aria-label={`Switch to ${card.title}`}
                       tabIndex={isActive ? -1 : 0}
                     >
-                      <img src={card.img} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
+                      <img src={card.img} srcSet={card.srcSet} sizes="(min-width: 640px) 500px, 100vw" alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
                       <div className="absolute inset-0 bg-[#2a1a0e]/55 group-hover:bg-[#2a1a0e]/40 transition-colors duration-300" />
                       <div className="absolute inset-x-0 bottom-0 p-5">
                         <p className="text-[0.6rem] uppercase tracking-[0.22em] text-white/50 mb-1.5">{card.label}</p>

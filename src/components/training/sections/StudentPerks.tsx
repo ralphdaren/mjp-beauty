@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import PerkFlipCard from '../PerkFlipCard'
 import StudentKitCard from '../StudentKitCard'
-import { FLIP_PERKS, PERK_02_IMG } from '@/data/training'
+import { FLIP_PERKS, PERK_02_IMG, PERK_02_IMG_SRCSET } from '@/data/training'
 import type { PerkKey } from '@/types/training'
 
 /** No.6 — the featured mentorship tile. */
@@ -74,6 +74,8 @@ function GroupPhoto({ className }: { className: string }) {
     <div className={`rounded-2xl overflow-hidden relative ${className}`}>
       <img
         src={PERK_02_IMG}
+        srcSet={PERK_02_IMG_SRCSET}
+        sizes="(min-width: 1264px) 695px, (min-width: 768px) 58vw, 100vw"
         alt="MJP Beauty in-person students"
         className="absolute inset-0 w-full h-full object-cover"
         loading="lazy"

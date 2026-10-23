@@ -24,6 +24,8 @@ export default function HowItWorks() {
             <div className="relative h-64 overflow-hidden">
               <img
                 src={item.img}
+                srcSet={item.srcSet}
+                sizes="(min-width: 768px) 65vw, 100vw"
                 alt={item.alt}
                 className="absolute inset-0 w-full h-full object-cover"
                 loading="lazy"
@@ -72,6 +74,8 @@ export default function HowItWorks() {
             >
               <img
                 src={item.img}
+                srcSet={item.srcSet}
+                sizes="(min-width: 768px) 65vw, 100vw"
                 alt={item.alt}
                 className="absolute inset-0 w-full h-full object-cover"
                 loading="lazy"
