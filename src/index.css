@@ -9,7 +9,6 @@
 @import "./styles/components/typography.css";
 @import "./styles/components/testimonials.css";
 @import "./styles/components/back-to-top.css";
-@import "./styles/components/made-for-more.css";
 
 @custom-variant dark (&:is(.dark *));
 

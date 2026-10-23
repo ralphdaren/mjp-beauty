@@ -2,6 +2,11 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "redirects": [
+    { "source": "/made-for-more-calgary/:path*", "destination": "/", "permanent": false },
+    { "source": "/made-for-more-calgary", "destination": "/", "permanent": false },
+    { "source": "/made-for-more", "destination": "/", "permanent": false }
+  ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/((?!api/|@|src/|node_modules/|.*\\.).*)", "destination": "/index.html" }

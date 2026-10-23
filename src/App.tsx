@@ -11,16 +11,13 @@ import PrivacyPolicyPage from '@/pages/PrivacyPolicyPage'
 import TermsOfUsePage from '@/pages/TermsOfUsePage'
 import AdminPage from '@/pages/AdminPage'
 import ManageBookingPage from '@/pages/ManageBookingPage'
-import MadeForMorePage from '@/pages/MadeForMorePage'
-import MadeForMoreTicketsPage from '@/pages/MadeForMoreTicketsPage'
-import MadeForMoreWaitlistPage from '@/pages/MadeForMoreWaitlistPage'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import ScrollToTop from '@/components/ScrollToTop'
 
 function AppContent() {
   const { pathname } = useLocation()
-  const isBareLayout = pathname === '/admin' || pathname.startsWith('/made-for-more-calgary')
+  const isBareLayout = pathname === '/admin'
 
   return (
     <>
@@ -35,10 +32,8 @@ function AppContent() {
         <Route path="/online-modules/:handle" element={<ProductDetailPage />} />
         <Route path="/freebies" element={<FreebiesPage />} />
         <Route path="/biz-mentorship" element={<BizMentorshipPage />} />
-        <Route path="/made-for-more-calgary" element={<MadeForMorePage />} />
-        <Route path="/made-for-more-calgary/tickets" element={<MadeForMoreTicketsPage />} />
-        <Route path="/made-for-more-calgary/waitlist" element={<MadeForMoreWaitlistPage />} />
-        <Route path="/made-for-more" element={<Navigate to="/made-for-more-calgary" replace />} />
+        <Route path="/made-for-more-calgary/*" element={<Navigate to="/" replace />} />
+        <Route path="/made-for-more" element={<Navigate to="/" replace />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsOfUsePage />} />
         <Route path="/admin" element={<AdminPage />} />
