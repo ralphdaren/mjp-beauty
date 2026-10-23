@@ -12,9 +12,6 @@ import InstagramReels from '../components/InstagramReels'
 import StudioLocation from '../components/booking/StudioLocation'
 import BookingDrawer from '../components/booking/BookingDrawer'
 import BookingPausedModal from '../components/booking/BookingPausedModal'
-
-// Online booking is paused while the page is reworked; appointments go through Instagram DMs.
-// Flip to false to restore the booking drawer.
 const BOOKING_PAUSED = false
 
 const REELS = [

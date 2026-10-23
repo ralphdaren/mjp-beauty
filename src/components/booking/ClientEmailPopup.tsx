@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
+import { cld, toSrcSet } from '@/lib/cloudinary'
 
 const CLIENT_LIST_URL = 'https://mjpbeauty.myflodesk.com/clientupdates'
-const CLD = 'https://res.cloudinary.com/dr9nm40gf/image/upload'
 const CARD_ID = 'v1785125705/booking-card-master_buat8e.jpg'
-const cardDesktop = `${CLD}/q_auto/f_auto/c_fill,g_auto,w_600,h_880/${CARD_ID}`
-const cardMobile = `${CLD}/q_auto/f_auto/c_fill,g_auto,w_1000,h_320/${CARD_ID}`
+const cardDesktop = cld(CARD_ID, ',c_fill,g_auto,ar_15:22')
+const cardMobile = cld(CARD_ID, ',c_fill,g_auto,ar_25:8')
 
 export default function ClientEmailPopup({ onClose }: { onClose: () => void }) {
   const [visible, setVisible] = useState(false)
@@ -56,9 +56,11 @@ export default function ClientEmailPopup({ onClose }: { onClose: () => void }) {
         {/* Left — image */}
         <div className="sm:w-[42%] shrink-0 h-40 sm:h-auto overflow-hidden">
           <picture>
-            <source media="(min-width: 640px)" srcSet={cardDesktop} />
+            <source media="(min-width: 640px)" srcSet={toSrcSet(cardDesktop, [300, 600, 900])} sizes="286px" />
             <img
-              src={cardMobile}
+              src={cardMobile(1000)}
+              srcSet={toSrcSet(cardMobile, [600, 1000, 1333])}
+              sizes="100vw"
               alt="MJP Beauty studio"
               className="w-full h-full object-cover"
               loading="lazy"
