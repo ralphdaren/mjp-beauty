@@ -1,13 +1,18 @@
+import { cld, toSrcSet } from '@/lib/cloudinary'
 import type { Service } from '../types/booking'
 
-const browLamImg1 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028342/brow-lm-img-01_pnidos.jpg'
-const browLamImg2 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028342/brow-lm-img-02_rmqbae.jpg'
-const browStImg1  = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028351/brow-st-img-01_v5ms1d.jpg'
-const browStImg2  = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028351/brow-st-img-02_knrsde.jpg'
-const browWtImg1  = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028361/brow-wt-img-01_pijrj8.jpg'
-const browWtImg2  = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028360/brow-wt-img-02_i0fu0d.jpg'
-const keratinImg1 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028371/keratin-lt-img-01_bwcm5l.jpg'
-const keratinImg2 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_700/v1783028372/keratin-lt-img-02_hoxajf.jpg'
+const serviceImg = (id: string) => {
+  const img = cld(id, ',c_limit')
+  return { src: img(700), srcSet: toSrcSet(img, [400, 700, 1000, 1400]) }
+}
+const browLamImg1 = serviceImg('v1783028342/brow-lm-img-01_pnidos.jpg')
+const browLamImg2 = serviceImg('v1783028342/brow-lm-img-02_rmqbae.jpg')
+const browStImg1  = serviceImg('v1783028351/brow-st-img-01_v5ms1d.jpg')
+const browStImg2  = serviceImg('v1783028351/brow-st-img-02_knrsde.jpg')
+const browWtImg1  = serviceImg('v1783028361/brow-wt-img-01_pijrj8.jpg')
+const browWtImg2  = serviceImg('v1783028360/brow-wt-img-02_i0fu0d.jpg')
+const keratinImg1 = serviceImg('v1783028371/keratin-lt-img-01_bwcm5l.jpg')
+const keratinImg2 = serviceImg('v1783028372/keratin-lt-img-02_hoxajf.jpg')
 
 const browLamVid = 'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1781343234/brow-lm-vid-01_isylz1.mp4'
 const browWtVid  = 'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1781343535/brow-wt-vid-01_jladew.mp4'

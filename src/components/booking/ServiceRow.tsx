@@ -30,7 +30,15 @@ export default function ServiceRow({ service, index, onVideoOpen, onBook }: Serv
           >
             {service.images.map((img, i) => (
               <div key={i} className="w-full h-full shrink-0">
-                <img src={img} alt={`${service.name} ${i + 1}`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                <img
+                  src={img.src}
+                  srcSet={img.srcSet}
+                  sizes="(min-width: 1024px) 240px, (min-width: 768px) 208px, 100vw"
+                  alt={`${service.name} ${i + 1}`}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
               </div>
             ))}
           </div>

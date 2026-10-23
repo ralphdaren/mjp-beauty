@@ -28,7 +28,7 @@ export interface Service {
   description: string
   duration: string
   tiers: PriceTier[]
-  images: string[]
+  images: { src: string; srcSet: string }[]
   video: string | null
 }
 

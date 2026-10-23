@@ -1,14 +1,11 @@
 import { useEffect } from 'react'
+import { cld, toSrcSet } from '@/lib/cloudinary'
 const headVid = 'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1781343345/home-head-vid_jlpxxp.mp4'
-const aboutImg = (w: number) =>
-  `https://res.cloudinary.com/dr9nm40gf/image/upload/f_auto,q_auto:good,w_${w}/v1792780992/about-me_asob5e.jpg`
-const aboutImgSrcSet = [450, 700, 900, 1350, 1800].map((w) => `${aboutImg(w)} ${w}w`).join(', ')
-const courseImg = (id: string) => (w: number) =>
-  `https://res.cloudinary.com/dr9nm40gf/image/upload/f_auto,q_auto:good,w_${w}/${id}`
-const courseSrcSet = (img: (w: number) => string) =>
-  [600, 900, 1200, 1600, 2000].map((w) => `${img(w)} ${w}w`).join(', ')
-const inPersonCourseImg = courseImg('v1792781734/in-person_rqa2rz.jpg')
-const onlineCourseImg = courseImg('v1792781733/online_uiaeq7.jpg')
+const aboutImg = cld('v1792780992/about-me_asob5e.jpg')
+const aboutImgSrcSet = toSrcSet(aboutImg, [450, 700, 900, 1350, 1800])
+const COURSE_WIDTHS = [600, 900, 1200, 1600, 2000]
+const inPersonCourseImg = cld('v1792781734/in-person_rqa2rz.jpg')
+const onlineCourseImg = cld('v1792781733/online_uiaeq7.jpg')
 import { Link, useLocation } from 'react-router-dom'
 import { CircleCheck } from 'lucide-react'
 import { useScrollAnimation } from '@/hooks/useScrollAnimation'
@@ -170,7 +167,7 @@ export default function Home() {
                 <img
                   className="h-72 w-full object-cover transition duration-300 group-hover:scale-105"
                   src={inPersonCourseImg(900)}
-                  srcSet={courseSrcSet(inPersonCourseImg)}
+                  srcSet={toSrcSet(inPersonCourseImg, COURSE_WIDTHS)}
                   sizes="(min-width: 1024px) 544px, 100vw"
                   alt="In person brow training"
                   loading="lazy"
@@ -221,7 +218,7 @@ export default function Home() {
                 <img
                   className="h-72 w-full object-cover transition duration-300 group-hover:scale-105"
                   src={onlineCourseImg(900)}
-                  srcSet={courseSrcSet(onlineCourseImg)}
+                  srcSet={toSrcSet(onlineCourseImg, COURSE_WIDTHS)}
                   sizes="(min-width: 1024px) 544px, 100vw"
                   alt="Online brow training"
                   loading="lazy"
