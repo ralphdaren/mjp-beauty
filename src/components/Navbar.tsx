@@ -5,7 +5,9 @@ import logoBrown from '@/assets/brand-kit/logo-brown.png'
 import AnnouncementBar from '@/components/AnnouncementBar'
 import SearchOverlay from '@/components/SearchOverlay'
 
-const optImg01 = 'https://res.cloudinary.com/dr9nm40gf/image/upload/q_auto/f_auto/w_500/v1783027940/opt-img-01_ufhoau.jpg'
+const optImg01 = (w: number) =>
+  `https://res.cloudinary.com/dr9nm40gf/image/upload/f_auto,q_auto:good,c_limit,w_${w}/v1783027940/opt-img-01_ufhoau.jpg`
+const optImg01SrcSet = [300, 500, 750, 1000].map((w) => `${optImg01(w)} ${w}w`).join(', ')
 import { getCollectionProducts } from '@/lib/shopify'
 import type { ShopifyProduct } from '@/lib/shopify'
 
@@ -18,7 +20,8 @@ const regularLinks = [
 ]
 
 const featuredCourse = {
-  img: optImg01,
+  img: optImg01(500),
+  srcSet: optImg01SrcSet,
   imgLabel: 'All-inclusive Course',
   title: 'All-In-One Online Course',
   description: 'Everything you need to launch on your own — from technique to business.',
@@ -357,6 +360,8 @@ export default function Navbar() {
                   <div className="relative overflow-hidden flex-[0_0_58%] min-h-0">
                     <img
                       src={featuredCourse.img}
+                      srcSet={featuredCourse.srcSet}
+                      sizes="(min-width: 1280px) 480px, 38vw"
                       alt={featuredCourse.title}
                       className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
                       loading="lazy"
@@ -557,6 +562,8 @@ export default function Navbar() {
                   <div className="relative w-24 shrink-0 overflow-hidden">
                     <img
                       src={featuredCourse.img}
+                      srcSet={featuredCourse.srcSet}
+                      sizes="96px"
                       alt={featuredCourse.title}
                       className="absolute inset-0 w-full h-full object-cover"
                       loading="lazy"
