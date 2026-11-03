@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { LogOut, CalendarCheck, GraduationCap, Users, Ticket, X, ChevronRight, type LucideIcon } from 'lucide-react'
-import { CATEGORY_LABEL, type AdminCategory, type TrainingView } from './adminShell'
+import { CATEGORY_LABEL, type AdminCategory, type ServicesView, type TrainingView } from './adminShell'
 
 const NAV: Array<{ id: AdminCategory; icon: LucideIcon }> = [
   { id: 'services', icon: CalendarCheck },
@@ -9,10 +9,21 @@ const NAV: Array<{ id: AdminCategory; icon: LucideIcon }> = [
   { id: 'mfm', icon: Ticket },
 ]
 
+const SERVICES_VIEWS: Array<{ id: ServicesView; label: string }> = [
+  { id: 'requests', label: 'Requests' },
+  { id: 'calendar', label: 'Calendar' },
+]
+
 const TRAINING_VIEWS: Array<{ id: TrainingView; label: string }> = [
   { id: 'bookings', label: 'Bookings' },
   { id: 'dates', label: 'Manage Dates' },
 ]
+
+interface SubNav {
+  items: Array<{ id: string; label: string }>
+  active: string
+  onSelect: (id: string) => void
+}
 
 interface AdminSidebarProps {
   category: AdminCategory
@@ -20,6 +31,8 @@ interface AdminSidebarProps {
   counts: Record<AdminCategory, number>
   trainingView: TrainingView
   onTrainingViewSelect: (v: TrainingView) => void
+  servicesView: ServicesView
+  onServicesViewSelect: (v: ServicesView) => void
   onSignOut: () => void
   open: boolean
   onClose: () => void
@@ -31,10 +44,16 @@ export default function AdminSidebar({
   counts,
   trainingView,
   onTrainingViewSelect,
+  servicesView,
+  onServicesViewSelect,
   onSignOut,
   open,
   onClose,
 }: AdminSidebarProps) {
+  const subNavs: Partial<Record<AdminCategory, SubNav>> = {
+    services: { items: SERVICES_VIEWS, active: servicesView, onSelect: (id) => onServicesViewSelect(id as ServicesView) },
+    training: { items: TRAINING_VIEWS, active: trainingView, onSelect: (id) => onTrainingViewSelect(id as TrainingView) },
+  }
   const itemRefs = useRef(new Map<AdminCategory, HTMLButtonElement>())
   const [pill, setPill] = useState<{ top: number; height: number } | null>(null)
 
@@ -90,7 +109,8 @@ export default function AdminSidebar({
           {NAV.map(({ id, icon: Icon }) => {
             const active = category === id
             const count = counts[id]
-            const hasChildren = id === 'training'
+            const subNav = subNavs[id]
+            const hasChildren = !!subNav
             return (
               <div key={id}>
                 <button
@@ -128,14 +148,14 @@ export default function AdminSidebar({
                   )}
                 </button>
 
-                {hasChildren && active && (
+                {subNav && active && (
                   <div className="relative ml-[1.28rem] mt-1 space-y-0.5 border-l border-[#ece7e0] pl-[0.53rem]">
-                    {TRAINING_VIEWS.map((view) => {
-                      const viewActive = trainingView === view.id
+                    {subNav.items.map((view) => {
+                      const viewActive = subNav.active === view.id
                       return (
                         <button
                           key={view.id}
-                          onClick={() => onTrainingViewSelect(view.id)}
+                          onClick={() => subNav.onSelect(view.id)}
                           aria-current={viewActive ? 'page' : undefined}
                           className={`flex w-full items-center rounded-lg px-3 py-2 text-left text-[13px] transition-colors ${
                             viewActive

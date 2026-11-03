@@ -43,7 +43,6 @@ function parseItems(raw: unknown): RequestedItem[] | null {
     if (!isOptionalString(serviceName, 200) || !isOptionalString(teamMemberId, 100)) return null
     if (!isOptionalString(variationId, 100)) return null
     items.push({
-      // Both are only hints until Square confirms them — see the resolvers below.
       serviceName: serviceName ? String(serviceName) : '',
       variationId: variationId ? String(variationId) : null,
       tierLabel: String(tierLabel),

@@ -19,34 +19,49 @@ export async function squareFetch(path: string, options: RequestInit = {}): Prom
   const data = await res.json()
   if (!res.ok) {
     const detail = (data.errors as Array<{ detail?: string }> | undefined)?.[0]?.detail
-    throw new Error(detail ?? JSON.stringify(data))
+    throw Object.assign(new Error(detail ?? JSON.stringify(data)), { status: res.status })
   }
   return data
 }
 
 // Cached location ID
 let _locationId: string | null = null
+let _locationInFlight: Promise<string> | null = null
 
 export async function getLocationId(): Promise<string> {
   if (_locationId) return _locationId
-  const data = await squareFetch('/v2/locations')
-  const id = (data.locations as Array<{ id: string }> | undefined)?.[0]?.id
-  if (!id) throw new Error('No Square location found')
-  _locationId = id
-  return id
+  // Concurrent callers on a cold instance share one request instead of each fetching.
+  _locationInFlight ??= squareFetch('/v2/locations')
+    .then((data) => {
+      const id = (data.locations as Array<{ id: string }> | undefined)?.[0]?.id
+      if (!id) throw new Error('No Square location found')
+      _locationId = id
+      return id
+    })
+    .finally(() => {
+      _locationInFlight = null
+    })
+  return _locationInFlight
 }
 
 let _catalogCache: { objects: any[]; fetchedAt: number } | null = null
+let _catalogInFlight: Promise<any[]> | null = null
 
 export async function getCatalogItems(): Promise<any[]> {
   const now = Date.now()
   if (_catalogCache && now - _catalogCache.fetchedAt < 5 * 60 * 1000) {
     return _catalogCache.objects
   }
-  const data = await squareFetch('/v2/catalog/list?types=ITEM')
-  const objects: any[] = data.objects ?? []
-  _catalogCache = { objects, fetchedAt: now }
-  return objects
+  _catalogInFlight ??= squareFetch('/v2/catalog/list?types=ITEM')
+    .then((data) => {
+      const objects: any[] = data.objects ?? []
+      _catalogCache = { objects, fetchedAt: now }
+      return objects
+    })
+    .finally(() => {
+      _catalogInFlight = null
+    })
+  return _catalogInFlight
 }
 
 export interface CatalogVariation {

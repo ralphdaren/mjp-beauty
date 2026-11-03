@@ -2,6 +2,7 @@
 
 export type AdminCategory = 'services' | 'training' | 'mentorship' | 'mfm'
 export type TrainingView = 'bookings' | 'dates'
+export type ServicesView = 'requests' | 'calendar'
 
 export const CATEGORY_LABEL: Record<AdminCategory, string> = {
   services: 'Brow Services',

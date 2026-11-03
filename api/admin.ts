@@ -5,6 +5,9 @@
 // POST /api/admin { action: 'decline', requestId }      → { ok: true }
 // GET  /api/admin?resource=mfm-tickets                   → { tickets }
 // POST /api/admin { resource: 'mfm-tickets', action: 'create' | 'resend' | 'delete' }
+// GET  /api/admin?resource=calendar&from=YYYY-MM-DD&to=YYYY-MM-DD → { blocks, failedWindows }  (to exclusive)
+// GET  /api/admin?resource=calendar-booking&id=<bookingId>  → { appointment }
+// GET  /api/admin?resource=client-history&customerId=<id>[&before=<iso>] → { entries, nextBefore, failedWindows }
 // All routes require: Authorization: Bearer <ADMIN_SECRET>
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
@@ -13,7 +16,9 @@ import { Resend } from 'resend'
 import { supabase } from './_supabase.js'
 import { squareFetch, getLocationId, getCatalogItems, findVariation } from './_square.js'
 import { escapeHtml } from './_html.js'
-import { enforceRateLimit, adminLimiter } from './_ratelimit.js'
+import { enforceRateLimit, adminLimiter, calendarReadLimiter } from './_ratelimit.js'
+import { CALENDAR_RESOURCES } from './_calendar.js'
+import { listCalendarBlocks, getAppointmentDetail, getClientHistoryChunk } from './_calendar-square.js'
 import { setCorsHeaders } from './_cors.js'
 import { isNonEmptyString, isValidIsoDateTime, isValidEmail, isOptionalString } from './_validate.js'
 import {
@@ -110,13 +115,56 @@ function listMfmTickets() {
     .limit(500)
 }
 
+// ── Brow Services calendar (read-only, live from Square) ─────────────────────
+
+const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/
+const MAX_CALENDAR_SPAN_DAYS = 62
+
+async function handleCalendar(req: VercelRequest, res: VercelResponse, resource: string) {
+  try {
+    if (resource === 'calendar') {
+      const { from, to } = req.query
+      if (typeof from !== 'string' || typeof to !== 'string' || !DATE_KEY.test(from) || !DATE_KEY.test(to)) {
+        return res.status(400).json({ error: 'from and to must be YYYY-MM-DD' })
+      }
+      const spanDays = (Date.parse(to) - Date.parse(from)) / 86400000
+      if (!(spanDays > 0 && spanDays <= MAX_CALENDAR_SPAN_DAYS)) {
+        return res.status(400).json({ error: `to must be after from, at most ${MAX_CALENDAR_SPAN_DAYS} days` })
+      }
+      return res.status(200).json(await listCalendarBlocks(from, to))
+    }
+
+    if (resource === 'calendar-booking') {
+      const { id } = req.query
+      if (!isNonEmptyString(id, 100)) return res.status(400).json({ error: 'id is required' })
+      return res.status(200).json({ appointment: await getAppointmentDetail(id) })
+    }
+
+    const { customerId, before } = req.query
+    if (!isNonEmptyString(customerId, 100)) return res.status(400).json({ error: 'customerId is required' })
+    if (before !== undefined && !isValidIsoDateTime(before)) {
+      return res.status(400).json({ error: 'before must be an ISO date-time' })
+    }
+    return res.status(200).json(await getClientHistoryChunk(customerId, typeof before === 'string' ? before : null, 12))
+  } catch (err) {
+    return res.status(500).json({ error: err instanceof Error ? err.message : String(err) })
+  }
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCorsHeaders(req, res)
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   if (req.method === 'OPTIONS') return res.status(200).end()
-  if (!(await enforceRateLimit(req, res, adminLimiter))) return
+
+  // Authorized calendar reads get their own, larger budget (one appointment tap is ~6 requests).
+  // Unauthorized requests always count against adminLimiter, which guards ADMIN_SECRET.
+  const resource = req.method === 'GET' ? req.query.resource : req.body?.resource
+  const calendarRead =
+    req.method === 'GET' && typeof resource === 'string' && CALENDAR_RESOURCES.has(resource) && isAuthorized(req)
+  if (!(await enforceRateLimit(req, res, calendarRead ? calendarReadLimiter : adminLimiter))) return
 
   if (!isAuthorized(req)) return res.status(401).json({ error: 'Unauthorized' })
+  if (calendarRead) return handleCalendar(req, res, resource)
 
   if (req.method === 'GET' && req.query.resource === 'auth') {
     return res.status(200).json({ ok: true })
@@ -140,7 +188,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // ── Training resources (dates CRUD + booking actions) ──────────────────────
-  const resource = req.method === 'GET' ? req.query.resource : req.body?.resource
   if (resource === 'training-dates' || resource === 'training-bookings') {
     return handleTraining(req, res, resource)
   }
