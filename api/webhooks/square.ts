@@ -74,7 +74,6 @@ export default async function handler(req: Request): Promise<Response> {
         .eq('square_booking_id', squareBookingId)
         .eq('status', 'accepted')
     } else if (squareBookingId && booking?.start_at) {
-      // Rescheduled in the Square dashboard: mirror the new time and length.
       const segments = booking.appointment_segments ?? []
       const durationMinutes = segments.reduce((total, s) => total + (s.duration_minutes ?? 0), 0)
       await supabase
