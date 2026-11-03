@@ -1,7 +1,7 @@
-import { useEffect, useLayoutEffect, useMemo, useState, useCallback, useRef } from 'react'
+import { Fragment, useEffect, useLayoutEffect, useMemo, useState, useCallback, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { HelpCircle } from 'lucide-react'
+import { Check, HelpCircle, Minus } from 'lucide-react'
 import { useScrollAnimation } from '@/hooks/useScrollAnimation'
 import BackToTop from '@/components/BackToTop'
 import Accordion from '@/components/Accordion'
@@ -13,9 +13,6 @@ import type { ShopifyProduct } from '@/lib/shopify'
 import { cld, toSrcSet } from '@/lib/cloudinary'
 const olHeadImg         = cld('v1783027948/ol-head_xivqpl.jpg', ',c_limit')
 const olHeadPortraitImg = cld('v1783027948/ol-head_xivqpl.jpg', ',c_fill,g_center,ar_9:16')
-const optImg01      = cld('v1783027940/opt-img-01_ufhoau.jpg', ',c_limit')
-const optImg02      = cld('v1783027944/opt-img-02_l9ncxq.jpg', ',c_limit')
-const OPT_WIDTHS    = [500, 750, 1000]
 const curriculumImg = cld('v1783027938/curriculum-img_frtvcf.jpg', ',c_limit')
 
 const REELS = [
@@ -176,35 +173,50 @@ const curriculumParts: CurriculumPart[] = [
   },
 ]
 
-const onlineOptionCards = [
+// Fallback names while Shopify loads; order matches VITE_SHOPIFY_HANDLE_MOD_01..06
+const singleModuleData = [
+  { name: 'Watch & Learn: Advanced Brow Demo Vault' },
+  { name: 'Brow Mapping Fundamentals' },
+  { name: 'Brow Tinting Fundamentals' },
+  { name: 'Strip Waxing Online Brow Course' },
+  { name: 'Mastering Brow Lamination: 10 Mistakes to Leave Behind' },
+  { name: 'Glam Up Your Grid: A Brow Artist\'s Social Media Guide' },
+]
+
+// Shopify CDN resizes on the fly via the `width` query param
+const SHOP_WIDTHS = [300, 450, 600]
+const shopifyImg = (url: string, w: number) => `${url}${url.includes('?') ? '&' : '?'}width=${w}`
+
+// ─── Path comparison data ─────────────────────────────────────────────────────
+
+// VIP-only rows; no Shopify product backs these, so the price is set here
+const VIP_EXTRAS = [
+  { name: '3-Month Online Brow Mentorship', price: '$1,199' },
+  { name: '6 Months of Unlimited Chat Support', price: null },
+]
+
+// Order matches VITE_SHOPIFY_HANDLE_INDEPENDENT, VITE_SHOPIFY_HANDLE_VIP
+const PATH_PLANS = [
   {
-    img: optImg01(600),
-    srcSet: toSrcSet(optImg01, OPT_WIDTHS),
-    alt: 'Independent Artist',
     label: 'Option 01',
     title: 'Independent Artist',
-    price: '$649',
+    fallbackPrice: '$649',
+    value: null, // live course total
     subtitle: 'For motivated Artists who prefer self-guided learning',
-    idealPrefix: 'Ideal for the artist who:',
-    shadowClass: 'shadow-[0_8px_32px_rgba(130,112,100,0.10)]',
     bullets: [
       'Is confident learning and applying techniques independently',
       'Is self-motivated and driven, learns on their own terms',
       'Wants budget-friendly training without sacrificing quality or depth',
       'Enjoys structured modules at their own pace, with freedom to revisit content',
-      'Is seasoned pro looking to refine the details of their craft',
+      'Is a seasoned pro looking to refine the details of their craft',
     ],
   },
   {
-    img: optImg02(600),
-    srcSet: toSrcSet(optImg02, OPT_WIDTHS),
-    alt: 'VIP Mentorship',
     label: 'Option 02',
     title: 'VIP Mentorship',
-    price: '$849',
+    fallbackPrice: '$849',
+    value: '$1,848',
     subtitle: 'For artists who are independent learners but still want the guidance of expert mentorship',
-    idealPrefix: 'Ideal for the artist who:',
-    shadowClass: 'shadow-[0_12px_40px_rgba(130,112,100,0.15)]',
     bullets: [
       'Thrives with self-paced learning but values expert guidance',
       'Prefers independent learning with support when needed',
@@ -213,15 +225,6 @@ const onlineOptionCards = [
       'Is ready to elevate their skills with both freedom and mentorship',
     ],
   },
-]
-
-const singleModuleData = [
-  { num: '01', name: 'Watch & Learn: Advanced Brow Demo Vault' },
-  { num: '02', name: 'Brow Mapping Fundamentals' },
-  { num: '03', name: 'Brow Tinting Fundamentals' },
-  { num: '04', name: 'Strip Waxing Online Brow Course' },
-  { num: '05', name: 'Mastering Brow Lamination: 10 Mistakes to Leave Behind' },
-  { num: '06', name: 'Glam Up Your Grid: A Brow Artist\'s Social Media Guide' },
 ]
 
 // ─── Online FAQ data ──────────────────────────────────────────────────────────
@@ -355,7 +358,6 @@ function OnlineFaqSection() {
 export default function OnlineBrowAcademyPage() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [animating, setAnimating] = useState(false)
-  const [activeOption, setActiveOption] = useState(0)
   const [activePart, setActivePart] = useState(0)
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
   const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0 })
@@ -370,7 +372,7 @@ export default function OnlineBrowAcademyPage() {
     const timer = setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80)
     return () => clearTimeout(timer)
   }, [location.hash])
-  const [enrolling, setEnrolling] = useState<number | null>(null)
+  const [enrolling, setEnrolling] = useState<string | null>(null)
 
   useLayoutEffect(() => {
     const el = tabRefs.current[activePart]
@@ -382,21 +384,28 @@ export default function OnlineBrowAcademyPage() {
     return () => window.removeEventListener('resize', update)
   }, [activePart])
 
-  const handleOptionSwitch = useCallback(() => {
-    setActiveOption((prev) => 1 - prev)
-  }, [])
-
-  const handleEnroll = useCallback(async (cardIndex: number) => {
-    const product = shopifyProducts[cardIndex]
+  const handleEnroll = useCallback(async (product: ShopifyProduct | null) => {
     if (!product?.variantId) return
-    setEnrolling(cardIndex)
+    setEnrolling(product.id)
     try {
       const url = await createCheckoutUrl(product.variantId)
       if (url) window.location.href = url
     } finally {
       setEnrolling(null)
     }
-  }, [shopifyProducts])
+  }, [])
+
+  const coursesTotal = useMemo(() => (
+    moduleProducts.every(Boolean)
+      ? moduleProducts.reduce((sum, p) => sum + parseFloat(p!.price), 0)
+      : null
+  ), [moduleProducts])
+
+  const pathPrice = (p: number) =>
+    shopifyProducts[p] ? formatPrice(shopifyProducts[p]!.price) : PATH_PLANS[p].fallbackPrice
+  // Independent's value is the live course total; VIP's is fixed
+  const pathValue = (p: number) =>
+    PATH_PLANS[p].value ?? (coursesTotal !== null ? `$${coursesTotal.toLocaleString('en-CA')}` : null)
 
   useEffect(() => {
     const handles = [
@@ -566,248 +575,239 @@ export default function OnlineBrowAcademyPage() {
           </div>
         </div>
 
-        {/* Option cards */}
+        {/* Course grid */}
         <div className="anim-fade-up mx-auto max-w-[1300px]">
-
-          {/* ── Stacked layout (below lg) ── */}
-          <div className="lg:hidden flex flex-col gap-6">
-            {onlineOptionCards.map((card, i) => (
-              <div
-                key={i}
-                className={`rounded-2xl border border-[#e3e2de] bg-white ${card.shadowClass} overflow-hidden flex flex-col`}
-              >
-                <div className="relative h-64 flex-shrink-0 overflow-hidden">
-                  <img src={card.img} srcSet={card.srcSet} sizes="(min-width: 1024px) 500px, 100vw" alt={card.alt} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
-                </div>
-                <div className="p-8 flex flex-col">
-                  <p className="text-[0.7rem] uppercase tracking-[0.28em] text-[#a0948a] mb-4">{card.label}</p>
-                  <h3 className="about-heading text-2xl font-semibold text-[#3d3028] leading-tight mb-4">{card.title}</h3>
-                  <div className="mb-1 flex items-baseline gap-1.5">
-                    <span className="text-sm text-[#a0948a] font-medium">Reg.</span>
-                    <span className="text-[3rem] font-semibold text-[#3d3028] leading-none">
-                      {shopifyProducts[i] ? formatPrice(shopifyProducts[i]!.price) : card.price}
-                    </span>
-                    <span className="text-xl text-[#5a5047] ml-1">CAD</span>
-                  </div>
-                  <p className="text-[#5a5047] text-sm leading-relaxed mb-6">{card.subtitle}</p>
-                  <div className="h-px bg-[#e3e2de] mb-4" />
-                  <p className="text-[0.68rem] uppercase tracking-[0.2em] text-[#a0948a] mb-3">{card.idealPrefix}</p>
-                  <ul className="flex flex-col gap-2">
-                    {card.bullets.map((b, j) => (
-                      <li key={j} className="flex items-start gap-2.5">
-                        <span className="mt-[7px] w-1 h-1 rounded-full bg-[#a0948a] shrink-0" />
-                        <span className="text-[#5a5047] text-sm leading-relaxed">{b}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <button
-                    onClick={() => handleEnroll(i)}
-                    disabled={enrolling === i || !shopifyProducts[i]}
-                    className="mt-6 w-full py-3.5 rounded-xl bg-[#3d3028] text-white text-[0.72rem] uppercase tracking-[0.2em] font-medium hover:bg-[#2a1a0e] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {enrolling === i ? 'Processing…' : 'Enroll Now'}
-                  </button>
-                </div>
-              </div>
-            ))}
-
-            {/* Option 03: Single Modules (stacked) */}
-            <div className="rounded-2xl border border-[#e3e2de] bg-white shadow-[0_8px_32px_rgba(130,112,100,0.10)] flex flex-col">
-              <div className="p-8 flex flex-col">
-                <p className="text-[0.7rem] uppercase tracking-[0.28em] text-[#a0948a] mb-4">Option 03</p>
-                <h3 className="about-heading text-2xl font-semibold text-[#3d3028] leading-tight mb-4">Single Modules</h3>
-                <div className="mb-1 flex items-baseline gap-1.5">
-                  <span className="text-sm text-[#a0948a] font-medium">From</span>
-                  <span className="text-[3rem] font-semibold text-[#3d3028] leading-none">$67</span>
-                  <span className="text-xl text-[#5a5047] ml-1">CAD</span>
-                </div>
-                <p className="text-[#5a5047] text-sm leading-relaxed mb-6">Purchase any module individually of your choice.</p>
-                <div className="h-px bg-[#e3e2de] mb-4" />
-                <div className="flex flex-col">
-                  {singleModuleData.map((mod, i) => (
-                    <div key={i} className="flex items-center justify-between py-3 border-b border-[#e3e2de] last:border-0">
-                      <div className="flex items-center gap-3">
-                        <span className="text-[0.67rem] font-medium text-[#827064] w-[28px] shrink-0">{mod.num}</span>
-                        <span className="text-[#3d3028] text-sm">{mod.name}</span>
-                      </div>
-                      {moduleProducts[i] && (
-                        <span className="text-[#5a5047] text-sm font-medium ml-2 shrink-0">
-                          {formatPrice(moduleProducts[i]!.price)}
-                        </span>
+          <div className="mb-8 flex items-center gap-4">
+            <div className="flex-1 h-px bg-[#e3e2de]" />
+            <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[#a0948a] text-center">
+              The curriculum · Included in both paths, or buy any course on its own
+            </p>
+            <div className="flex-1 h-px bg-[#e3e2de]" />
+          </div>
+          <ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-10 md:gap-x-5">
+            {singleModuleData.map((mod, i) => {
+              const product = moduleProducts[i]
+              const image = product?.featuredImage
+              const detailPath = product ? `/online-modules/${product.handle}` : '/online-modules'
+              return (
+                <li key={i} className="flex flex-col">
+                  <Link to={detailPath} className="group block">
+                    <div className="aspect-square overflow-hidden rounded-xl bg-[#f6f2ec]">
+                      {image && (
+                        <img
+                          src={shopifyImg(image.url, 600)}
+                          srcSet={SHOP_WIDTHS.map((w) => `${shopifyImg(image.url, w)} ${w}w`).join(', ')}
+                          sizes="(min-width: 1024px) 200px, (min-width: 768px) 33vw, 50vw"
+                          alt={image.altText || product!.title}
+                          className="h-full w-full object-cover transition-opacity duration-200 group-hover:opacity-90"
+                          loading="lazy"
+                          decoding="async"
+                        />
                       )}
                     </div>
-                  ))}
-                </div>
-                <Link
-                  to="/online-modules"
-                  className="mt-6 w-full py-3.5 rounded-xl border border-[#3d3028] text-[#3d3028] text-[0.72rem] uppercase tracking-[0.2em] font-medium hover:bg-[#3d3028] hover:text-white transition-colors duration-200 text-center block"
-                >
-                  Browse Modules
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Desktop layout (lg+) ── */}
-          <div className="hidden lg:flex gap-6">
-
-            {/* Animated pair (Options 01 & 02) */}
-            <div className="flex-[0_0_65%] relative">
-
-              {/* Ghost sizer — uses the longer card (index 0) to set container height */}
-              <div
-                className="invisible pointer-events-none flex flex-row"
-                style={{ width: 'calc(80% - 10px)' }}
-                aria-hidden="true"
-              >
-                <div className="w-[38%] flex-shrink-0" />
-                <div className="flex-1 p-10 flex flex-col">
-                  <p className="text-[0.7rem] mb-4">{onlineOptionCards[0].label}</p>
-                  <h3 className="about-heading text-2xl sm:text-3xl mb-4">{onlineOptionCards[0].title}</h3>
-                  <div className="mb-1 flex items-baseline gap-1.5">
-                    <span className="text-sm">Reg.</span>
-                    <span className="text-[3rem] leading-none">{onlineOptionCards[0].price}</span>
-                    <span className="text-xl ml-1">CAD</span>
-                  </div>
-                  <p className="text-sm leading-relaxed mb-6">{onlineOptionCards[0].subtitle}</p>
-                  <div className="h-px mb-4" />
-                  <p className="text-[0.68rem] mb-3">{onlineOptionCards[0].idealPrefix}</p>
-                  <ul className="flex flex-col gap-2">
-                    {onlineOptionCards[0].bullets.map((b, i) => (
-                      <li key={i} className="flex items-start gap-2.5">
-                        <span className="mt-[7px] w-1 h-1 rounded-full shrink-0" />
-                        <span className="text-sm leading-relaxed">{b}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-auto w-full py-3.5" aria-hidden="true" />
-                </div>
-              </div>
-
-              {/* Animated cards */}
-              <div className="absolute inset-0 flex gap-5">
-                {onlineOptionCards.map((card, i) => {
-                  const isActive = activeOption === i
-                  return (
-                    <div
-                      key={i}
-                      className={`relative overflow-hidden rounded-2xl border border-[#e3e2de] bg-white ${card.shadowClass} transition-[flex-grow] duration-700 ease-in-out`}
-                      style={{ flexGrow: isActive ? 4 : 1, flexShrink: 0, flexBasis: '0%' }}
-                    >
-                      {/* Full card content — visible when active */}
-                      <div
-                        className="absolute inset-0 flex flex-row"
-                        style={{
-                          opacity: isActive ? 1 : 0,
-                          transition: isActive ? 'opacity 0.45s ease' : 'opacity 0.2s ease',
-                        }}
-                        aria-hidden={!isActive}
-                      >
-                        <div className="relative w-[38%] flex-shrink-0 overflow-hidden">
-                          <img src={card.img} srcSet={card.srcSet} sizes="(min-width: 1024px) 500px, 100vw" alt={card.alt} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
-                        </div>
-                        <div className="flex-1 p-10 flex flex-col">
-                          <p className="text-[0.7rem] uppercase tracking-[0.28em] text-[#a0948a] mb-4">{card.label}</p>
-                          <h3 className="about-heading text-2xl sm:text-3xl font-semibold text-[#3d3028] leading-tight mb-4">
-                            {card.title}
-                          </h3>
-                          <div className="mb-1 flex items-baseline gap-1.5">
-                            <span className="text-sm text-[#a0948a] font-medium">Reg.</span>
-                            <span className="text-[3rem] font-semibold text-[#3d3028] leading-none">
-                              {shopifyProducts[i] ? formatPrice(shopifyProducts[i]!.price) : card.price}
-                            </span>
-                            <span className="text-xl text-[#5a5047] ml-1">CAD</span>
-                          </div>
-                          <p className="text-[#5a5047] text-sm leading-relaxed mb-6">{card.subtitle}</p>
-                          <div className="h-px bg-[#e3e2de] mb-4" />
-                          <p className="text-[0.68rem] uppercase tracking-[0.2em] text-[#a0948a] mb-3">{card.idealPrefix}</p>
-                          <ul className="flex flex-col gap-2">
-                            {card.bullets.map((b, j) => (
-                              <li key={j} className="flex items-start gap-2.5">
-                                <span className="mt-[7px] w-1 h-1 rounded-full bg-[#a0948a] shrink-0" />
-                                <span className="text-[#5a5047] text-sm leading-relaxed">{b}</span>
-                              </li>
-                            ))}
-                          </ul>
-                          <button
-                            onClick={() => handleEnroll(i)}
-                            disabled={enrolling === i || !shopifyProducts[i]}
-                            className="mt-auto w-full py-3.5 rounded-xl bg-[#3d3028] text-white text-[0.72rem] uppercase tracking-[0.2em] font-medium hover:bg-[#2a1a0e] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {enrolling === i ? 'Processing…' : 'Enroll Now'}
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Peek overlay — visible when inactive, clickable to switch */}
+                    <h3 className="mt-4 text-sm font-medium leading-snug text-[#3d3028] group-hover:underline underline-offset-4 decoration-[#d6cec8]">
+                      {product?.title ?? mod.name}
+                    </h3>
+                  </Link>
+                  <div className="mt-auto pt-4">
+                    <div className="h-px bg-[#e3e2de] mb-3" />
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="text-xl font-semibold text-[#3d3028] leading-none">
+                        {product ? formatPrice(product.price) : <span className="inline-block h-5 w-12 rounded bg-[#f6f2ec] animate-pulse align-middle" />}
+                      </span>
                       <button
-                        className="absolute inset-0 group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#a0948a]"
-                        style={{
-                          opacity: isActive ? 0 : 1,
-                          pointerEvents: isActive ? 'none' : 'auto',
-                          transition: isActive ? 'opacity 0.2s ease' : 'opacity 0.5s ease 0.3s',
-                        }}
-                        onClick={handleOptionSwitch}
-                        aria-label={`Switch to ${card.title}`}
-                        tabIndex={isActive ? -1 : 0}
+                        onClick={() => handleEnroll(product)}
+                        disabled={!product || enrolling === product.id}
+                        className="text-[0.65rem] uppercase tracking-[0.2em] font-medium text-[#3d3028] border-b border-[#3d3028] pb-0.5 hover:text-[#827064] hover:border-[#827064] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                        aria-label={`Buy ${product?.title ?? mod.name}`}
                       >
-                        <img src={card.img} srcSet={card.srcSet} sizes="(min-width: 1024px) 500px, 100vw" alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" />
-                        <div className="absolute inset-0 bg-[#2a1a0e]/55 group-hover:bg-[#2a1a0e]/40 transition-colors duration-300" />
-                        <div className="absolute inset-x-0 bottom-0 p-5">
-                          <p className="text-[0.6rem] uppercase tracking-[0.22em] text-white/50 mb-1.5">{card.label}</p>
-                          <p className="text-white font-semibold text-sm leading-tight mb-3">{card.title}</p>
-                          <p className="text-[0.62rem] uppercase tracking-[0.18em] text-white/50 group-hover:text-white/80 transition-colors duration-300">
-                            View →
-                          </p>
-                        </div>
+                        {product && enrolling === product.id ? 'Processing…' : 'Buy course'}
                       </button>
                     </div>
-                  )
-                })}
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+
+          {/* Live total, shown once every price has loaded */}
+          {coursesTotal !== null && (
+            <p className="about-heading mt-14 text-center text-lg sm:text-xl text-[#5a5047]">
+              On their own, the 6 courses add up to{' '}
+              <span className="font-semibold text-[#3d3028]">${coursesTotal.toLocaleString('en-CA')}</span>.
+              Get them all in a path below and save.
+            </p>
+          )}
+
+          {/* ── Path comparison ── */}
+          <div className="mt-16 md:mt-20">
+
+            {/* Table (md+) */}
+            <div className="hidden md:grid grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)_minmax(0,1fr)] rounded-2xl border border-[#e3e2de] overflow-hidden shadow-[0_8px_32px_rgba(130,112,100,0.10)]">
+
+              {/* Header row */}
+              <div className="px-8 lg:px-10 pt-10 pb-8 flex flex-col justify-end border-b border-[#e3e2de]">
+                <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[#a0948a] mb-3">What's included</p>
+                <h3 className="about-heading text-2xl lg:text-[1.9rem] font-semibold text-[#3d3028] leading-tight">
+                  One curriculum.<br />Two ways to learn it.
+                </h3>
               </div>
-
-            </div>
-
-            {/* Option 03: Single Modules */}
-            <div className="flex-1 min-w-0">
-              <div className="rounded-2xl border border-[#e3e2de] bg-white shadow-[0_8px_32px_rgba(130,112,100,0.10)] overflow-hidden h-full flex flex-col">
-                <div className="p-10 flex flex-col flex-1">
-                  <p className="text-[0.7rem] uppercase tracking-[0.28em] text-[#a0948a] mb-4">Option 03</p>
-                  <h3 className="about-heading text-2xl sm:text-3xl font-semibold text-[#3d3028] leading-tight mb-4">
-                    More Online Courses
-                  </h3>
-                  <div className="mb-1 flex items-baseline gap-1.5">
-                    <span className="text-sm text-[#a0948a] font-medium">From</span>
-                    <span className="text-[3rem] font-semibold text-[#3d3028] leading-none">$67</span>
-                    <span className="text-xl text-[#5a5047] ml-1">CAD</span>
-                  </div>
-                  <p className="text-[#5a5047] text-sm leading-relaxed mb-6">Browse through our wide selection of online courses that best suits your learning</p>
-                  <div className="h-px bg-[#e3e2de] mb-4" />
-                  <div className="flex flex-col flex-1">
-                    {singleModuleData.map((mod, i) => (
-                      <div key={i} className="flex items-center justify-between py-3 border-b border-[#e3e2de] last:border-0">
-                        <div className="flex items-center gap-3">
-                          <span className="text-[0.67rem] font-medium text-[#827064] w-[28px] shrink-0">{mod.num}</span>
-                          <span className="text-[#3d3028] text-sm">{mod.name}</span>
-                        </div>
-                        {moduleProducts[i] && (
-                          <span className="text-[#5a5047] text-sm font-medium ml-2 shrink-0">
-                            {formatPrice(moduleProducts[i]!.price)}
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <Link
-                    to="/online-modules"
-                    className="mt-6 w-full py-3.5 rounded-xl border border-[#3d3028] text-[#3d3028] text-[0.72rem] uppercase tracking-[0.2em] font-medium hover:bg-[#3d3028] hover:text-white transition-colors duration-200 text-center block"
+              {PATH_PLANS.map((plan, p) => {
+                const vip = p === 1
+                return (
+                  <div
+                    key={plan.title}
+                    className={vip
+                      ? 'px-8 lg:px-10 pt-10 pb-8 bg-[#2a1a0e] border-b border-white/10'
+                      : 'px-8 lg:px-10 pt-10 pb-8 border-l border-b border-[#e3e2de]'}
                   >
-                    Browse Online Courses
-                  </Link>
-                </div>
+                    <p className={`text-[0.68rem] uppercase tracking-[0.28em] mb-4 ${vip ? 'text-[#c9bcb1]' : 'text-[#a0948a]'}`}>{plan.label}</p>
+                    <h3 className={`about-heading text-2xl lg:text-[1.9rem] font-semibold leading-tight mb-3 ${vip ? 'text-[#f6f2ec]' : 'text-[#3d3028]'}`}>{plan.title}</h3>
+                    <p className={`text-sm leading-relaxed mb-6 ${vip ? 'text-[#f6f2ec]/75' : 'text-[#5a5047]'}`}>{plan.subtitle}</p>
+                    {pathValue(p) && (
+                      <p className={`text-sm line-through mb-1 ${vip ? 'text-[#f6f2ec]/45' : 'text-[#a0948a]'}`}>Value {pathValue(p)}</p>
+                    )}
+                    <div className="flex items-baseline gap-1.5">
+                      <span className={`text-[2.75rem] font-semibold leading-none ${vip ? 'text-[#f6f2ec]' : 'text-[#3d3028]'}`}>{pathPrice(p)}</span>
+                      <span className={`text-sm ml-1 ${vip ? 'text-[#f6f2ec]/70' : 'text-[#5a5047]'}`}>CAD</span>
+                    </div>
+                  </div>
+                )
+              })}
+
+              {/* Course rows */}
+              {singleModuleData.map((mod, i) => (
+                <Fragment key={i}>
+                  <div className="px-8 lg:px-10 py-4 flex items-center justify-between gap-4 border-b border-[#e3e2de]">
+                    <span className="text-sm text-[#3d3028]">{moduleProducts[i]?.title ?? mod.name}</span>
+                    <span className="text-sm text-[#a0948a] shrink-0">{moduleProducts[i] ? formatPrice(moduleProducts[i]!.price) : ''}</span>
+                  </div>
+                  <div className="flex items-center justify-center border-l border-b border-[#e3e2de]">
+                    <Check size={16} strokeWidth={1.75} className="text-[#827064]" aria-label="Included" />
+                  </div>
+                  <div className="flex items-center justify-center bg-[#2a1a0e] border-b border-white/10">
+                    <Check size={16} strokeWidth={1.75} className="text-[#f6f2ec]" aria-label="Included" />
+                  </div>
+                </Fragment>
+              ))}
+
+              {/* VIP-only rows */}
+              {VIP_EXTRAS.map((extra) => (
+                <Fragment key={extra.name}>
+                  <div className="px-8 lg:px-10 py-4 flex items-center justify-between gap-4 bg-[#f6f2ec] border-b border-[#e3e2de]">
+                    <span className="text-sm font-semibold text-[#3d3028]">{extra.name}</span>
+                    {extra.price && <span className="text-sm text-[#827064] shrink-0">{extra.price}</span>}
+                  </div>
+                  <div className="flex items-center justify-center border-l border-b border-[#e3e2de]">
+                    <Minus size={14} strokeWidth={1.5} className="text-[#a0948a]" aria-label="Not included" />
+                  </div>
+                  <div className="flex items-center justify-center bg-[#3d3028] border-b border-white/10">
+                    <Check size={16} strokeWidth={1.75} className="text-[#f6f2ec]" aria-label="Included" />
+                  </div>
+                </Fragment>
+              ))}
+
+              {/* Ideal-for row + enroll */}
+              <div className="px-8 lg:px-10 py-8">
+                <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[#a0948a]">Ideal for the artist who</p>
               </div>
+              {PATH_PLANS.map((plan, p) => {
+                const vip = p === 1
+                const product = shopifyProducts[p]
+                return (
+                  <div
+                    key={plan.title}
+                    className={vip ? 'px-8 lg:px-10 py-8 bg-[#2a1a0e] flex flex-col' : 'px-8 lg:px-10 py-8 border-l border-[#e3e2de] flex flex-col'}
+                  >
+                    <ul className="flex flex-col gap-3 mb-8">
+                      {plan.bullets.map((b) => (
+                        <li key={b} className="flex items-start gap-2.5">
+                          <span className={`mt-[8px] w-1 h-1 rounded-full shrink-0 ${vip ? 'bg-[#c9bcb1]' : 'bg-[#a0948a]'}`} />
+                          <span className={`text-sm leading-relaxed ${vip ? 'text-[#f6f2ec]/80' : 'text-[#5a5047]'}`}>{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <button
+                      onClick={() => handleEnroll(product)}
+                      disabled={!product || enrolling === product.id}
+                      className={`mt-auto w-full py-3.5 rounded-xl text-[0.72rem] uppercase tracking-[0.2em] font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${vip
+                        ? 'bg-[#f6f2ec] text-[#2a1a0e] hover:bg-white'
+                        : 'bg-[#3d3028] text-white hover:bg-[#2a1a0e]'}`}
+                    >
+                      {product && enrolling === product.id ? 'Processing…' : 'Enroll Now'}
+                    </button>
+                  </div>
+                )
+              })}
             </div>
 
+            {/* Stacked cards (below md) */}
+            <div className="md:hidden flex flex-col gap-6">
+              {PATH_PLANS.map((plan, p) => {
+                const vip = p === 1
+                const product = shopifyProducts[p]
+                const rows = [
+                  ...singleModuleData.map((mod, i) => ({ name: moduleProducts[i]?.title ?? mod.name, included: true, extra: false })),
+                  ...VIP_EXTRAS.map((extra) => ({ name: extra.name, included: vip, extra: true })),
+                ]
+                return (
+                  <div
+                    key={plan.title}
+                    className={vip
+                      ? 'rounded-2xl bg-[#2a1a0e] p-7 shadow-[0_12px_40px_rgba(42,26,14,0.25)]'
+                      : 'rounded-2xl border border-[#e3e2de] bg-white p-7 shadow-[0_8px_32px_rgba(130,112,100,0.10)]'}
+                  >
+                    <p className={`text-[0.68rem] uppercase tracking-[0.28em] mb-3 ${vip ? 'text-[#c9bcb1]' : 'text-[#a0948a]'}`}>{plan.label}</p>
+                    <h3 className={`about-heading text-2xl font-semibold leading-tight mb-3 ${vip ? 'text-[#f6f2ec]' : 'text-[#3d3028]'}`}>{plan.title}</h3>
+                    <p className={`text-sm leading-relaxed mb-5 ${vip ? 'text-[#f6f2ec]/75' : 'text-[#5a5047]'}`}>{plan.subtitle}</p>
+                    {pathValue(p) && (
+                      <p className={`text-sm line-through mb-1 ${vip ? 'text-[#f6f2ec]/45' : 'text-[#a0948a]'}`}>Value {pathValue(p)}</p>
+                    )}
+                    <div className="flex items-baseline gap-1.5 mb-6">
+                      <span className={`text-[2.5rem] font-semibold leading-none ${vip ? 'text-[#f6f2ec]' : 'text-[#3d3028]'}`}>{pathPrice(p)}</span>
+                      <span className={`text-sm ml-1 ${vip ? 'text-[#f6f2ec]/70' : 'text-[#5a5047]'}`}>CAD</span>
+                    </div>
+
+                    <ul className={`border-t ${vip ? 'border-white/10' : 'border-[#e3e2de]'}`}>
+                      {rows.map((row) => (
+                        <li
+                          key={row.name}
+                          className={`flex items-center gap-3 py-3 border-b text-sm ${vip ? 'border-white/10' : 'border-[#e3e2de]'} ${
+                            row.included
+                              ? vip ? 'text-[#f6f2ec]' : 'text-[#3d3028]'
+                              : 'text-[#a0948a] line-through decoration-[#d6cec8]'
+                          } ${row.extra && row.included ? 'font-semibold' : ''}`}
+                        >
+                          {row.included
+                            ? <Check size={15} strokeWidth={1.75} className={`shrink-0 ${vip ? 'text-[#f6f2ec]' : 'text-[#827064]'}`} aria-label="Included" />
+                            : <Minus size={13} strokeWidth={1.5} className="shrink-0 text-[#a0948a]" aria-label="Not included" />}
+                          {row.name}
+                        </li>
+                      ))}
+                    </ul>
+
+                    <p className={`mt-6 mb-3 text-[0.68rem] uppercase tracking-[0.22em] ${vip ? 'text-[#c9bcb1]' : 'text-[#a0948a]'}`}>Ideal for the artist who</p>
+                    <ul className="flex flex-col gap-2.5">
+                      {plan.bullets.map((b) => (
+                        <li key={b} className="flex items-start gap-2.5">
+                          <span className={`mt-[8px] w-1 h-1 rounded-full shrink-0 ${vip ? 'bg-[#c9bcb1]' : 'bg-[#a0948a]'}`} />
+                          <span className={`text-sm leading-relaxed ${vip ? 'text-[#f6f2ec]/80' : 'text-[#5a5047]'}`}>{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <button
+                      onClick={() => handleEnroll(product)}
+                      disabled={!product || enrolling === product.id}
+                      className={`mt-7 w-full py-3.5 rounded-xl text-[0.72rem] uppercase tracking-[0.2em] font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${vip
+                        ? 'bg-[#f6f2ec] text-[#2a1a0e] hover:bg-white'
+                        : 'bg-[#3d3028] text-white hover:bg-[#2a1a0e]'}`}
+                    >
+                      {product && enrolling === product.id ? 'Processing…' : 'Enroll Now'}
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         </div>
       </section>
