@@ -150,11 +150,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(409).json({ error: 'That time is no longer available. Please pick another slot.' })
     }
 
+    // Accepted bookings already live in Square, so isOfferedBySquare covers them;
+    // only pending requests need a hold here.
     const heldBlocks = await getHeldBlocks(
       String(startAt),
       new Date(endMs).toISOString(),
       catalogItems,
-      ['pending', 'accepted'],
     )
 
     if (overlapsBlock(startMs, endMs, heldBlocks)) {

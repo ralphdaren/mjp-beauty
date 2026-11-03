@@ -1,9 +1,9 @@
 // POST /api/webhooks/square
 // Square calls this when a booking changes status (e.g. the store cancels an
 // accepted appointment directly from the Square dashboard, bypassing this
-// app's admin dashboard entirely). Keeps booking_requests.status in sync so
-// the admin dashboard doesn't keep showing a cancelled appointment as
-// "accepted".
+// app's admin dashboard entirely). Keeps booking_requests status, time and
+// length in sync so the admin dashboard doesn't keep showing a cancelled or
+// rescheduled appointment as it was originally booked.
 import { supabase } from '../_supabase.js'
 
 export const config = { runtime: 'edge' }
@@ -43,7 +43,19 @@ export default async function handler(req: Request): Promise<Response> {
     return new Response(JSON.stringify({ error: 'Invalid signature' }), { status: 401 })
   }
 
-  let event: { type?: string; data?: { object?: { booking?: { id?: string; status?: string } } } }
+  let event: {
+    type?: string
+    data?: {
+      object?: {
+        booking?: {
+          id?: string
+          status?: string
+          start_at?: string
+          appointment_segments?: Array<{ duration_minutes?: number }>
+        }
+      }
+    }
+  }
   try {
     event = JSON.parse(rawBody)
   } catch {
@@ -59,6 +71,18 @@ export default async function handler(req: Request): Promise<Response> {
       await supabase
         .from('booking_requests')
         .update({ status: 'cancelled', reviewed_at: new Date().toISOString() })
+        .eq('square_booking_id', squareBookingId)
+        .eq('status', 'accepted')
+    } else if (squareBookingId && booking?.start_at) {
+      // Rescheduled in the Square dashboard: mirror the new time and length.
+      const segments = booking.appointment_segments ?? []
+      const durationMinutes = segments.reduce((total, s) => total + (s.duration_minutes ?? 0), 0)
+      await supabase
+        .from('booking_requests')
+        .update({
+          start_at: booking.start_at,
+          ...(durationMinutes > 0 ? { duration_minutes: durationMinutes } : {}),
+        })
         .eq('square_booking_id', squareBookingId)
         .eq('status', 'accepted')
     }
