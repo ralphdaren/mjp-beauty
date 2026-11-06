@@ -23,7 +23,14 @@ function BookingPoliciesContent() {
         q="How do I secure my appointment slot?"
         a={
           <div className="space-y-2">
-            <p>If you book <strong className="text-[#3d3530] font-semibold">online</strong>, a credit card on file is required. It will only be charged 50% of the booked service if you fail to comply with the cancellation/late/no-show policies below.</p>
+            <p>If you book <strong className="text-[#3d3530] font-semibold">online</strong>, a credit card on file is required. It is only charged if you cancel late, cancel within 24 hours of your appointment, don't show up, or arrive more than 10 minutes late. Fees are a percentage of your full booking total, GST included:</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>24 to 48 hours' notice: 50%</li>
+              <li>Cancelling within 24 hours: 100%</li>
+              <li>No-show: 100%</li>
+              <li>More than 10 minutes late: 50%</li>
+            </ul>
+            <p>If your card can't be charged for any reason (for example, it has expired or has insufficient funds), the fee must be paid before <strong className="text-[#3d3530] font-semibold">any</strong> upcoming appointments. If it isn't paid, your upcoming appointments will be cancelled and you won't be able to book until the fee is paid.</p>
             <p>If you book <strong className="text-[#3d3530] font-semibold">directly through Micah</strong>, a 50% non-refundable deposit is required to secure your spot. Failure to meet the cancellation policy will result in forfeiture of that deposit.</p>
           </div>
         }
@@ -39,15 +46,15 @@ function BookingPoliciesContent() {
       />
       <Accordion
         q="What is the cancellation policy?"
-        a={<p>A <strong className="text-[#3d3530] font-semibold">48-hour (2-day) notice</strong> is required to reschedule or cancel. Failure to do so will result in a cancellation fee charged to your card on file.</p>}
+        a={<p>A <strong className="text-[#3d3530] font-semibold">48-hour (2-day) notice</strong> is required to reschedule or cancel. Cancelling with 24 to 48 hours' notice is charged <strong className="text-[#3d3530] font-semibold">50% of your booking</strong>. Cancelling within 24 hours of your appointment is charged <strong className="text-[#3d3530] font-semibold">the full amount</strong>. Fees are charged to your card on file.</p>}
       />
       <Accordion
         q="What happens if I'm late?"
-        a={<p>A <strong className="text-[#3d3530] font-semibold">10-minute grace period</strong> is given to those running late. If you are more than 10 minutes late without communication, your appointment will be cancelled and a cancellation fee will be charged. If a last-minute emergency occurs, please communicate with Micah so you can work something out.</p>}
+        a={<p>A <strong className="text-[#3d3530] font-semibold">10-minute grace period</strong> is given to those running late. If you are more than 10 minutes late without communication, your appointment will be cancelled and <strong className="text-[#3d3530] font-semibold">50% of your booking</strong> will be charged to your card on file. If a last-minute emergency occurs, please communicate with Micah so you can work something out.</p>}
       />
       <Accordion
         q="What is the no-show policy?"
-        a={<p><strong className="text-[#3d3530] font-semibold">No-shows are not tolerated at MJP Beauty.</strong> This will result in an automatic cancellation fee charged to your credit card on file.</p>}
+        a={<p><strong className="text-[#3d3530] font-semibold">No-shows are not tolerated at MJP Beauty.</strong> A no-show is charged <strong className="text-[#3d3530] font-semibold">the full amount of your booking</strong> to your card on file.</p>}
       />
       <Accordion
         q="New client — what should I expect?"

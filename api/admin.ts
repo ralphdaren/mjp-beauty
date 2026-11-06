@@ -8,6 +8,9 @@
 // GET  /api/admin?resource=calendar&from=YYYY-MM-DD&to=YYYY-MM-DD → { blocks, failedWindows }  (to exclusive)
 // GET  /api/admin?resource=calendar-booking&id=<bookingId>  → { appointment }
 // GET  /api/admin?resource=client-history&customerId=<id>[&before=<iso>] → { entries, nextBefore, failedWindows }
+// GET  /api/admin?resource=fee-quote&requestId=<id>      → FeeQuote
+// POST /api/admin { resource: 'fee', action: 'preview', requestId, amountCents }         → { chargeCents, gstCents }
+// POST /api/admin { resource: 'fee', action: 'charge', requestId, reason, amountCents }  → { chargedCents, paymentId, emailSent }
 // All routes require: Authorization: Bearer <ADMIN_SECRET>
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
@@ -37,6 +40,8 @@ import {
   mfmManualKey,
   resolveMfmTier,
 } from './_mfm-config.js'
+import { isFeeReason } from './_fee.js'
+import { getFeeQuote, previewFee, chargeFee, toFeeHttpError } from './_fee-charge.js'
 
 const VALID_STATUSES = ['pending', 'accepted', 'declined', 'cancelled']
 const VALID_TRAINING_OPTIONS = ['group', 'private']
@@ -193,6 +198,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   if (resource === 'mfm-tickets') return handleMfmTickets(req, res)
 
+  // ── Cancellation fee: must stay above the generic GET list and the accept/decline POST ──
+  if (resource === 'fee-quote' || resource === 'fee') return handleFee(req, res, resource)
+
   // ── GET: list booking requests ─────────────────────────────────────────────
   if (req.method === 'GET') {
     const { status } = req.query
@@ -303,6 +311,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   return res.status(405).json({ error: 'Method not allowed' })
+}
+
+// ── Cancellation fee ─────────────────────────────────────────────────────────
+
+async function handleFee(req: VercelRequest, res: VercelResponse, resource: 'fee-quote' | 'fee') {
+  try {
+    if (resource === 'fee-quote') {
+      if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })
+      const { requestId } = req.query
+      if (!isNonEmptyString(requestId, 100)) return res.status(400).json({ error: 'requestId is required' })
+      return res.status(200).json(await getFeeQuote(requestId))
+    }
+
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+    const { action, requestId, reason, amountCents } = req.body ?? {}
+    if (!isNonEmptyString(requestId, 100)) return res.status(400).json({ error: 'requestId is required' })
+    if (!Number.isInteger(amountCents) || amountCents <= 0) {
+      return res.status(400).json({ error: 'amountCents must be a positive whole number' })
+    }
+
+    if (action === 'preview') {
+      return res.status(200).json(await previewFee(String(requestId), amountCents))
+    }
+    if (action === 'charge') {
+      if (!isFeeReason(reason)) return res.status(400).json({ error: 'reason is not a valid fee reason' })
+      return res.status(200).json(await chargeFee(String(requestId), reason, amountCents))
+    }
+    return res.status(400).json({ error: 'action must be "preview" or "charge"' })
+  } catch (err) {
+    const { status, message, keepClaim, alreadyCharged } = toFeeHttpError(err)
+    return res.status(status).json({
+      error: message,
+      ...(keepClaim ? { keepClaim: true } : {}),
+      ...(alreadyCharged ? { alreadyCharged: true } : {}),
+    })
+  }
 }
 
 // ── Training dates CRUD + booking confirm/cancel ─────────────────────────────

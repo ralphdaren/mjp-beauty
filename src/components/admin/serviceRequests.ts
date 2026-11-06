@@ -15,6 +15,14 @@ export interface BookingRequest {
   duration_minutes: number | null
   start_at: string
   reviewed_at: string | null
+  square_booking_id: string | null
+  square_customer_id: string | null
+  square_no_show: boolean
+  fee_status: 'charging' | 'charged' | null
+  fee_reason: string | null
+  fee_amount_cents: number | null
+  fee_charged_at: string | null
+  fee_claimed_at?: string | null
 }
 
 export type RequestStatus = BookingRequest['status']
@@ -26,6 +34,44 @@ export interface RequestService {
 
 export function requestServices(r: BookingRequest): RequestService[] {
   return r.items?.length ? r.items : [{ serviceName: r.service_name, tierLabel: r.tier_label }]
+}
+
+export const FEE_REASON_LABELS: Record<string, string> = {
+  late: 'Late cancellation',
+  same_day: 'Same-day cancellation',
+  no_show: 'No-show',
+  late_arrival: 'Late arrival',
+}
+
+const CLAIM_STALE_MS = 5 * 60 * 1000
+
+/** True while a charge is genuinely in flight (a claim older than 5 minutes is treated as abandoned). */
+export function isFeeInProgress(r: BookingRequest, nowMs: number): boolean {
+  if (r.fee_status !== 'charging') return false
+  const claimed = r.fee_claimed_at ? Date.parse(r.fee_claimed_at) : NaN
+  if (Number.isNaN(claimed)) return false
+  return nowMs - claimed <= CLAIM_STALE_MS
+}
+
+/** A 'charging' claim older than 5 minutes (or with no claim time): the last attempt's outcome was never confirmed. */
+export function isFeeClaimStale(r: BookingRequest, nowMs: number): boolean {
+  return r.fee_status === 'charging' && !isFeeInProgress(r, nowMs)
+}
+
+export const STALE_CLAIM_WARNING = 'Previous attempt unconfirmed. Check Square first.'
+
+/** Eligibility except the card requirement: used to tell "No card on file" from "not eligible". */
+export function feeEligibleIgnoringCard(r: BookingRequest, nowMs: number): boolean {
+  if (!r.square_booking_id) return false
+  if (r.fee_status === 'charged') return false
+  if (r.fee_status === 'charging' && isFeeInProgress(r, nowMs)) return false
+  if (r.status === 'cancelled') return true
+  return r.status === 'accepted' && Date.parse(r.start_at) < nowMs
+}
+
+/** Button visibility only. Mirrors api/_fee.ts isChargeable; the server is the authority. */
+export function canChargeFee(r: BookingRequest, nowMs: number): boolean {
+  return !!r.square_customer_id && feeEligibleIgnoringCard(r, nowMs)
 }
 
 const PAGE_SIZE = 10
@@ -47,11 +93,19 @@ export function useServiceRequests({ token, requests, onRefetch }: UseServiceReq
   const [optionFilter, setOptionFilter] = useState('')
   const [page, setPage] = useState(1)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  const [now, setNow] = useState(() => Date.now())
+  const [feeTarget, setFeeTarget] = useState<BookingRequest | null>(null)
 
   useEffect(() => {
     setPage(1)
     setExpanded(new Set())
   }, [tab, search, dateFrom, dateTo, serviceFilter, optionFilter])
+
+  // Keeps fee eligibility (upcoming -> passed, stale claims) current without a refetch.
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30_000)
+    return () => clearInterval(id)
+  }, [])
 
   function toggleExpanded(id: string) {
     setExpanded((prev) => {
@@ -137,6 +191,13 @@ export function useServiceRequests({ token, requests, onRefetch }: UseServiceReq
     toggleExpanded,
     actionLoading,
     handleAction,
+
+    token,
+    onRefetch,
+    now,
+    feeTarget,
+    openFee: setFeeTarget,
+    closeFee: () => setFeeTarget(null),
   }
 }
 

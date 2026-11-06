@@ -140,15 +140,19 @@ export default function DrawerDetails({
               </div>
               <div>
                 <p className="font-semibold text-[#3d3530] mb-1">SAME DAY CANCELLATION (WITHIN 24 HOURS)</p>
-                <p>Will be subject to a 100% FEE of the booked service! An invoice will be sent to pay the fee and is required to be paid before any upcoming future services.</p>
+                <p>Will be subject to a 100% fee of the booked service, charged to your card on file.</p>
               </div>
               <div>
                 <p className="font-semibold text-[#3d3530] mb-1">NO-SHOW POLICY</p>
-                <p>No shows will not be tolerated and will be subject to the same cancellation fee charge stated above.</p>
+                <p>No-shows will be charged 100% of the booked service to your card on file.</p>
               </div>
               <div>
                 <p className="font-semibold text-[#3d3530] mb-1">LATE POLICY</p>
                 <p>If you are running late, you will be given a 10-minute grace period. If you do not make it within your 10 minute window, your appointment will be cancelled and you will be subject to the 50% cancellation fee of the booked service.</p>
+              </div>
+              <div>
+                <p className="font-semibold text-[#3d3530] mb-1">IF YOUR CARD CAN'T BE CHARGED</p>
+                <p>If your card can't be charged for any reason (for example, it has expired or has insufficient funds), the fee must be paid before ANY upcoming appointments. If it isn't paid, your upcoming appointments will be cancelled and you won't be able to book until the fee is paid.</p>
               </div>
             </div>
           </div>
@@ -244,7 +248,7 @@ export default function DrawerDetails({
       {deadline && fee && (
         <div className="bg-[#fdf8f3] border border-[#e8ddd4] rounded-xl px-4 py-3 mb-5">
           <p className="text-[11px] text-[#6b5f58] leading-relaxed">
-            Please cancel or reschedule before <span className="font-medium text-[#3d3530]">{deadline}</span>. After that, you may be charged a cancellation fee of <span className="font-medium text-[#3d3530]">{fee}</span>.{' '}
+            Please cancel or reschedule before <span className="font-medium text-[#3d3530]">{deadline}</span>. After that, a late cancellation fee of <span className="font-medium text-[#3d3530]">{fee}</span> (50% of your booking) may be charged.{' '}
             <button
               type="button"
               onClick={() => setPolicyOpen(true)}

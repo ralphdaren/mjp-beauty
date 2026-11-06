@@ -229,6 +229,7 @@ export function useBookingState() {
       const cardData = await cardRes.json()
       if (!cardRes.ok) throw new Error(cardData.error ?? 'Failed to save card')
       const customerId: string = cardData.customerId
+      const cardId: string | null = cardData.cardId ?? null
 
       const bookingRes = await fetch('/api/bookings/create', {
         method: 'POST',
@@ -242,6 +243,7 @@ export function useBookingState() {
           })),
           startAt: selectedStartAt,
           customerId,
+          cardId,
           firstName,
           lastName,
           email,

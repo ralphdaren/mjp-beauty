@@ -31,6 +31,7 @@ interface RequestedItem {
   variationId: string | null
   tierLabel: string
   teamMemberId: string | null
+  priceCents?: number | null
 }
 
 function parseItems(raw: unknown): RequestedItem[] | null {
@@ -98,7 +99,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
   if (!(await enforceRateLimit(req, res, bookingCreateLimiter))) return
 
-  const { items: rawItems, startAt, customerId, firstName, lastName, email, phone, honeypot } = req.body ?? {}
+  const { items: rawItems, startAt, customerId, cardId, firstName, lastName, email, phone, honeypot } = req.body ?? {}
 
   if (honeypot) {
     return res.status(200).json({ requestId: randomUUID() })
@@ -120,7 +121,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!isValidEmail(email)) {
     return res.status(400).json({ error: 'email must be a valid email address' })
   }
-  if (!isOptionalString(lastName, 100) || !isOptionalString(phone, 30) || !isOptionalString(customerId, 100)) {
+  if (!isOptionalString(lastName, 100) || !isOptionalString(phone, 30) || !isOptionalString(customerId, 100) || !isOptionalString(cardId, 255)) {
     return res.status(400).json({ error: 'One or more fields exceed the allowed length' })
   }
 
@@ -140,6 +141,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       variationId: matches[index].id,
       serviceName: resolveServiceName(item.serviceName, matches[index], item.tierLabel),
       tierLabel: resolveTierLabel(item.tierLabel, matches[index]),
+      priceCents: matches[index].priceCents,
     }))
 
     const startMs = new Date(String(startAt)).getTime()
@@ -171,6 +173,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         duration_minutes: durationMinutes,
         start_at: String(startAt),
         square_customer_id: customerId ? String(customerId) : null,
+        square_card_id: cardId ? String(cardId) : null,
         first_name: String(firstName),
         last_name: lastName ? String(lastName) : '',
         email: String(email),

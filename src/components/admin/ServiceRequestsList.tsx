@@ -1,7 +1,19 @@
-import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronDown, TriangleAlert } from 'lucide-react'
 import { MobileRowSkeleton, TableRowSkeleton } from './RowSkeleton'
 import { formatDateTime, formatSubmitted } from './adminFormat'
-import { requestServices, type BookingRequest, type RequestStatus, type ServiceRequestsController } from './serviceRequests'
+import FeeSheet from './FeeSheet'
+import {
+  canChargeFee,
+  FEE_REASON_LABELS,
+  feeEligibleIgnoringCard,
+  isFeeClaimStale,
+  isFeeInProgress,
+  STALE_CLAIM_WARNING,
+  requestServices,
+  type BookingRequest,
+  type RequestStatus,
+  type ServiceRequestsController,
+} from './serviceRequests'
 
 const STATUS_STYLES: Record<RequestStatus, { dot: string }> = {
   pending: { dot: 'bg-amber-500' },
@@ -41,11 +53,94 @@ function RequestActions({ requestId, loading, onAction, variant }: RequestAction
   )
 }
 
+function formatShortDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-CA', { timeZone: 'America/Winnipeg', month: 'short', day: 'numeric' })
+}
+
+const PILL = 'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10.5px] font-semibold tracking-[0.04em] whitespace-nowrap'
+const FEE_BTN = 'px-4 py-1.5 text-[11px] bg-white border border-[#e6c9ab] text-[#b07d4e] tracking-[0.1em] uppercase rounded-full'
+
+function FeeCell({
+  request: r,
+  onCharge,
+  align,
+  now,
+}: {
+  request: BookingRequest
+  onCharge: (r: BookingRequest) => void
+  align: 'right' | 'left'
+  now: number
+}) {
+  const wrap = `flex flex-col gap-1.5 ${align === 'right' ? 'items-end text-right' : 'items-start'}`
+
+  if (r.fee_status === 'charged') {
+    return (
+      <div className={wrap}>
+        <span className={`${PILL} bg-[#e7f3ec] text-[#4a9d6f]`}>
+          <span className="w-1.5 h-1.5 rounded-full bg-current" />
+          Fee charged{r.fee_amount_cents != null ? ` · $${(r.fee_amount_cents / 100).toFixed(2)}` : ''}
+        </span>
+        <span className="text-[11px] text-[#a0948a]">
+          {(r.fee_reason && FEE_REASON_LABELS[r.fee_reason]) ?? 'Fee'}
+          {r.fee_charged_at ? ` · ${formatShortDate(r.fee_charged_at)}` : ''}
+        </span>
+      </div>
+    )
+  }
+  if (isFeeInProgress(r, now)) {
+    return (
+      <div className={wrap}>
+        <span className={`${PILL} bg-[#f1ece5] text-[#6b5f58]`}>Charge in progress</span>
+      </div>
+    )
+  }
+
+  const eligible = feeEligibleIgnoringCard(r, now)
+  const past = r.status === 'accepted' && Date.parse(r.start_at) < now
+  return (
+    <div className={wrap}>
+      {isFeeClaimStale(r, now) && (
+        <span className={`${PILL} bg-[#fdf3e1] text-[#b7791f]`}>
+          <TriangleAlert size={11} className="shrink-0" />
+          {STALE_CLAIM_WARNING}
+        </span>
+      )}
+      {r.square_no_show ? (
+        <span className={`${PILL} bg-[#fdf3e1] text-[#b7791f]`}>
+          <span className="w-1.5 h-1.5 rounded-full bg-current" />
+          Marked no-show in Square
+        </span>
+      ) : past ? (
+        <span className={`${PILL} bg-[#f1ece5] text-[#6b5f58]`}>Appointment passed</span>
+      ) : null}
+      {canChargeFee(r, now) ? (
+        <button
+          onClick={() => onCharge(r)}
+          className={`${FEE_BTN} hover:bg-[#b07d4e] hover:border-[#b07d4e] hover:text-white transition-colors`}
+        >
+          Charge fee
+        </button>
+      ) : eligible ? (
+        <>
+          <button disabled className={`${FEE_BTN} opacity-50 cursor-not-allowed`}>
+            Charge fee
+          </button>
+          <span className="text-[11px] text-[#a0948a]">No card on file</span>
+        </>
+      ) : r.status === 'accepted' && !past ? (
+        <span className="text-[11px] text-[#a0948a]">Upcoming</span>
+      ) : null}
+    </div>
+  )
+}
+
 const TH = 'px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#a0948a]'
 
 function RequestsTable({ controller, loading }: { controller: ServiceRequestsController; loading: boolean }) {
-  const { tab, pageItems, actionLoading, handleAction } = controller
+  const { tab, pageItems, actionLoading, handleAction, openFee, now } = controller
   const showActions = tab === 'pending'
+  const showFee = tab === 'accepted' || tab === 'cancelled'
+  const columns = showActions || showFee ? 5 : 4
 
   return (
     <div className="hidden md:block bg-white rounded-2xl shadow-sm overflow-hidden">
@@ -58,12 +153,13 @@ function RequestsTable({ controller, loading }: { controller: ServiceRequestsCon
               <th className={`w-[18%] ${TH}`}>Appointment</th>
               <th className={`w-[14%] ${TH}`}>Submitted</th>
               {showActions && <th className={`w-[1%] ${TH} text-right whitespace-nowrap`}>Actions</th>}
+              {showFee && <th className={`w-[1%] ${TH} text-right whitespace-nowrap`}>Fee</th>}
             </tr>
           </thead>
           <tbody>
             {loading
               ? Array.from({ length: SKELETON_ROWS }).map((_, i) => (
-                  <TableRowSkeleton key={i} columns={showActions ? 5 : 4} />
+                  <TableRowSkeleton key={i} columns={columns} />
                 ))
               : pageItems.map((r) => (
                   <tr
@@ -102,6 +198,11 @@ function RequestsTable({ controller, loading }: { controller: ServiceRequestsCon
                         />
                       </td>
                     )}
+                    {showFee && (
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <FeeCell request={r} onCharge={openFee} align="right" now={now} />
+                      </td>
+                    )}
                   </tr>
                 ))}
           </tbody>
@@ -122,7 +223,7 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
 
 function RequestCard({ request, controller }: { request: BookingRequest; controller: ServiceRequestsController }) {
   const r = request
-  const { expanded, toggleExpanded, actionLoading, handleAction } = controller
+  const { expanded, toggleExpanded, actionLoading, handleAction, openFee, now } = controller
   const services = requestServices(r)
   const isOpen = expanded.has(r.id)
 
@@ -182,6 +283,10 @@ function RequestCard({ request, controller }: { request: BookingRequest; control
             </DetailRow>
           </div>
 
+          {(r.status === 'accepted' || r.status === 'cancelled') && (
+            <FeeCell request={r} onCharge={openFee} align="left" now={now} />
+          )}
+
           {r.status === 'pending' && (
             <RequestActions
               requestId={r.id}
@@ -225,7 +330,8 @@ interface ServiceRequestsListProps {
 }
 
 export default function ServiceRequestsList({ controller, loading, error }: ServiceRequestsListProps) {
-  const { tab, search, hasActiveFilters, filtered, pageItems, page, totalPages, setPage } = controller
+  const { tab, search, hasActiveFilters, filtered, pageItems, page, totalPages, setPage, feeTarget, closeFee, token, onRefetch } =
+    controller
   const isEmpty = !loading && filtered.length === 0
 
   return (
@@ -249,6 +355,15 @@ export default function ServiceRequestsList({ controller, loading, error }: Serv
       )}
 
       {totalPages > 1 && <Pagination page={page} totalPages={totalPages} onChange={setPage} />}
+
+      {feeTarget && (
+        <FeeSheet
+          request={feeTarget}
+          token={token}
+          onClose={closeFee}
+          onCharged={() => void onRefetch({ silent: true })}
+        />
+      )}
     </div>
   )
 }

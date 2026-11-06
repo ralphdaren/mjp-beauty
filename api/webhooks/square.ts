@@ -67,7 +67,13 @@ export default async function handler(req: Request): Promise<Response> {
     const squareBookingId = booking?.id
     const status = booking?.status
 
-    if (squareBookingId && status && CANCELLED_STATUSES.has(status)) {
+    if (squareBookingId && status === 'NO_SHOW') {
+      await supabase
+        .from('booking_requests')
+        .update({ square_no_show: true })
+        .eq('square_booking_id', squareBookingId)
+        .eq('status', 'accepted')
+    } else if (squareBookingId && status && CANCELLED_STATUSES.has(status)) {
       await supabase
         .from('booking_requests')
         .update({ status: 'cancelled', reviewed_at: new Date().toISOString() })

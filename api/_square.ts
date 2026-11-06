@@ -112,6 +112,7 @@ export interface VariationMatch {
   durationMs: number | null
   itemName: string
   variationName: string
+  priceCents: number | null
 }
 
 function toMatch(item: any, v: any): VariationMatch {
@@ -121,6 +122,7 @@ function toMatch(item: any, v: any): VariationMatch {
     durationMs: (v.item_variation_data?.service_duration as number | undefined) ?? null,
     itemName: (item.item_data?.name as string | undefined) ?? '',
     variationName: (v.item_variation_data?.name as string | undefined) ?? '',
+    priceCents: (v.item_variation_data?.price_money?.amount as number | undefined) ?? null,
   }
 }
 
