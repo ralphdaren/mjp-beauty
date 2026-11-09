@@ -159,15 +159,8 @@ export default function TestimonialsSection() {
   return (
     <section className="testimonials-section">
       <div className="anim-fade-up testimonials-header">
-        <p className="testimonials-eyebrow">STUDENT STORIES</p>
-        <h2 className="about-heading testimonials-heading">
-          Real Results from{' '}
-          <span className="text-[#827064]">Real Students</span>
-        </h2>
-        <p className="testimonials-subtext">
-          From first strokes to fully booked — see what our students are creating
-          after training with MJP Beauty.
-        </p>
+        <h2 className="about-heading about-heading--upright testimonials-heading">Student Stories</h2>
+        <p className="testimonials-subtext">KIND WORDS FROM MY STUDENTS</p>
       </div>
 
       <div className="reviews-grid">

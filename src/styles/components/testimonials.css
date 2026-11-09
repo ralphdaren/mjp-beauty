@@ -1,37 +1,42 @@
 /* ─── Testimonials / Reviews Section ────────────────────────────── */
 
 .testimonials-section {
-  background-color: #ede8e0;
+  background-color: #ffffff;
   padding-top: 4rem;
   padding-bottom: 4rem;
 }
 
+/* Left edge lines up with the reviews grid below (same padding + max-width) */
 .testimonials-header {
-  max-width: 50rem;
-  margin: 0 auto;
-  padding: 0 1.5rem 3rem;
-  text-align: center;
+  padding: 0 2.5rem 2rem;
+  text-align: left;
 }
 
-.testimonials-eyebrow {
-  margin-bottom: 0.75rem;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.28em;
-  color: var(--muted-foreground);
+@media (min-width: 768px) {
+  .testimonials-header {
+    padding: 0 4rem 2.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .testimonials-header {
+    max-width: 82rem;
+    margin: 0 auto;
+  }
 }
 
 .testimonials-heading {
-  font-size: clamp(1.75rem, 4vw, 2.8rem);
+  font-size: clamp(2rem, 5vw, 3.25rem);
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.1;
   color: var(--foreground);
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .testimonials-subtext {
-  font-size: 0.9rem;
-  line-height: 1.75;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  letter-spacing: 0.15em;
   color: var(--muted-foreground);
 }
 
@@ -40,15 +45,25 @@
 .reviews-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
+  gap: 12px;
   height: 480px;
   overflow: hidden;
   padding: 0 2.5rem;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
 }
 
 @media (min-width: 768px) {
   .reviews-grid {
     padding: 0 4rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .reviews-grid {
+    max-width: 82rem;
+    margin: 0 auto;
+    height: 620px;
   }
 }
 
@@ -77,8 +92,9 @@
   display: block;
   object-fit: cover;
   flex-shrink: 0;
+  border: 1px solid #e5e5e5;
   border-radius: 0.875rem;
-  margin-bottom: 6px;
+  margin-bottom: 12px;
   user-select: none;
   -webkit-user-drag: none;
 }
