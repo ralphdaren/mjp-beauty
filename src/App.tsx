@@ -14,10 +14,25 @@ import ManageBookingPage from '@/pages/ManageBookingPage'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import ScrollToTop from '@/components/ScrollToTop'
+import LoginPage from '@/pages/auth/LoginPage'
+import SignupPage from '@/pages/auth/SignupPage'
+import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
+import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
+import AuthCallbackPage from '@/pages/auth/AuthCallbackPage'
+import RequireAuth from '@/components/auth/RequireAuth'
+import PortalLayout from '@/pages/portal/PortalLayout'
+import MyCoursesPage from '@/pages/portal/MyCoursesPage'
+import CertificatesPage from '@/pages/portal/CertificatesPage'
+import AppointmentsPage from '@/pages/portal/AppointmentsPage'
+import AccountPage from '@/pages/portal/AccountPage'
+import CoursePlaceholderPage from '@/pages/portal/CoursePlaceholderPage'
+
+const BARE_PATHS = ['/admin', '/login', '/signup', '/forgot-password', '/reset-password', '/auth/callback']
+const isBarePath = (pathname: string) => BARE_PATHS.includes(pathname) || pathname === '/portal' || pathname.startsWith('/portal/')
 
 function AppContent() {
   const { pathname } = useLocation()
-  const isBareLayout = pathname === '/admin'
+  const isBareLayout = isBarePath(pathname)
 
   return (
     <>
@@ -36,8 +51,34 @@ function AppContent() {
         <Route path="/made-for-more" element={<Navigate to="/" replace />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsOfUsePage />} />
-        <Route path="/admin" element={<AdminPage />} />
+        <Route
+          path="/admin"
+          element={
+            <RequireAuth role="admin">
+              <AdminPage />
+            </RequireAuth>
+          }
+        />
         <Route path="/manage-booking" element={<ManageBookingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/auth/callback" element={<AuthCallbackPage />} />
+        <Route
+          path="/portal"
+          element={
+            <RequireAuth>
+              <PortalLayout />
+            </RequireAuth>
+          }
+        >
+          <Route index element={<MyCoursesPage />} />
+          <Route path="certificates" element={<CertificatesPage />} />
+          <Route path="appointments" element={<AppointmentsPage />} />
+          <Route path="account" element={<AccountPage />} />
+          <Route path="courses/:slug" element={<CoursePlaceholderPage />} />
+        </Route>
       </Routes>
       {!isBareLayout && <Footer />}
     </>

@@ -208,15 +208,13 @@ export default function Navbar() {
             <img src={logoBrown} alt="MJP Beauty" className="h-10 sm:h-12 w-auto" />
           </NavLink>
           <div className="flex items-center gap-0.5 sm:gap-1 -mr-2">
-            <a
-              href="https://mjpbeautyacademy.thinkific.com/users/sign_in"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Student Login"
+            <Link
+              to="/login"
+              aria-label="Portal"
               className="p-2 text-brand rounded-md active:opacity-60 transition-opacity duration-200"
             >
               <User size={22} />
-            </a>
+            </Link>
             <button
               onClick={() => setIsSearchOpen(true)}
               aria-label="Search"
@@ -283,20 +281,18 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Right: Student Login | Cart | Book */}
+          {/* Right: Portal | Cart | Book */}
           <div className="flex items-center gap-8">
             <div className="relative group">
-              <a
-                href="https://mjpbeautyacademy.thinkific.com/users/sign_in"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Student Login"
+              <Link
+                to="/login"
+                aria-label="Portal"
                 className="flex items-center justify-center p-2 -m-2 text-brand hover:opacity-70 transition-opacity duration-200"
               >
                 <User size={22} />
-              </a>
+              </Link>
               <span className="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 rounded-md bg-[#3d3530] text-white text-xs whitespace-nowrap opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200">
-                Student Login
+                Portal
               </span>
             </div>
 

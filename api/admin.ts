@@ -11,7 +11,7 @@
 // GET  /api/admin?resource=fee-quote&requestId=<id>      → FeeQuote
 // POST /api/admin { resource: 'fee', action: 'preview', requestId, amountCents }         → { chargeCents, gstCents }
 // POST /api/admin { resource: 'fee', action: 'charge', requestId, reason, amountCents }  → { chargedCents, paymentId, emailSent }
-// All routes require: Authorization: Bearer <ADMIN_SECRET>
+// All routes require: Authorization: Bearer <Supabase access token of a user whose profiles.role = 'admin'>
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { randomUUID } from 'crypto'
@@ -23,6 +23,7 @@ import { enforceRateLimit, adminLimiter, calendarReadLimiter } from './_ratelimi
 import { CALENDAR_RESOURCES } from './_calendar.js'
 import { listCalendarBlocks, getAppointmentDetail, getClientHistoryChunk } from './_calendar-square.js'
 import { setCorsHeaders } from './_cors.js'
+import { getAdminUser } from './_auth.js'
 import { isNonEmptyString, isValidIsoDateTime, isValidEmail, isOptionalString } from './_validate.js'
 import {
   renderTicketEmail,
@@ -48,10 +49,6 @@ const VALID_TRAINING_OPTIONS = ['group', 'private']
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const CLIENT_TIMEZONE = 'America/Winnipeg'
-
-function isAuthorized(req: VercelRequest): boolean {
-  return req.headers['authorization'] === `Bearer ${process.env.ADMIN_SECRET}`
-}
 
 interface RequestedItem {
   serviceName: string
@@ -162,14 +159,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') return res.status(200).end()
 
   // Authorized calendar reads get their own, larger budget (one appointment tap is ~6 requests).
-  // Unauthorized requests always count against adminLimiter, which guards ADMIN_SECRET.
+  // Everything else is rate limited BEFORE the token is checked, so floods never reach Supabase Auth.
   const resource = req.method === 'GET' ? req.query.resource : req.body?.resource
-  const calendarRead =
-    req.method === 'GET' && typeof resource === 'string' && CALENDAR_RESOURCES.has(resource) && isAuthorized(req)
-  if (!(await enforceRateLimit(req, res, calendarRead ? calendarReadLimiter : adminLimiter))) return
+  const calendarResource = req.method === 'GET' && typeof resource === 'string' && CALENDAR_RESOURCES.has(resource)
+  let admin: Awaited<ReturnType<typeof getAdminUser>> = null
+  if (calendarResource) {
+    admin = await getAdminUser(req)
+    if (!(await enforceRateLimit(req, res, admin ? calendarReadLimiter : adminLimiter))) return
+  } else {
+    if (!(await enforceRateLimit(req, res, adminLimiter))) return
+    admin = await getAdminUser(req)
+  }
 
-  if (!isAuthorized(req)) return res.status(401).json({ error: 'Unauthorized' })
-  if (calendarRead) return handleCalendar(req, res, resource)
+  if (!admin) return res.status(401).json({ error: 'Unauthorized' })
+  if (calendarResource) return handleCalendar(req, res, resource)
 
   if (req.method === 'GET' && req.query.resource === 'auth') {
     return res.status(200).json({ ok: true })

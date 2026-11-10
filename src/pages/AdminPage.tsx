@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import AdminHeader from '../components/admin/AdminHeader'
-import AdminLogin from '../components/admin/AdminLogin'
 import AdminSidebar from '../components/admin/AdminSidebar'
 import BrowCalendarPanel from '../components/admin/BrowCalendarPanel'
+import CoursesPlaceholderPanel from '../components/admin/CoursesPlaceholderPanel'
 import MadeForMorePanel from '../components/admin/MadeForMorePanel'
 import MentorshipPanel from '../components/admin/MentorshipPanel'
 import ServiceRequestsList from '../components/admin/ServiceRequestsList'
@@ -35,10 +35,8 @@ export default function AdminPage() {
     setSidebarOpen(false)
   }
 
-  if (!session.authenticated) return <AdminLogin onSubmit={session.signIn} />
-
   const refresh: PanelRefresh | null =
-    category === 'mentorship'
+    category === 'mentorship' || category === 'courses'
       ? null
       : showCalendar
         ? { run: calendar.reload, loading: calendar.loading }
@@ -56,6 +54,7 @@ export default function AdminPage() {
           training: holdCount,
           mentorship: 0,
           mfm: session.mfmTickets.filter((t) => !t.email_sent_at).length,
+          courses: 0,
         }}
         trainingView={trainingView}
         onTrainingViewSelect={setTrainingView}
@@ -114,6 +113,8 @@ export default function AdminPage() {
         )}
 
         {category === 'mentorship' && <MentorshipPanel />}
+
+        {category === 'courses' && <CoursesPlaceholderPanel />}
       </div>
     </div>
   )

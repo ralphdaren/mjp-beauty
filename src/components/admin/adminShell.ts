@@ -1,6 +1,6 @@
 /** Contract between the dashboard shell (sidebar + header) and the panels it hosts. */
 
-export type AdminCategory = 'services' | 'training' | 'mentorship' | 'mfm'
+export type AdminCategory = 'services' | 'training' | 'mentorship' | 'mfm' | 'courses'
 export type TrainingView = 'bookings' | 'dates'
 export type ServicesView = 'requests' | 'calendar'
 
@@ -9,6 +9,7 @@ export const CATEGORY_LABEL: Record<AdminCategory, string> = {
   training: 'In-Person Training',
   mentorship: 'Biz Mentorship',
   mfm: 'Made For More',
+  courses: 'Online Courses',
 }
 
 export interface PanelRefresh {

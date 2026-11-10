@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/lib/auth/AuthProvider'
 import type { BookingRequest } from './serviceRequests'
 import type { TrainingBooking } from './TrainingBookingsPanel'
 import type { TrainingDateRow } from './TrainingDatesPanel'
 import type { MfmTicket } from './MadeForMorePanel'
-
-const TOKEN_KEY = 'mjp_admin_token'
 
 export interface FetchOpts {
   silent?: boolean
@@ -47,9 +47,13 @@ async function loadResource<T>({
 }
 
 export function useAdminSession() {
-  const [token, setToken] = useState(() => sessionStorage.getItem(TOKEN_KEY) ?? '')
-  const [authenticated, setAuthenticated] = useState(false)
-  const restoring = !!token
+  // The token is the admin's Supabase access token; supabase-js refreshes it, and the new
+  // value flows to every panel through this hook. Only rendered behind <RequireAuth role="admin">.
+  const auth = useAuth()
+  const navigate = useNavigate()
+  const token = auth.session?.access_token ?? ''
+  const authenticated = auth.profile?.role === 'admin'
+  const restoring = true
 
   const [requests, setRequests] = useState<BookingRequest[]>([])
   const [requestsLoading, setRequestsLoading] = useState(restoring)
@@ -67,10 +71,12 @@ export function useAdminSession() {
   const [ticketsLoading, setTicketsLoading] = useState(restoring)
   const [ticketsError, setTicketsError] = useState('')
 
+  // The API rejected a session the browser still holds (role removed, server misconfigured).
+  // Sign out first: redirecting alone sends the still-signed-in user straight back here, in a loop.
+  const { signOut: authSignOut } = auth
   const signOutUnauthorized = useCallback(() => {
-    setAuthenticated(false)
-    sessionStorage.removeItem(TOKEN_KEY)
-  }, [])
+    void authSignOut().finally(() => navigate('/login?next=%2Fadmin', { replace: true }))
+  }, [authSignOut, navigate])
 
   const refetchRequests = useCallback(
     (opts?: FetchOpts) =>
@@ -172,48 +178,25 @@ export function useAdminSession() {
     [signOutUnauthorized],
   )
 
+  // Load once when the first token arrives; later refreshed tokens must not reload everything.
   const bootstrapped = useRef(false)
   useEffect(() => {
     if (!token || bootstrapped.current) return
     bootstrapped.current = true
-    setAuthenticated(true)
     loadAll(token)
-  }, [])
-
-  const signIn = useCallback(
-    async (password: string): Promise<string | null> => {
-      try {
-        const res = await fetch('/api/admin?resource=auth', {
-          headers: { Authorization: `Bearer ${password}` },
-        })
-        if (res.status === 401) return 'Incorrect password.'
-        if (!res.ok) throw new Error('Sign-in failed')
-        sessionStorage.setItem(TOKEN_KEY, password)
-        setToken(password)
-        setAuthenticated(true)
-        loadAll(password)
-        return null
-      } catch {
-        return 'Could not connect. Try again.'
-      }
-    },
-    [loadAll],
-  )
+  }, [token, loadAll])
 
   const signOut = useCallback(() => {
-    sessionStorage.removeItem(TOKEN_KEY)
-    setToken('')
-    setAuthenticated(false)
+    void authSignOut()
     setRequests([])
     setTrainingBookings([])
     setTrainingDates([])
     setMfmTickets([])
-  }, [])
+  }, [authSignOut])
 
   return {
     token,
     authenticated,
-    signIn,
     signOut,
 
     requests,
