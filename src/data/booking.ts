@@ -9,6 +9,8 @@ const browLamImg1 = serviceImg('v1783028342/brow-lm-img-01_pnidos.jpg')
 const browLamImg2 = serviceImg('v1783028342/brow-lm-img-02_rmqbae.jpg')
 const browStImg1  = serviceImg('v1783028351/brow-st-img-01_v5ms1d.jpg')
 const browStImg2  = serviceImg('v1783028351/brow-st-img-02_knrsde.jpg')
+const browStImg3  = serviceImg('v1794438950/brow-st-img-03_ybyuwz.jpg')
+const browStImg4  = serviceImg('v1794438950/brow-st-img-04_chztjx.jpg')
 const browWtImg1  = serviceImg('v1783028361/brow-wt-img-01_pijrj8.jpg')
 const browWtImg2  = serviceImg('v1783028360/brow-wt-img-02_i0fu0d.jpg')
 const keratinImg1 = serviceImg('v1783028371/keratin-lt-img-01_bwcm5l.jpg')
@@ -48,7 +50,7 @@ export const SERVICES: Service[] = [
     tiers: [
       { squareVariationId: 'I56EZ4ZJVCHX67FYG4HO4Y6Q', label: 'Returning Client', price: '$66.67', duration: '30 min' },
     ],
-    images: [browStImg1, browStImg2],
+    images: [browStImg1, browStImg2, browStImg3, browStImg4],
     video: null,
   },
   {
