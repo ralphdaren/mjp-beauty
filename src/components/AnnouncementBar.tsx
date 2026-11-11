@@ -1,7 +1,7 @@
 import { CalendarCheck, GraduationCap, type LucideIcon } from 'lucide-react'
 
 const MESSAGES: { icon: LucideIcon; text: string }[] = [
-  { icon: GraduationCap, text: 'Brow training for 2027 is now open' },
+  { icon: GraduationCap, text: 'Brow training waitlist for 2027 is now open' },
   { icon: CalendarCheck, text: 'Now booking appointments for December' },
 ]
 
