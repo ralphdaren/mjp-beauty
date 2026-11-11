@@ -43,7 +43,7 @@ export const SERVICES: Service[] = [
     name: 'Brow Shape & Tint',
     tagline: 'Sculpted • Tinted • Polished',
     description:
-      'A complete brow enhancement package — brow shaping, waxing, and tinting all in one. Brow tint lasts up to 1 week on the skin and 4+ weeks on the hairs for a defined, polished finish.',
+      'Want a filled-in, makeup look without having to reach for your makeup every day? Choose the tint that best suits your style: Standard Tint gives your brows a soft, natural finish. The stain lasts around 5–7 days on the skin and 3+ weeks on the hairs. Hybrid Tint creates a deeper, longer-lasting stain, lasting around 7–10 days on the skin and 4+ weeks on the hairs. The choice is yours!',
     duration: '40 min+',
     tiers: [
       { squareVariationId: 'I56EZ4ZJVCHX67FYG4HO4Y6Q', label: 'Returning Client', price: '$66.67', duration: '30 min' },
