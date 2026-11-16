@@ -4,7 +4,8 @@ export const BLACK_FRIDAY = {
   startsAt: new Date('2026-11-19T08:00:00-06:00'),
   endsAt: new Date('2026-11-26T00:00:00-06:00'),
   image: 'v1794854802/black-friday_jxuwyr.jpg',
-  href: '/online-brow-courses',
+  // Popup button sends people to the Flodesk insider waitlist, not the courses page.
+  href: 'https://mjpbeauty.myflodesk.com/insider-subscribers',
 }
 
 export const isBlackFridayRunning = (now = new Date()) => now < BLACK_FRIDAY.endsAt
