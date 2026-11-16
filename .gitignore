@@ -41,3 +41,6 @@ dist-ssr
 # Environment Variables
 .env
 .vercel
+
+# Supabase migrations (local only)
+supabase/migrations/

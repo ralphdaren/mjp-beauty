@@ -1,6 +1,10 @@
-import { CalendarCheck, GraduationCap, type LucideIcon } from 'lucide-react'
+import { CalendarCheck, GraduationCap, Tag, type LucideIcon } from 'lucide-react'
+import { isBlackFridayRunning } from '@/data/promos'
 
 const MESSAGES: { icon: LucideIcon; text: string }[] = [
+  ...(isBlackFridayRunning()
+    ? [{ icon: Tag, text: 'Black Friday: 15% off all online brow courses, Nov 19 to 25' }]
+    : []),
   { icon: GraduationCap, text: 'Brow training waitlist for 2027 is now open' },
   { icon: CalendarCheck, text: 'Now booking appointments for December' },
 ]

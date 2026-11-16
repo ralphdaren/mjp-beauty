@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { cld, toSrcSet } from '@/lib/cloudinary'
 const headVid = 'https://res.cloudinary.com/dr9nm40gf/video/upload/q_auto/f_auto/v1781343345/home-head-vid_jlpxxp.mp4'
 const aboutImg = cld('v1792780992/about-me_asob5e.jpg')
@@ -12,6 +12,10 @@ import { useScrollAnimation } from '@/hooks/useScrollAnimation'
 import BackToTop from '@/components/BackToTop'
 import TestimonialsSection from '@/components/TestimonialsSection'
 import InstagramReels from '@/components/InstagramReels'
+import BlackFridayPopup from '@/components/BlackFridayPopup'
+import { isBlackFridayRunning } from '@/data/promos'
+
+const BF_POPUP_KEY = 'mjp-black-friday-2026-popup-dismissed'
 
 const REELS = [
   'v1785126609/home-reel-01_aswz81',
@@ -27,6 +31,21 @@ const REELS = [
 export default function Home() {
   const location = useLocation()
   useScrollAnimation()
+  const [bfPopupOpen, setBfPopupOpen] = useState(false)
+
+  useEffect(() => {
+    if (!isBlackFridayRunning()) return
+    try {
+      if (sessionStorage.getItem(BF_POPUP_KEY)) return
+    } catch { /* storage blocked: still show it */ }
+    const t = setTimeout(() => setBfPopupOpen(true), 800)
+    return () => clearTimeout(t)
+  }, [])
+
+  function closeBfPopup() {
+    setBfPopupOpen(false)
+    try { sessionStorage.setItem(BF_POPUP_KEY, '1') } catch { /* ignore */ }
+  }
 
   useEffect(() => {
     const target = (location.state as { scrollTo?: string } | null)?.scrollTo
@@ -277,6 +296,7 @@ export default function Home() {
         </div>
       </section>
       <BackToTop />
+      {bfPopupOpen && <BlackFridayPopup onClose={closeBfPopup} />}
     </main>
   )
 }
