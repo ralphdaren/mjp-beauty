@@ -10,3 +10,14 @@ export const BLACK_FRIDAY = {
 
 export const isBlackFridayRunning = (now = new Date()) => now < BLACK_FRIDAY.endsAt
 export const hasBlackFridayStarted = (now = new Date()) => now >= BLACK_FRIDAY.startsAt
+
+// Time left until `target`, split for a countdown display. Clamps at zero once the target passes.
+export function countdownParts(target: Date, now = new Date()) {
+  const total = Math.max(0, Math.floor((target.getTime() - now.getTime()) / 1000))
+  return {
+    days: Math.floor(total / 86400),
+    hours: Math.floor((total % 86400) / 3600),
+    minutes: Math.floor((total % 3600) / 60),
+    seconds: total % 60,
+  }
+}

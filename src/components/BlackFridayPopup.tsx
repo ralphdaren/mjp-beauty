@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 import { cld, toSrcSet } from '@/lib/cloudinary'
-import { BLACK_FRIDAY, hasBlackFridayStarted } from '@/data/promos'
+import { BLACK_FRIDAY, countdownParts, hasBlackFridayStarted } from '@/data/promos'
+
+const pad = (n: number) => String(n).padStart(2, '0')
 
 const posterDesktop = cld(BLACK_FRIDAY.image, ',c_fill,g_auto,ar_2:3')
 // Mobile: a landscape crop around the "BLACK FRIDAY 15% OFF" headline on the poster.
@@ -11,7 +13,20 @@ const posterMobile = (w: number) =>
 export default function BlackFridayPopup({ onClose }: { onClose: () => void }) {
   const [visible, setVisible] = useState(false)
   const closeRef = useRef<HTMLButtonElement>(null)
-  const started = hasBlackFridayStarted()
+  // Ticks every second so the countdown is live and flips from "starts in" to "ends in" at 8 AM
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(id)
+  }, [])
+  const started = hasBlackFridayStarted(now)
+  const left = countdownParts(started ? BLACK_FRIDAY.endsAt : BLACK_FRIDAY.startsAt, now)
+  const units = [
+    { label: 'Days', value: left.days },
+    { label: 'Hours', value: left.hours },
+    { label: 'Mins', value: left.minutes },
+    { label: 'Secs', value: left.seconds },
+  ]
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 30)
@@ -93,10 +108,28 @@ export default function BlackFridayPopup({ onClose }: { onClose: () => void }) {
             </p>
           </div>
 
+          <div className="mb-5">
+            <p className="text-[10px] tracking-[0.2em] uppercase text-[#827064] mb-2">
+              {started ? 'Sale ends in' : 'Sale starts in'}
+            </p>
+            {/* Screen readers get the plain date instead of a number changing every second */}
+            <p className="sr-only">
+              {started ? 'The sale ends at the end of November 25.' : 'The sale starts November 19 at 8 AM Manitoba time.'}
+            </p>
+            <div className="grid grid-cols-4 gap-2" aria-hidden="true">
+              {units.map((u) => (
+                <div key={u.label} className="rounded-lg border border-[#e3e2de] py-2 text-center">
+                  <span className="block text-xl font-semibold text-[#3d3530] leading-none tabular-nums">{pad(u.value)}</span>
+                  <span className="block text-[9px] tracking-[0.15em] uppercase text-[#a0948a] mt-1">{u.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <p className="text-xs text-[#6b5f58] leading-relaxed mb-6">
             {started
               ? 'On now until November 25. Time to stand out and become the go-to brow artist in your city.'
-              : 'Starts November 19 at 8 AM (Manitoba time) and runs until November 25. Set those alarms!'}
+              : 'Runs until November 25. Set those alarms!'}
           </p>
 
           <a

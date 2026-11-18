@@ -36,11 +36,13 @@ dist-ssr
 *.mpeg
 *.mpg
 
-# Images (tracked in git — videos excluded separately due to size)
-
 # Environment Variables
 .env
 .vercel
 
 # Supabase migrations (local only)
 supabase/migrations/
+
+# Claude planning docs and brainstorm mockups
+docs/
+.superpowers/
