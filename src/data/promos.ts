@@ -4,8 +4,8 @@ export const BLACK_FRIDAY = {
   startsAt: new Date('2026-11-19T08:00:00-05:00'),
   endsAt: new Date('2026-11-26T00:00:00-05:00'),
   image: 'v1794854802/black-friday_jxuwyr.jpg',
-  // Popup button sends people to the Flodesk insider waitlist, not the courses page.
-  href: 'https://mjpbeauty.myflodesk.com/insider-subscribers',
+  // Popup button sends people to the online courses page.
+  href: '/online-brow-courses',
   // First 3 VIP enrollments get a free strategy call. Set to false once all 3 are claimed.
   vipBonusAvailable: true,
 }

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { cld, toSrcSet } from '@/lib/cloudinary'
 import { BLACK_FRIDAY, countdownParts, hasBlackFridayStarted } from '@/data/promos'
 
@@ -132,15 +133,13 @@ export default function BlackFridayPopup({ onClose }: { onClose: () => void }) {
               : 'Runs until November 25. Set those alarms!'}
           </p>
 
-          <a
-            href={BLACK_FRIDAY.href}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            to={BLACK_FRIDAY.href}
             onClick={dismiss}
             className="w-full py-2.5 bg-[#827064] text-white text-xs text-center tracking-widest uppercase rounded-full hover:opacity-90 active:scale-[0.98] transition-all"
           >
-            Join the waitlist
-          </a>
+            Shop the sale
+          </Link>
 
           <button
             onClick={dismiss}
