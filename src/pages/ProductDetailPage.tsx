@@ -1,10 +1,13 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, X, ChevronLeft, ChevronRight, Star, Lock } from 'lucide-react'
-import { getProductByHandle, createCheckoutUrl, formatPrice } from '@/lib/shopify'
+import { getProductByHandle, createCheckoutUrl } from '@/lib/shopify'
 import type { ShopifyProduct } from '@/lib/shopify'
 import { getProductReviews, submitReview } from '@/lib/judgeme'
 import type { JudgeMeReview } from '@/lib/judgeme'
+import SalePrice from '@/components/sale/SalePrice'
+import SaleTag from '@/components/sale/SaleTag'
+import VipBonusNote from '@/components/sale/VipBonusNote'
 
 const REVIEWS_PER_PAGE = 3
 
@@ -326,11 +329,17 @@ export default function ProductDetailPage() {
             <p className="text-[10px] tracking-[0.35em] uppercase text-[#a0948a] mb-2">MJP Beauty</p>
             <h1 className="text-2xl font-semibold text-[#3d3028] mb-4 leading-snug">{product.title}</h1>
 
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-semibold text-[#3d3028]">{formatPrice(product.price)}</span>
-                <span className="text-sm text-[#5a5047] ml-1">CAD</span>
-              </div>
+            <div>
+              <SaleTag price={product.price} compareAtPrice={product.compareAtPrice} variant="pill" />
+            </div>
+            <div className="flex items-end justify-between mb-6">
+              <SalePrice
+                price={product.price}
+                compareAtPrice={product.compareAtPrice}
+                priceClassName="text-3xl font-semibold text-[#3d3028]"
+                wasClassName="text-base text-[#a0948a] mb-1"
+                cadClassName="text-sm text-[#5a5047] ml-1"
+              />
               {reviews.length > 0 && (
                 <div className="flex items-center gap-1">
                   <Star size={13} fill="#3d3028" stroke="#3d3028" />
@@ -339,6 +348,10 @@ export default function ProductDetailPage() {
                 </div>
               )}
             </div>
+
+            {product.handle === import.meta.env.VITE_SHOPIFY_HANDLE_VIP && (
+              <VipBonusNote tone="light" className="mb-6" />
+            )}
 
             <div className="h-px bg-[#e3e2de] mb-6" />
 

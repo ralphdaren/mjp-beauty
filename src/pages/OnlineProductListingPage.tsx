@@ -4,6 +4,10 @@ import { Link } from 'react-router-dom'
 import { getCollectionProducts, getProductByHandle, createCheckoutUrl, formatPrice } from '@/lib/shopify'
 import type { ShopifyProduct } from '@/lib/shopify'
 import { getAllPublishedReviews } from '@/lib/judgeme'
+import { percentOff } from '@/lib/sale'
+import SalePrice from '@/components/sale/SalePrice'
+import SaleTag from '@/components/sale/SaleTag'
+import VipBonusNote from '@/components/sale/VipBonusNote'
 
 type ReviewSummary = { avg: number; count: number }
 
@@ -91,7 +95,8 @@ export default function OnlineModulesPage() {
             <div className="mb-14 rounded-2xl border border-[#e3e2de] bg-[#faf8f5] shadow-[0_4px_20px_rgba(130,112,100,0.08)] overflow-hidden">
               <div className="flex flex-col md:flex-row md:max-h-[420px]">
                 {selectedTrack.featuredImage && (
-                  <div className="md:w-[38%] shrink-0 bg-[#f6f2ec]">
+                  <div className="relative md:w-[38%] shrink-0 bg-[#f6f2ec]">
+                    <SaleTag price={selectedTrack.price} compareAtPrice={selectedTrack.compareAtPrice} variant="corner" />
                     <img
                       src={selectedTrack.featuredImage.url}
                       alt={selectedTrack.featuredImage.altText || selectedTrack.title}
@@ -137,6 +142,12 @@ export default function OnlineModulesPage() {
                           </span>
                           {product && (
                             <span className={`block text-xs mt-1 ${isActive ? 'text-[#5a5047]' : 'text-[#a0948a]'}`}>
+                              {percentOff(product.price, product.compareAtPrice) !== null && (
+                                <s className="mr-1.5 opacity-75">
+                                  <span className="sr-only">Regular price </span>
+                                  {formatPrice(product.compareAtPrice!)}
+                                </s>
+                              )}
                               {formatPrice(product.price)}
                             </span>
                           )}
@@ -146,13 +157,14 @@ export default function OnlineModulesPage() {
                   </div>
 
                   <div className="mt-auto">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-semibold text-[#3d3028] leading-none">
-                          {formatPrice(selectedTrack.price)}
-                        </span>
-                        <span className="text-xs text-[#5a5047] ml-1">CAD</span>
-                      </div>
+                    <div className="flex items-end justify-between mb-3">
+                      <SalePrice
+                        price={selectedTrack.price}
+                        compareAtPrice={selectedTrack.compareAtPrice}
+                        priceClassName="text-2xl font-semibold text-[#3d3028] leading-none"
+                        wasClassName="text-sm text-[#a0948a] mb-1"
+                        cadClassName="text-xs text-[#5a5047] ml-1"
+                      />
                       {reviewSummaries[selectedTrack.handle] && (
                         <div className="flex items-center gap-1 shrink-0 whitespace-nowrap">
                           <Star size={11} fill="#3d3028" stroke="#3d3028" />
@@ -165,6 +177,10 @@ export default function OnlineModulesPage() {
                         </div>
                       )}
                     </div>
+
+                    {selectedTrack.handle === ALL_IN_ONE_TRACKS[1].handle && (
+                      <VipBonusNote tone="light" className="mb-4" />
+                    )}
 
                     <Link
                       to={`/online-modules/${selectedTrack.handle}`}
@@ -205,7 +221,8 @@ export default function OnlineModulesPage() {
                 >
                   <Link to={`/online-modules/${product.handle}`} className="block group">
                     {product.featuredImage ? (
-                      <div className="w-full aspect-square bg-[#f6f2ec]">
+                      <div className="relative w-full aspect-square bg-[#f6f2ec]">
+                        <SaleTag price={product.price} compareAtPrice={product.compareAtPrice} variant="corner" short />
                         <img
                           src={product.featuredImage.url}
                           alt={product.featuredImage.altText || product.title}
@@ -224,13 +241,14 @@ export default function OnlineModulesPage() {
                   <div className="px-4 pb-4 flex flex-col flex-1">
                     <div className="mt-auto">
                       <div className="h-px bg-[#e3e2de] mb-3" />
-                      <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:justify-between mb-3">
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-xl font-semibold text-[#3d3028] leading-none">
-                            {formatPrice(product.price)}
-                          </span>
-                          <span className="text-xs text-[#5a5047] ml-1">CAD</span>
-                        </div>
+                      <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-end sm:justify-between mb-3">
+                        <SalePrice
+                          price={product.price}
+                          compareAtPrice={product.compareAtPrice}
+                          priceClassName="text-xl font-semibold text-[#3d3028] leading-none"
+                          wasClassName="text-xs text-[#a0948a] mb-1"
+                          cadClassName="text-xs text-[#5a5047] ml-1"
+                        />
                         {reviewSummaries[product.handle] && (
                           <div className="flex items-center gap-1 shrink-0 whitespace-nowrap">
                             <Star size={11} fill="#3d3028" stroke="#3d3028" />

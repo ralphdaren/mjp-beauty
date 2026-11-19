@@ -10,6 +10,11 @@ import type { ReviewOption } from '@/components/CourseReviewsSection'
 import InstagramReels from '@/components/InstagramReels'
 import { getProductByHandle, createCheckoutUrl, formatPrice } from '@/lib/shopify'
 import type { ShopifyProduct } from '@/lib/shopify'
+import { percentOff } from '@/lib/sale'
+import { isVipBonusShowing } from '@/data/promos'
+import SalePrice from '@/components/sale/SalePrice'
+import SaleTag from '@/components/sale/SaleTag'
+import VipBonusNote from '@/components/sale/VipBonusNote'
 import { cld, toSrcSet } from '@/lib/cloudinary'
 const olHeadImg         = cld('v1783027948/ol-head_xivqpl.jpg', ',c_limit')
 const olHeadPortraitImg = cld('v1783027948/ol-head_xivqpl.jpg', ',c_fill,g_center,ar_9:16')
@@ -187,6 +192,13 @@ const singleModuleData = [
 const SHOP_WIDTHS = [300, 450, 600]
 const shopifyImg = (url: string, w: number) => `${url}${url.includes('?') ? '&' : '?'}width=${w}`
 
+// Sum of course prices; sale prices can make it fractional, so always 0 or 2 decimals
+const formatTotal = (n: number) => {
+  const cents = Math.round(n * 100)
+  const digits = cents % 100 === 0 ? 0 : 2
+  return `$${(cents / 100).toLocaleString('en-CA', { minimumFractionDigits: digits, maximumFractionDigits: digits })}`
+}
+
 // ─── Path comparison data ─────────────────────────────────────────────────────
 
 // VIP-only rows; no Shopify product backs these, so the price is set here
@@ -287,7 +299,7 @@ const ONLINE_FAQ: { q: string; a: ReactNode }[] = [
     q: 'What if I need extra support while taking the course?',
     a: (
       <p>
-        Consider the VIP Mentorship option for $849 CAD which allows you to have direct mentorship
+        Consider the VIP Mentorship option, which allows you to have direct mentorship
         and guidance from your Educator, Micah. You will have up to 3 model submissions to receive
         detailed and personalized feedback, along with 6 months of unlimited chat support. Designed
         to fast-track your results as a student!
@@ -403,9 +415,13 @@ export default function OnlineBrowAcademyPage() {
 
   const pathPrice = (p: number) =>
     shopifyProducts[p] ? formatPrice(shopifyProducts[p]!.price) : PATH_PLANS[p].fallbackPrice
+  const pathOnSale = (p: number) => {
+    const product = shopifyProducts[p]
+    return !!product && percentOff(product.price, product.compareAtPrice) !== null
+  }
   // Independent's value is the live course total; VIP's is fixed
   const pathValue = (p: number) =>
-    PATH_PLANS[p].value ?? (coursesTotal !== null ? `$${coursesTotal.toLocaleString('en-CA')}` : null)
+    pathOnSale(p) ? null : PATH_PLANS[p].value ?? (coursesTotal !== null ? formatTotal(coursesTotal) : null)
 
   useEffect(() => {
     const handles = [
@@ -592,7 +608,8 @@ export default function OnlineBrowAcademyPage() {
               return (
                 <li key={i} className="flex flex-col">
                   <Link to={detailPath} className="group block">
-                    <div className="aspect-square overflow-hidden rounded-xl bg-[#f6f2ec]">
+                    <div className="relative aspect-square overflow-hidden rounded-xl bg-[#f6f2ec]">
+                      {product && <SaleTag price={product.price} compareAtPrice={product.compareAtPrice} variant="corner" short />}
                       {image && (
                         <img
                           src={shopifyImg(image.url, 600)}
@@ -611,10 +628,17 @@ export default function OnlineBrowAcademyPage() {
                   </Link>
                   <div className="mt-auto pt-4">
                     <div className="h-px bg-[#e3e2de] mb-3" />
-                    <div className="flex items-baseline justify-between gap-3">
-                      <span className="text-xl font-semibold text-[#3d3028] leading-none">
-                        {product ? formatPrice(product.price) : <span className="inline-block h-5 w-12 rounded bg-[#f6f2ec] animate-pulse align-middle" />}
-                      </span>
+                    <div className="flex items-end justify-between gap-3">
+                      {product ? (
+                        <SalePrice
+                          price={product.price}
+                          compareAtPrice={product.compareAtPrice}
+                          priceClassName="text-xl font-semibold text-[#3d3028] leading-none"
+                          wasClassName="text-xs text-[#a0948a] mb-1"
+                        />
+                      ) : (
+                        <span className="inline-block h-5 w-12 rounded bg-[#f6f2ec] animate-pulse align-middle" />
+                      )}
                       <button
                         onClick={() => handleEnroll(product)}
                         disabled={!product || enrolling === product.id}
@@ -634,7 +658,7 @@ export default function OnlineBrowAcademyPage() {
           {coursesTotal !== null && (
             <p className="about-heading mt-14 text-center text-lg sm:text-xl text-[#5a5047]">
               On their own, the 6 courses add up to{' '}
-              <span className="font-semibold text-[#3d3028]">${coursesTotal.toLocaleString('en-CA')}</span>.
+              <span className="font-semibold text-[#3d3028]">{formatTotal(coursesTotal)}</span>.
               Get them all in a path below and save.
             </p>
           )}
@@ -667,10 +691,25 @@ export default function OnlineBrowAcademyPage() {
                     {pathValue(p) && (
                       <p className={`text-sm line-through mb-1 ${vip ? 'text-[#f6f2ec]/45' : 'text-[#a0948a]'}`}>Value {pathValue(p)}</p>
                     )}
-                    <div className="flex items-baseline gap-1.5">
-                      <span className={`text-[2.75rem] font-semibold leading-none ${vip ? 'text-[#f6f2ec]' : 'text-[#3d3028]'}`}>{pathPrice(p)}</span>
-                      <span className={`text-sm ml-1 ${vip ? 'text-[#f6f2ec]/70' : 'text-[#5a5047]'}`}>CAD</span>
-                    </div>
+                    {shopifyProducts[p] && (
+                      <SaleTag price={shopifyProducts[p]!.price} compareAtPrice={shopifyProducts[p]!.compareAtPrice} variant="pill" tone={vip ? 'dark' : 'light'} />
+                    )}
+                    {shopifyProducts[p] ? (
+                      <SalePrice
+                        className=""
+                        price={shopifyProducts[p]!.price}
+                        compareAtPrice={shopifyProducts[p]!.compareAtPrice}
+                        priceClassName={`text-[2.75rem] font-semibold leading-none ${vip ? 'text-[#f6f2ec]' : 'text-[#3d3028]'}`}
+                        wasClassName={`text-sm mb-1 ${vip ? 'text-[#f6f2ec]/45' : 'text-[#a0948a]'}`}
+                        cadClassName={`text-sm ml-1 ${vip ? 'text-[#f6f2ec]/70' : 'text-[#5a5047]'}`}
+                      />
+                    ) : (
+                      <div className="flex items-baseline gap-1.5">
+                        <span className={`text-[2.75rem] font-semibold leading-none ${vip ? 'text-[#f6f2ec]' : 'text-[#3d3028]'}`}>{pathPrice(p)}</span>
+                        <span className={`text-sm ml-1 ${vip ? 'text-[#f6f2ec]/70' : 'text-[#5a5047]'}`}>CAD</span>
+                      </div>
+                    )}
+                    {vip && <VipBonusNote tone="dark" className="mt-5" />}
                   </div>
                 )
               })}
@@ -680,7 +719,19 @@ export default function OnlineBrowAcademyPage() {
                 <Fragment key={i}>
                   <div className="px-8 lg:px-10 py-4 flex items-center justify-between gap-4 border-b border-[#e3e2de]">
                     <span className="text-sm text-[#3d3028]">{moduleProducts[i]?.title ?? mod.name}</span>
-                    <span className="text-sm text-[#a0948a] shrink-0">{moduleProducts[i] ? formatPrice(moduleProducts[i]!.price) : ''}</span>
+                    <span className="text-sm text-[#a0948a] shrink-0">
+                      {moduleProducts[i] && percentOff(moduleProducts[i]!.price, moduleProducts[i]!.compareAtPrice) !== null && (
+                        <s className="mr-1.5 text-xs">
+                          <span className="sr-only">Regular price </span>
+                          {formatPrice(moduleProducts[i]!.compareAtPrice!)}
+                        </s>
+                      )}
+                      {moduleProducts[i] && (
+                        <span className={percentOff(moduleProducts[i]!.price, moduleProducts[i]!.compareAtPrice) !== null ? 'text-[#3d3028]' : ''}>
+                          {formatPrice(moduleProducts[i]!.price)}
+                        </span>
+                      )}
+                    </span>
                   </div>
                   <div className="flex items-center justify-center border-l border-b border-[#e3e2de]">
                     <Check size={16} strokeWidth={1.75} className="text-[#827064]" aria-label="Included" />
@@ -706,6 +757,26 @@ export default function OnlineBrowAcademyPage() {
                   </div>
                 </Fragment>
               ))}
+
+              {/* Black Friday bonus row (VIP only) */}
+              {isVipBonusShowing() && (
+                <>
+                  <div className="px-8 lg:px-10 py-4 flex items-center justify-between gap-4 bg-[#fbf3e8] border-b border-[#e3e2de]">
+                    <span className="text-sm font-semibold text-[#3d3028]">
+                      60-min Biz Strategy Call
+                      <span className="ml-2 align-[2px] rounded bg-[#827064] px-1.5 py-0.5 text-[0.55rem] uppercase tracking-[0.15em] text-white">Black Friday</span>
+                      <span className="block text-xs font-normal text-[#827064] mt-0.5">First 3 VIP enrollments only</span>
+                    </span>
+                    <span className="text-sm text-[#827064] shrink-0">$267</span>
+                  </div>
+                  <div className="flex items-center justify-center border-l border-b border-[#e3e2de]">
+                    <Minus size={14} strokeWidth={1.5} className="text-[#a0948a]" aria-label="Not included" />
+                  </div>
+                  <div className="flex items-center justify-center bg-[#3d3028] border-b border-white/10">
+                    <Check size={16} strokeWidth={1.75} className="text-[#f6f2ec]" aria-label="Included" />
+                  </div>
+                </>
+              )}
 
               {/* Ideal-for row + enroll */}
               <div className="px-8 lg:px-10 py-8">
@@ -749,6 +820,9 @@ export default function OnlineBrowAcademyPage() {
                 const rows = [
                   ...singleModuleData.map((mod, i) => ({ name: moduleProducts[i]?.title ?? mod.name, included: true, extra: false })),
                   ...VIP_EXTRAS.map((extra) => ({ name: extra.name, included: vip, extra: true })),
+                  ...(isVipBonusShowing()
+                    ? [{ name: '60-min Biz Strategy Call (Black Friday, first 3 VIP enrollments)', included: vip, extra: true }]
+                    : []),
                 ]
                 return (
                   <div
@@ -763,10 +837,25 @@ export default function OnlineBrowAcademyPage() {
                     {pathValue(p) && (
                       <p className={`text-sm line-through mb-1 ${vip ? 'text-[#f6f2ec]/45' : 'text-[#a0948a]'}`}>Value {pathValue(p)}</p>
                     )}
-                    <div className="flex items-baseline gap-1.5 mb-6">
-                      <span className={`text-[2.5rem] font-semibold leading-none ${vip ? 'text-[#f6f2ec]' : 'text-[#3d3028]'}`}>{pathPrice(p)}</span>
-                      <span className={`text-sm ml-1 ${vip ? 'text-[#f6f2ec]/70' : 'text-[#5a5047]'}`}>CAD</span>
-                    </div>
+                    {shopifyProducts[p] && (
+                      <SaleTag price={shopifyProducts[p]!.price} compareAtPrice={shopifyProducts[p]!.compareAtPrice} variant="pill" tone={vip ? 'dark' : 'light'} />
+                    )}
+                    {shopifyProducts[p] ? (
+                      <SalePrice
+                        className="mb-6"
+                        price={shopifyProducts[p]!.price}
+                        compareAtPrice={shopifyProducts[p]!.compareAtPrice}
+                        priceClassName={`text-[2.5rem] font-semibold leading-none ${vip ? 'text-[#f6f2ec]' : 'text-[#3d3028]'}`}
+                        wasClassName={`text-sm mb-1 ${vip ? 'text-[#f6f2ec]/45' : 'text-[#a0948a]'}`}
+                        cadClassName={`text-sm ml-1 ${vip ? 'text-[#f6f2ec]/70' : 'text-[#5a5047]'}`}
+                      />
+                    ) : (
+                      <div className="flex items-baseline gap-1.5 mb-6">
+                        <span className={`text-[2.5rem] font-semibold leading-none ${vip ? 'text-[#f6f2ec]' : 'text-[#3d3028]'}`}>{pathPrice(p)}</span>
+                        <span className={`text-sm ml-1 ${vip ? 'text-[#f6f2ec]/70' : 'text-[#5a5047]'}`}>CAD</span>
+                      </div>
+                    )}
+                    {vip && <VipBonusNote tone="dark" className="-mt-2 mb-6" />}
 
                     <ul className={`border-t ${vip ? 'border-white/10' : 'border-[#e3e2de]'}`}>
                       {rows.map((row) => (

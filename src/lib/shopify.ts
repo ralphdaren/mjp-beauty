@@ -10,6 +10,7 @@ export type ShopifyVariant = {
   id: string
   title: string
   price: string
+  compareAtPrice: string | null
   currencyCode: string
   availableForSale: boolean
   quantityAvailable: number | null
@@ -23,6 +24,7 @@ export type ShopifyProduct = {
   descriptionHtml: string
   variantId: string
   price: string
+  compareAtPrice: string | null
   currencyCode: string
   featuredImage: { url: string; altText: string } | null
   images: { url: string; altText: string }[]
@@ -60,6 +62,9 @@ const PRODUCT_QUERY = `
               amount
               currencyCode
             }
+            compareAtPrice {
+              amount
+            }
           }
         }
       }
@@ -88,6 +93,9 @@ const COLLECTION_PRODUCTS_QUERY = `
                   price {
                     amount
                     currencyCode
+                  }
+                  compareAtPrice {
+                    amount
                   }
                 }
               }
@@ -119,6 +127,9 @@ const PRODUCT_SEARCH_QUERY = `
                 price {
                   amount
                   currencyCode
+                }
+                compareAtPrice {
+                  amount
                 }
               }
             }
@@ -159,6 +170,7 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
       availableForSale?: boolean
       quantityAvailable?: number | null
       price?: { amount?: string; currencyCode?: string }
+      compareAtPrice?: { amount?: string } | null
     }
 
     const product = data.productByHandle
@@ -166,6 +178,7 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
       id: node.id,
       title: node.title ?? '',
       price: node.price?.amount ?? '0',
+      compareAtPrice: node.compareAtPrice?.amount ?? null,
       currencyCode: node.price?.currencyCode ?? 'CAD',
       availableForSale: node.availableForSale ?? false,
       quantityAvailable: node.quantityAvailable ?? null,
@@ -180,6 +193,7 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
       descriptionHtml: product.descriptionHtml ?? '',
       variantId: variant?.id ?? '',
       price: variant?.price ?? '0',
+      compareAtPrice: variant?.compareAtPrice ?? null,
       currencyCode: variant?.currencyCode ?? 'CAD',
       featuredImage: product.featuredImage ?? null,
       images: (product.images?.edges ?? []).map(({ node }: { node: any }) => ({ url: node.url, altText: node.altText ?? '' })),
@@ -207,6 +221,7 @@ export async function getCollectionProducts(collectionHandle: string, first = 50
         descriptionHtml: '',
         variantId: variant?.id ?? '',
         price: variant?.price?.amount ?? '0',
+        compareAtPrice: variant?.compareAtPrice?.amount ?? null,
         currencyCode: variant?.price?.currencyCode ?? 'CAD',
         featuredImage: node.featuredImage ?? null,
         images: [],
@@ -238,6 +253,7 @@ export async function searchProducts(term: string, first = 6): Promise<ShopifyPr
         descriptionHtml: '',
         variantId: variant?.id ?? '',
         price: variant?.price?.amount ?? '0',
+        compareAtPrice: variant?.compareAtPrice?.amount ?? null,
         currencyCode: variant?.price?.currencyCode ?? 'CAD',
         featuredImage: node.featuredImage ?? null,
         images: [],
