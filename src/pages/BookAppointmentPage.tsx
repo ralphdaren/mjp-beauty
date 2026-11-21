@@ -5,11 +5,11 @@ import { useScrollPopupTrigger } from '../hooks/useScrollPopupTrigger'
 import { useBookingState } from '../hooks/useBookingState'
 import { useServices } from '../hooks/useServices'
 import ClientEmailPopup from '../components/booking/ClientEmailPopup'
-import ServiceRow from '../components/booking/ServiceRow'
+import ServiceMenu from '../components/booking/ServiceMenu'
 import VideoModal from '../components/booking/VideoModal'
-import InfoTabs from '../components/booking/InfoTabs'
 import InstagramReels from '../components/InstagramReels'
-import StudioLocation from '../components/booking/StudioLocation'
+import SectionHeading from '../components/SectionHeading'
+import VisitSection from '../components/booking/VisitSection'
 import BookingDrawer from '../components/booking/BookingDrawer'
 import BookingPausedModal from '../components/booking/BookingPausedModal'
 const BOOKING_PAUSED = false
@@ -58,36 +58,27 @@ export default function BookAppointmentPage() {
 
   return (
     <>
-      {/* Page hero */}
-      <div className="bg-[#f6f2ec] border-b border-[#e3e2de] py-14 text-center px-6">
-        <p className="hero-eyebrow text-[10px] tracking-[0.35em] uppercase text-[#a0948a] mb-3">MJP Beauty</p>
-        <h1 className="hero-heading text-3xl font-semibold text-[#3d3530] mb-3">Our Services</h1>
-        <p className="hero-tagline text-sm text-[#6b5f58] max-w-md mx-auto leading-relaxed">
-          Choose your treatment below and book your appointment. All services are performed by
-          Micah — a certified brow and lash artist.
-        </p>
-      </div>
+      <ServiceMenu
+        services={services}
+        onVideoOpen={b.setVideoSrc}
+        hideBar={b.drawerOpen}
+        onBook={(service, tier) =>
+          BOOKING_PAUSED ? setPausedOpen(true) : b.openDrawerWithItems([{ service, tier }])
+        }
+      />
 
-      {/* Services list */}
-      <main className="bg-[#fefefe] py-4 px-6 md:px-10 lg:px-16">
-        <div className="max-w-5xl mx-auto divide-y divide-[#e3e2de]">
-          {services.map((service, index) => (
-            <ServiceRow
-              key={service.id}
-              service={service}
-              index={index}
-              onVideoOpen={b.setVideoSrc}
-              onBook={BOOKING_PAUSED ? () => setPausedOpen(true) : b.openDrawerForService}
-            />
-          ))}
-        </div>
-      </main>
+      <InstagramReels
+        reels={REELS}
+        header={
+          <SectionHeading
+            id="work-heading"
+            title="Micah's recent work"
+            line="Real clients, fresh from the chair. Tap a reel to watch."
+          />
+        }
+      />
 
-      <InstagramReels reels={REELS} />
-
-      <StudioLocation />
-
-      <InfoTabs />
+      <VisitSection />
 
       {b.videoSrc && (
         <VideoModal src={b.videoSrc} onClose={() => b.setVideoSrc(null)} />

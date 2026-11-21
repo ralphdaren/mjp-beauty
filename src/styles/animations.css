@@ -123,3 +123,15 @@
   opacity: 1;
   transform: translate(0);
 }
+
+/* Booking page services menu: variation rows rise in when a service opens. */
+@keyframes menu-row-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+.menu-row-rise {
+  animation: menu-row-rise 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .menu-row-rise { animation: none; }
+}

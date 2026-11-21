@@ -16,6 +16,13 @@
   font-style: normal;
 }
 
+/* Normal-width light serif for the booking page redesign headings. */
+.display-serif {
+  font-family: 'Noto Serif Display', Georgia, serif;
+  font-stretch: 100%;
+  font-weight: 200;
+}
+
 /* ─── Script Accent ──────────────────────────────────────────────── */
 
 .script-accent {

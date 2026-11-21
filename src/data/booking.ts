@@ -74,7 +74,7 @@ export const SERVICES: Service[] = [
     name: 'Keratin Lash Lift',
     tagline: 'Lifted • Curled • Luminous',
     description:
-      'Enhances and lifts your natural lashes making them appear longer, fuller, and freshly curled. Paired with a vitamin mask for deep nourishment. Lasts 6-8 weeks — the most low-maintenance service you can get.',
+      "Enhances and lifts your natural lashes making them appear longer, fuller, and freshly curled. Paired with a vitamin mask for deep nourishment. Lasts 6-8 weeks. It's the most low-maintenance service you can get.",
     duration: '45 min+',
     tiers: [
       { squareVariationId: 'QUUXGEOUYHNGG5EBW6NFUBG7', label: 'With Tint', price: '$104.76', duration: '1 hr' },
@@ -107,11 +107,11 @@ export const FAQ_DATA = [
       },
       {
         q: 'Who is it not suited for?',
-        a: "Clients with Alopecia on their brows, large troublesome patches without hair growth, those who don't wish to add more fullness, or those with dry or damaged hairs. Not sure? Consult with Micah — she can assess your brows to see if you're the right fit.",
+        a: "Clients with Alopecia on their brows, large troublesome patches without hair growth, those who don't wish to add more fullness, or those with dry or damaged hairs. Not sure? Consult with Micah. She can assess your brows to see if you're the right fit.",
       },
       {
         q: 'Will my brows stay styled the way Micah sets them at the end of the appointment?',
-        a: "No — daily styling is still required using a brow gel/soap and a brow oil to keep them nourished. However, styling is very minimal and easy. Micah also takes time at the end of the appointment to show you how to style your newly laminated brows.",
+        a: "No, daily styling is still required using a brow gel/soap and a brow oil to keep them nourished. However, styling is very minimal and easy. Micah also takes time at the end of the appointment to show you how to style your newly laminated brows.",
       },
       {
         q: 'How often can I get brow lamination done?',
@@ -119,7 +119,7 @@ export const FAQ_DATA = [
       },
       {
         q: 'Can I get brow henna and brow lamination done in one appointment?',
-        a: "No, you must wait at least 48 hours after brow lamination to get your brows henna'd to avoid any reactions. A new combined service is currently in development — stay tuned!",
+        a: "No, you must wait at least 48 hours after brow lamination to get your brows henna'd to avoid any reactions. A new combined service is currently in development, so stay tuned!",
       },
     ],
   },
@@ -144,7 +144,7 @@ export const FAQ_DATA = [
       },
       {
         q: 'Does the lash lift procedure hurt?',
-        a: 'Not at all. It is pain-free and non-invasive as long as your artist is properly trained and certified. Your eyes will be closed for approximately 30-45 minutes — use that time to relax and unwind.',
+        a: 'Not at all. It is pain-free and non-invasive as long as your artist is properly trained and certified. Your eyes will be closed for approximately 30-45 minutes, so use that time to relax and unwind.',
       },
       {
         q: 'Can a lash lift damage my natural lashes?',
@@ -162,9 +162,9 @@ export const AFTERCARE_DATA = [
   {
     category: 'Brow Lamination',
     items: [
-      'Do not wet the brows for the first 24 hrs — avoid swimming, saunas, facial treatments, and sweating from workouts.',
+      'Do not wet the brows for the first 24 hrs. Avoid swimming, saunas, facial treatments, and sweating from workouts.',
       'Use the complimentary aftercare balm daily from the second night post-treatment. Push it upwards through the brows before bed, leave overnight, and rinse off in the morning.',
-      'Brush your brow hairs up daily to keep the lifted effect strong — even before you go to bed.',
+      'Brush your brow hairs up daily to keep the lifted effect strong, even before you go to bed.',
       'Do not apply makeup or undertake further facial/skin treatments for at least 24 hours after your service.',
       'Avoid prolonged exposure to direct sunlight or heat.',
       'Do not apply Retin-A, AHA, or exfoliate around the brow area for at least 72 hours before and after treatment.',
@@ -176,7 +176,7 @@ export const AFTERCARE_DATA = [
   {
     category: 'Lash Lifts',
     items: [
-      'Do not get your lashes wet for at least 24 hours — avoid hot showers, saunas, and sweating from workouts.',
+      'Do not get your lashes wet for at least 24 hours. Avoid hot showers, saunas, and sweating from workouts.',
       'Be mindful of how often you wash your lashes. Always pat them dry with a clean towel.',
       'Avoid sleeping on your face or side (especially the first 24 hours) to prevent awkward kinks.',
       'Brush your lashes upwards every day.',

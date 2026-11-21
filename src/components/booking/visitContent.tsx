@@ -1,25 +1,32 @@
-import { useState } from 'react'
-import { FileText, HelpCircle, Heart } from 'lucide-react'
-import Accordion from '../Accordion'
-import { FAQ_DATA, AFTERCARE_DATA } from '../../data/booking'
+import type { ReactNode } from 'react'
+import { ChevronDown } from 'lucide-react'
+import { AFTERCARE_DATA, FAQ_DATA } from '../../data/booking'
 
-const INFO_TABS = [
-  { id: 'policies',  label: 'Booking Policies', Icon: FileText },
-  { id: 'faq',       label: 'FAQ',              Icon: HelpCircle },
-  { id: 'aftercare', label: 'Aftercare',        Icon: Heart },
-] as const
-
-type InfoTabId = (typeof INFO_TABS)[number]['id']
-
-// ─── Tab content components ───────────────────────────────────────────────────
-
-function BookingPoliciesContent() {
+/** One question row for the "Before your visit" tabs. Uses <details> so it works without JS state. */
+function QA({ q, a, defaultOpen }: { q: string; a: ReactNode; defaultOpen?: boolean }) {
   return (
-    <div className="max-w-2xl mx-auto">
-      <p className="text-sm text-[#6b5f58] leading-relaxed mb-6">
+    <details className="group border-b border-[rgba(61,53,48,.13)]" open={defaultOpen}>
+      <summary className="list-none [&::-webkit-details-marker]:hidden flex items-center justify-between gap-5 min-h-[58px] py-3 text-[15.5px] text-[#3d3530] cursor-pointer rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b07b5a]">
+        <span>{q}</span>
+        <ChevronDown
+          size={16}
+          aria-hidden="true"
+          className="shrink-0 text-[#827064] transition-transform duration-200 group-open:rotate-180 motion-reduce:transition-none"
+        />
+      </summary>
+      <div className="text-[14.5px] leading-[1.7] text-[#4a403a] pb-5 max-w-[62ch]">{a}</div>
+    </details>
+  )
+}
+
+export function PoliciesPanel() {
+  return (
+    <div>
+      <p className="text-[14.5px] text-[#6b5f58] leading-relaxed pt-4 pb-2">
         Please read the following policies and pre-appointment guidelines prior to making your appointment.
       </p>
-      <Accordion
+      <QA
+        defaultOpen
         q="How do I secure my appointment slot?"
         a={
           <div className="space-y-2">
@@ -35,29 +42,29 @@ function BookingPoliciesContent() {
           </div>
         }
       />
-      <Accordion
+      <QA
         q="What is the refund policy?"
         a={
           <div className="space-y-2">
-            <p>Refunds are not offered — clients pay for Micah's time and products, which cannot be "returned."</p>
+            <p>Refunds are not offered. Clients pay for Micah's time and products, which cannot be "returned."</p>
             <p>However, customer satisfaction is a priority. If you are unhappy with a service, please let Micah know so you can address your concerns and work out a solution together.</p>
           </div>
         }
       />
-      <Accordion
+      <QA
         q="What is the cancellation policy?"
         a={<p>A <strong className="text-[#3d3530] font-semibold">48-hour (2-day) notice</strong> is required to reschedule or cancel. Cancelling with 24 to 48 hours' notice is charged <strong className="text-[#3d3530] font-semibold">50% of your booking</strong>. Cancelling within 24 hours of your appointment is charged <strong className="text-[#3d3530] font-semibold">the full amount</strong>. Fees are charged to your card on file.</p>}
       />
-      <Accordion
+      <QA
         q="What happens if I'm late?"
         a={<p>A <strong className="text-[#3d3530] font-semibold">10-minute grace period</strong> is given to those running late. If you are more than 10 minutes late without communication, your appointment will be cancelled and <strong className="text-[#3d3530] font-semibold">50% of your booking</strong> will be charged to your card on file. If a last-minute emergency occurs, please communicate with Micah so you can work something out.</p>}
       />
-      <Accordion
+      <QA
         q="What is the no-show policy?"
         a={<p><strong className="text-[#3d3530] font-semibold">No-shows are not tolerated at MJP Beauty.</strong> A no-show is charged <strong className="text-[#3d3530] font-semibold">the full amount of your booking</strong> to your card on file.</p>}
       />
-      <Accordion
-        q="New client — what should I expect?"
+      <QA
+        q="New client: what should I expect?"
         a={
           <ol className="list-decimal list-inside space-y-2">
             <li>Once your appointment request is accepted, you'll receive a confirmation email with all appointment details.</li>
@@ -66,7 +73,7 @@ function BookingPoliciesContent() {
           </ol>
         }
       />
-      <Accordion
+      <QA
         q="What payment methods are accepted?"
         a={
           <div className="space-y-2">
@@ -80,18 +87,18 @@ function BookingPoliciesContent() {
           </div>
         }
       />
-      <Accordion
-        q="Pre-appointment guidelines — Brow services"
+      <QA
+        q="Pre-appointment guidelines: brow services"
         a={
           <ul className="list-disc list-inside space-y-2">
-            <li>Arrive with <strong className="text-[#3d3530] font-semibold">clean brows</strong> — no makeup or products on/around the brows. Moisturizer is okay and recommended.</li>
-            <li>For Brow Lamination, <strong className="text-[#3d3530] font-semibold">avoid trimming your brows at least 3 weeks prior</strong> — we want to work with as much hair as possible.</li>
+            <li>Arrive with <strong className="text-[#3d3530] font-semibold">clean brows</strong>, with no makeup or products on/around the brows. Moisturizer is okay and recommended.</li>
+            <li>For Brow Lamination, <strong className="text-[#3d3530] font-semibold">avoid trimming your brows at least 3 weeks prior</strong>. We want to work with as much hair as possible.</li>
             <li>Inform Micah if you are using Retinoids, acne medications, Vitamin A products, or any skin-thinning treatments. Stop usage at least <strong className="text-[#3d3530] font-semibold">2–3 weeks prior</strong> to your appointment.</li>
           </ul>
         }
       />
-      <Accordion
-        q="Pre-appointment guidelines — Lash Lift services"
+      <QA
+        q="Pre-appointment guidelines: lash lift services"
         a={
           <ul className="list-disc list-inside space-y-2">
             <li>Do not arrive with any makeup, especially eye makeup (mascara, concealer, foundation, eyeliner, eyeshadow).</li>
@@ -99,45 +106,42 @@ function BookingPoliciesContent() {
           </ul>
         }
       />
-      <div className="mt-4 bg-[#f6f2ec] border border-[#e3e2de] rounded-xl p-4 text-sm text-[#6b5f58]">
-        <strong className="text-[#827064]">Additional info:</strong> Please read the confirmation
-        email after booking — it contains all details about the studio address and parking instructions.
+      <div className="mt-6 bg-[#fefefe] rounded-[10px] p-4 text-sm text-[#4a403a] leading-relaxed">
+        <strong className="text-[#3d3530] font-medium">Additional info:</strong> Please read the confirmation
+        email after booking. It contains all details about the studio address and parking instructions.
       </div>
     </div>
   )
 }
 
-function FaqContent() {
+export function FaqPanel() {
   return (
-    <div className="max-w-2xl mx-auto space-y-10">
+    <div className="space-y-8 pt-4">
       {FAQ_DATA.map((group) => (
         <div key={group.category}>
-          <h3 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#827064] mb-1 pb-2 border-b border-[#e3e2de]">
-            {group.category}
-          </h3>
-          <div>
-            {group.items.map((item) => (
-              <Accordion key={item.q} q={item.q} a={item.a} />
-            ))}
-          </div>
+          <h3 className="text-[15px] font-medium text-[#4a403a] pb-1">{group.category}</h3>
+          {group.items.map((item) => (
+            <QA key={item.q} q={item.q} a={item.a} />
+          ))}
         </div>
       ))}
     </div>
   )
 }
 
-function AftercareContent() {
+export function AftercarePanel() {
   return (
-    <div className="max-w-2xl mx-auto">
-      {AFTERCARE_DATA.map((group) => (
-        <Accordion
+    <div>
+      {AFTERCARE_DATA.map((group, i) => (
+        <QA
           key={group.category}
+          defaultOpen={i === 0}
           q={group.category}
           a={
-            <ul className="space-y-3">
-              {group.items.map((item, i) => (
-                <li key={i} className="flex gap-3 leading-relaxed">
-                  <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-[#827064] shrink-0" />
+            <ul className="space-y-2.5">
+              {group.items.map((item, j) => (
+                <li key={j} className="flex gap-3">
+                  <span className="mt-[9px] w-1.5 h-1.5 rounded-full bg-[#b07b5a] shrink-0" />
                   <span>{item}</span>
                 </li>
               ))}
@@ -146,59 +150,5 @@ function AftercareContent() {
         />
       ))}
     </div>
-  )
-}
-
-// ─── Main InfoTabs component ──────────────────────────────────────────────────
-
-export default function InfoTabs() {
-  const [active, setActive] = useState<InfoTabId>('policies')
-
-  return (
-    <section className="bg-[#f6f2ec] border-t border-[#e3e2de] py-16">
-      <div className="max-w-4xl mx-auto px-6">
-
-        <div className="anim-fade-up text-center mb-10">
-          <p className="text-[10px] tracking-[0.25em] uppercase text-[#a0948a] mb-2">Good to Know</p>
-          <h2 className="text-2xl font-semibold text-[#3d3530]">Policies & Aftercare</h2>
-        </div>
-
-        <div className="flex justify-center mb-8">
-          <div className="flex gap-0 border-b border-[#d9d4cf] w-full max-w-lg">
-            {INFO_TABS.map(({ id, label, Icon }) => {
-              const isActive = active === id
-              return (
-                <button
-                  key={id}
-                  onClick={() => setActive(id)}
-                  className={`group relative flex-1 flex flex-col items-center gap-1.5 py-3 px-2 transition-colors duration-200 ${
-                    isActive ? 'text-[#6e5f55]' : 'text-[#a0948a] hover:text-[#6e5f55]'
-                  }`}
-                >
-                  <Icon size={15} className="transition-colors duration-200" />
-                  <span className="text-[11px] tracking-[0.1em] uppercase font-semibold whitespace-nowrap transition-colors duration-200">
-                    {label}
-                  </span>
-                  <span
-                    className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] bg-[#827064] rounded-full transition-all duration-300 ${
-                      isActive ? 'w-3/4 opacity-100' : 'w-0 opacity-0'
-                    }`}
-                  />
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        <div className="bg-white border border-[#e3e2de] rounded-2xl px-8 py-10 shadow-sm">
-          <div key={active} className="tab-fade-in">
-            {active === 'policies'  && <BookingPoliciesContent />}
-            {active === 'faq'       && <FaqContent />}
-            {active === 'aftercare' && <AftercareContent />}
-          </div>
-        </div>
-
-      </div>
-    </section>
   )
 }

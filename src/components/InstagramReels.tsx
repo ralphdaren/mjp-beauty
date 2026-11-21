@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, type ReactNode } from 'react'
 import { SiInstagram } from '@icons-pack/react-simple-icons'
 import { Volume2, VolumeX } from 'lucide-react'
 
@@ -39,7 +39,7 @@ function getSlot(diff: number, d: ReturnType<typeof getDims>) {
   }
 }
 
-export default function InstagramReels({ reels }: { reels: string[] }) {
+export default function InstagramReels({ reels, header }: { reels: string[]; header?: ReactNode }) {
   const N = reels.length
   const [active, setActive] = useState(0)
   const [inView, setInView] = useState(false)
@@ -122,6 +122,8 @@ export default function InstagramReels({ reels }: { reels: string[] }) {
 
   return (
     <section ref={sectionRef} className="bg-[#fefefe] py-20 border-t border-[#e3e2de] overflow-hidden">
+      {header}
+
       {/* Carousel */}
       <div
         className="relative"
@@ -216,10 +218,14 @@ export default function InstagramReels({ reels }: { reels: string[] }) {
           href="https://www.instagram.com/mjpbeauty"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-8 py-3 border border-[#3d3530] text-[#3d3530] text-sm tracking-[0.1em] uppercase font-medium rounded-full hover:bg-[#3d3530] hover:text-white transition-colors duration-300"
+          className={
+            header
+              ? 'inline-flex items-center gap-2 min-h-12 px-6 border border-[#3d3530] text-[#3d3530] text-[14.5px] font-medium rounded-full hover:bg-[#3d3530] hover:text-white transition-colors duration-300'
+              : 'inline-flex items-center gap-2 px-8 py-3 border border-[#3d3530] text-[#3d3530] text-sm tracking-[0.1em] uppercase font-medium rounded-full hover:bg-[#3d3530] hover:text-white transition-colors duration-300'
+          }
         >
           <SiInstagram size={14} />
-          Follow on Instagram
+          {header ? 'More on Instagram' : 'Follow on Instagram'}
         </a>
       </div>
     </section>
