@@ -135,3 +135,13 @@
 @media (prefers-reduced-motion: reduce) {
   .menu-row-rise { animation: none; }
 }
+
+/* Booking page photo: bar on the active thumbnail fills until the next photo. */
+@keyframes photo-progress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.photo-progress {
+  transform-origin: left;
+  animation: photo-progress var(--photo-interval, 4500ms) linear both;
+}

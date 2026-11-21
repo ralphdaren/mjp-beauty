@@ -90,7 +90,7 @@ export default function ServiceMenu({ services, onBook, onVideoOpen, hideBar }: 
                   </span>
                   {from && (
                     <span className="text-[13px] text-[#6b5f58] whitespace-nowrap">
-                      from <span className="display-serif !font-normal text-base text-[#3d3530] ml-1">{from}</span>
+                      from <span className="font-semibold text-[15px] text-[#3d3530] ml-1">{from}</span>
                     </span>
                   )}
                 </button>
@@ -106,16 +106,16 @@ export default function ServiceMenu({ services, onBook, onVideoOpen, hideBar }: 
                 >
                   <div className="overflow-hidden">
                     <div className="pb-[30px]">
-                      {service.images[0] && (
-                        <div className="md:hidden aspect-[16/10] rounded-[3px] overflow-hidden mb-[18px]">
-                          <img
-                            src={service.images[0].src}
-                            srcSet={service.images[0].srcSet}
+                      {/* Phones: the same rotating photos as the desktop panel, inside the open service.
+                          Mounted only while open so closed services don't run timers or load images. */}
+                      {open && service.images.length > 0 && (
+                        <div className="md:hidden mb-[18px]">
+                          <ServicePhoto
+                            services={[service]}
+                            service={service}
+                            onVideoOpen={onVideoOpen}
+                            frameClassName="aspect-[16/10]"
                             sizes="100vw"
-                            alt={`${service.name} by Micah`}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                            decoding="async"
                           />
                         </div>
                       )}
@@ -152,7 +152,7 @@ export default function ServiceMenu({ services, onBook, onVideoOpen, hideBar }: 
                               <span className="col-start-2 row-start-2 md:col-start-auto md:row-start-auto text-[13px] text-[#6b5f58] whitespace-nowrap">
                                 {tier.duration}
                               </span>
-                              <span className="col-start-3 row-start-1 row-span-2 md:col-start-auto md:row-start-auto md:row-span-1 display-serif !font-normal text-[17px] min-w-[80px] text-right">
+                              <span className="col-start-3 row-start-1 row-span-2 md:col-start-auto md:row-start-auto md:row-span-1 font-semibold text-base min-w-[80px] text-right">
                                 {tier.price}
                               </span>
                             </button>

@@ -29,7 +29,7 @@ export default function SummaryBar({ picked, onBook, hidden }: SummaryBarProps) 
           <div className="flex flex-col md:flex-row md:items-baseline md:gap-2 leading-tight">
             {picked && (
               <>
-                <span className="display-serif !font-light text-[21px] md:text-2xl text-[#3d3530]">{picked.tier.price}</span>
+                <span className="font-semibold text-lg md:text-xl text-[#3d3530]">{picked.tier.price}</span>
                 <span className="text-xs text-[#6b5f58] whitespace-nowrap">before tax</span>
               </>
             )}
