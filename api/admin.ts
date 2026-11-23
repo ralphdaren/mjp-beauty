@@ -17,7 +17,8 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { randomUUID } from 'crypto'
 import { Resend } from 'resend'
 import { supabase } from './_supabase.js'
-import { squareFetch, getLocationId, getCatalogItems, findVariation } from './_square.js'
+import { squareFetch, getLocationId, getCatalogItems, findVariation, variationMinutes } from './_square.js'
+import { bookingSegments, findSquareConflicts, releaseSquareHold } from './_square-hold.js'
 import { escapeHtml } from './_html.js'
 import { enforceRateLimit, adminLimiter, calendarReadLimiter } from './_ratelimit.js'
 import { CALENDAR_RESOURCES } from './_calendar.js'
@@ -229,18 +230,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       try {
         const [locationId, catalogItems] = await Promise.all([getLocationId(), getCatalogItems()])
 
-        const appointmentSegments = requestedItems(request).map((item) => {
-          const match = findVariation(catalogItems, item)
-          if (!match) throw new Error(`No Square variation found for: "${item.tierLabel}"`)
+        const items = requestedItems(request)
+        const appointmentSegments = bookingSegments(items, catalogItems, request.team_member_id)
+        const holdId: string | null = request.square_hold_booking_id ?? null
 
-          const segment: Record<string, unknown> = {
-            service_variation_id: match.id,
-            service_variation_version: match.version,
-          }
-          const teamMemberId = item.teamMemberId ?? request.team_member_id
-          if (teamMemberId) segment.team_member_id = teamMemberId
-          return segment
+        // Square lets the business double-book without complaint, so check
+        // first. The request's own hold doesn't count as a clash.
+        const durationMinutes = request.duration_minutes ?? items.reduce((total, item) => {
+          const match = findVariation(catalogItems, item)
+          return total + (match ? variationMinutes(match) : 0)
+        }, 0)
+        const startMs = new Date(request.start_at).getTime()
+        const conflicts = await findSquareConflicts({
+          locationId,
+          teamMemberIds: items.map((item) => item.teamMemberId ?? request.team_member_id ?? ''),
+          startMs,
+          endMs: startMs + Math.max(durationMinutes, 1) * 60_000,
+          excludeIds: holdId ? [holdId] : [],
         })
+        if (conflicts.length > 0) {
+          return res.status(409).json({
+            error: 'This time is already taken by another appointment in Square, so it was not accepted. Decline the request or contact the client to choose another time.',
+          })
+        }
 
         const bookingData = await squareFetch('/v2/bookings', {
           method: 'POST',
@@ -257,6 +269,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const squareBookingId = bookingData.booking?.id as string
 
+        // The real booking exists now, so the hold can go without the time
+        // ever being open in between.
+        const holdReleased = await releaseSquareHold(holdId)
+
         await supabase
           .from('booking_requests')
           .update({
@@ -266,7 +282,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           })
           .eq('id', String(requestId))
 
-        return res.status(200).json({ squareBookingId })
+        return res.status(200).json({
+          squareBookingId,
+          ...(holdReleased ? {} : {
+            warning: 'Accepted. The "Website Request (pending)" hold could not be removed from Square, so please cancel it there by hand.',
+          }),
+        })
       } catch (err) {
         return res.status(500).json({ error: String(err) })
       }
@@ -274,6 +295,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (action === 'decline') {
       try {
+        await releaseSquareHold(request.square_hold_booking_id)
+
         await supabase
           .from('booking_requests')
           .update({ status: 'declined', reviewed_at: new Date().toISOString() })

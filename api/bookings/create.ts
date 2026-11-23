@@ -2,8 +2,9 @@
 // Body: { items: [{ serviceName, tierLabel, teamMemberId }], startAt, customerId,
 //         firstName, lastName, email, phone }
 // An appointment holds one or more services, booked back to back in the order
-// they're listed. Stores a pending booking request in Supabase — the Square
-// booking is NOT created until admin accepts.
+// they're listed. Stores a pending booking request in Supabase and places a
+// placeholder hold in Square so Square's own channels can't sell the time. The
+// client's real Square booking is NOT created until admin accepts.
 
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { randomUUID } from 'crypto'
@@ -15,6 +16,8 @@ import {
   type VariationMatch,
 } from '../_square.js'
 import { getHeldBlocks, overlapsBlock } from '../_holds.js'
+import { bookingSegments, createSquareHold, findSquareConflicts, releaseSquareHold } from '../_square-hold.js'
+import { holdSellerNote } from '../_hold-rules.js'
 import { enforceRateLimit, bookingCreateLimiter } from '../_ratelimit.js'
 import { setCorsHeaders } from '../_cors.js'
 import { isValidEmail, isValidIsoDateTime, isNonEmptyString, isOptionalString } from '../_validate.js'
@@ -91,6 +94,57 @@ async function isOfferedBySquare(
   return ((data.availabilities as any[]) ?? []).some(
     (a: any) => new Date(a.start_at).getTime() === startMs,
   )
+}
+
+/**
+ * Creates the Square hold for a freshly saved request and links it to the row.
+ * 'taken' means Square already had something there; 'failed' means Square or
+ * Supabase errored. Either way any hold that was made is cancelled again.
+ */
+async function placeSquareHold(input: {
+  requestId: string
+  locationId: string
+  startAt: string
+  startMs: number
+  endMs: number
+  items: RequestedItem[]
+  catalogItems: any[]
+  note: string
+}): Promise<'held' | 'taken' | 'failed'> {
+  let holdId: string | null = null
+  try {
+    holdId = await createSquareHold({
+      locationId: input.locationId,
+      startAt: input.startAt,
+      segments: bookingSegments(input.items, input.catalogItems, null),
+      sellerNote: input.note,
+      idempotencyKey: `hold-${input.requestId}`,
+    })
+
+    const conflicts = await findSquareConflicts({
+      locationId: input.locationId,
+      teamMemberIds: input.items.map((item) => item.teamMemberId ?? ''),
+      startMs: input.startMs,
+      endMs: input.endMs,
+      excludeIds: [holdId],
+    })
+    if (conflicts.length > 0) {
+      await releaseSquareHold(holdId)
+      return 'taken'
+    }
+
+    const { error } = await supabase
+      .from('booking_requests')
+      .update({ square_hold_booking_id: holdId })
+      .eq('id', input.requestId)
+    if (error) throw new Error(error.message)
+
+    return 'held'
+  } catch (err) {
+    console.error('Could not place Square hold:', err)
+    await releaseSquareHold(holdId)
+    return 'failed'
+  }
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -188,6 +242,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(409).json({ error: 'This time slot was just booked by someone else. Please choose another.' })
       }
       throw new Error(error.message)
+    }
+
+    // Block the time on Square's own channels too, then make sure nobody booked
+    // it through Square in the moments between the availability check and now.
+    const holdOutcome = await placeSquareHold({
+      requestId: data.id,
+      locationId,
+      startAt: String(startAt),
+      startMs,
+      endMs,
+      items,
+      catalogItems,
+      note: holdSellerNote({
+        firstName: String(firstName),
+        lastName: lastName ? String(lastName) : '',
+        email: String(email),
+        phone: phone ? String(phone) : null,
+        services: items.map((item) => `${item.serviceName}: ${item.tierLabel}`),
+      }),
+    })
+    if (holdOutcome !== 'held') {
+      await supabase.from('booking_requests').delete().eq('id', data.id)
+      return holdOutcome === 'taken'
+        ? res.status(409).json({ error: 'That time is no longer available. Please pick another slot.' })
+        : res.status(503).json({ error: "We couldn't reserve that time just now. Please try again in a moment." })
     }
 
     const appointmentDate = new Date(String(startAt)).toLocaleString('en-CA', {

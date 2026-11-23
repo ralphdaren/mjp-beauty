@@ -126,6 +126,7 @@ export function useServiceRequests({ token, requests, onRefetch }: UseServiceReq
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? `Failed to ${action}`)
+      if (data.warning) alert(data.warning)
       await onRefetch({ silent: true })
     } catch (err) {
       alert(String(err))

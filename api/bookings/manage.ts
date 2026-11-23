@@ -8,6 +8,7 @@ import { supabase } from '../_supabase.js'
 import { enforceRateLimit, manageBookingLimiter } from '../_ratelimit.js'
 import { setCorsHeaders } from '../_cors.js'
 import { isNonEmptyString } from '../_validate.js'
+import { releaseSquareHold } from '../_square-hold.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCorsHeaders(req, res)
@@ -57,5 +58,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     .eq('status', 'pending')
 
   if (updateError) return res.status(500).json({ error: updateError.message })
+
+  // Free the time on Square's channels too.
+  await releaseSquareHold(request.square_hold_booking_id)
   return res.status(200).json({ ok: true })
 }
